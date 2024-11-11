@@ -10,7 +10,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import os
 from pathlib import Path
+import pymysql 
+from decouple import config
+import boto3 
+
+pymysql.install_as_MySQLdb()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,13 +26,23 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-)w+v8im1y)snz-zzc^)ky0hs81s=982=$h5^f3+dc&ku$3#zya'
+# AWS SSM 클라이언트 생성
+ssm = boto3.client('ssm', region_name='ap-northeast-2')
 
+def get_parameter(name, with_decryption=True):
+    """AWS Parameter Store에서 값을 가져오는 함수"""
+    return ssm.get_parameter(Name=name, WithDecryption=with_decryption)['Parameter']['Value']
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = get_parameter('/interviewdb-info/SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
+# settings.py
+TIME_ZONE = 'Asia/Seoul'  # 한국 시간으로 설정
+USE_TZ = True  # 타임존 사용 활성화
 
 # Application definition
 
@@ -75,8 +91,12 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': get_parameter('/interviewdb-info/DB_NAME'),
+        'USER': get_parameter('/interviewdb-info/DB_USER'),
+        'PASSWORD': get_parameter('/interviewdb-info/DB_PASSWORD', with_decryption=True),
+        'HOST': get_parameter('/interviewdb-info/DB_HOST'),
+        'PORT': get_parameter('/interviewdb-info/DB_PORT'),
     }
 }
 
@@ -114,8 +134,12 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
+STATIC_URL = "static/"
+STATIC_PATH = os.path.join(
+    BASE_DIR, "static"
+)  # concatena a pasta static a variavel instanciada base_dir que aponta para a raiz do projeto
 
-STATIC_URL = 'static/'
+STATICFILES_DIRS = (STATIC_PATH,)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
