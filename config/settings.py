@@ -93,9 +93,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': get_parameter('/interviewdb-info/DB_NAME'),
-        'USER': get_parameter('/interviewdb-infoDB_USER'),
-        'PASSWORD': get_parameter('/interviewdb-infoDB_PASSWORD', with_decryption=True),
-        'HOST': get_parameter('/interviewdb-infoDB_HOST'),
+        'USER': get_parameter('/interviewdb-info/DB_USER'),
+        'PASSWORD': get_parameter('/interviewdb-info/DB_PASSWORD', with_decryption=True),
+        'HOST': get_parameter('/interviewdb-info/DB_HOST'),
         'PORT': get_parameter('/interviewdb-info/DB_PORT'),
     }
 }
