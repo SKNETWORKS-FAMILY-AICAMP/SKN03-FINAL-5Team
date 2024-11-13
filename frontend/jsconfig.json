@@ -1,7 +1,9 @@
 {
   "compilerOptions": {
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@/interview": ["./interview/*"],
+      "@/login": ["./login/*"]
     }
   }
 }
