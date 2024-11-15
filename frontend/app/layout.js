@@ -1,5 +1,4 @@
 import localFont from 'next/font/local';
-import './globals.css';
 import { ChakraProvider } from '@chakra-ui/react';
 
 // const geistSans = localFont({
@@ -21,8 +20,8 @@ export const metadata = {
 export default function RootLayout(props) {
   const { children } = props;
   return (
-    <html suppressHydrationWarning>
-      <body>
+    <html>
+      <body suppressHydrationWarning>
         <ChakraProvider>{children}</ChakraProvider>
       </body>
     </html>
