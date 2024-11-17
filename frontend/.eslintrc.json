@@ -1,7 +1,31 @@
+// {
+//   "extends": ["eslint:recommended", "plugin:prettier/recommended"],
+//   "plugins": ["prettier"],
+//   "rules": {
+//     "prettier/prettier": "error"
+//   }
+// }
 {
-  "extends": ["eslint:recommended", "plugin:prettier/recommended"],
-  "plugins": ["prettier"],
+  "extends": [
+    "next/core-web-vitals",
+    "eslint:recommended"
+  ],
+  "env": {
+    "browser": true,
+    "es6": true,
+    "node": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
   "rules": {
-    "prettier/prettier": "error"
+    "import/no-anonymous-default-export": "off",
+    "react/display-name": "off",
+    "no-unused-vars": "warn",
+    "jsx-a11y/alt-text": "warn"
   }
 }

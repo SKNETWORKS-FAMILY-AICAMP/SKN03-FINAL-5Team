@@ -16,3 +16,6 @@ scikit-learn
 matplotlib
 gunicorn
 boto3
+fastapi
+uvicorn
+node
