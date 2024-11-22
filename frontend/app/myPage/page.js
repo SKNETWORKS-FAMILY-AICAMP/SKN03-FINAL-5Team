@@ -1,6 +1,6 @@
 'use client'; // 클라이언트 컴포넌트 선언 필요
 
-import Container from '@/common/components/container';
+import Container from '@/app/common/components/container';
 import Header from '@/common/components/header';
 import InterviewHistory from './components/interviewHistory';
 import SideNavigation from './components/navigation';
