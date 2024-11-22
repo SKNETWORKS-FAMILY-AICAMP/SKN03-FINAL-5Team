@@ -27,7 +27,7 @@ phases:
     commands:
       - echo Build started on `date`
       # 프로젝트 폴더로 이동 
-      - cd ./frontend
+      # - cd ./frontend
       - pwd
       - echo Building the Docker image...
       # Github Repository에 있는 Dockerfile의 위치에 맞춰 수정 
@@ -51,4 +51,4 @@ phases:
 artifacts:
     files: 
       - imagedefinitions.json
-    base-directory: 'frontend'
+    # base-directory: 'frontend'
