@@ -2,9 +2,6 @@ FROM node:18
 
 WORKDIR /app
 
-# ESLint 설정 파일을 먼저 복사
-COPY .eslintrc.json ./
-
 # package.json 및 종속성 파일 복사 및 설치
 COPY package*.json ./
 RUN npm install
