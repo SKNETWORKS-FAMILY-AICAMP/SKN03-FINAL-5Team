@@ -3,7 +3,8 @@
     "paths": {
       "@/*": ["./*"],
       "@/interview": ["./interview/*"],
-      "@/login": ["./login/*"]
+      "@/login": ["./login/*"],
+      "@/mypage": ["./mypage/*"]
     }
   }
 }

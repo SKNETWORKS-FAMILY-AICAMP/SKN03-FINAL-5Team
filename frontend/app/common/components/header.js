@@ -8,7 +8,7 @@ const Header = () => {
       p={'10px 30px'}
       color={'#0066FF'}
       justifyContent='space-between'
-      fontSize={'32px'}
+      fontSize={'28px'}
     >
       <Flex alignItems={'center'} gap={'40px'}>
         <Link href='/'>
@@ -22,7 +22,7 @@ const Header = () => {
         <Link href='/interview'>
           <Box w={'100%'}>AI Mock Interview</Box>
         </Link>
-        <Link href='/mypage'>
+        <Link href='/myPage'>
           <Box w={'100%'}>My Page</Box>
         </Link>
       </Flex>
