@@ -52,5 +52,5 @@ artifacts:
     files: 
       - '**/*'
       - imagedefinitions.json
-      discard-paths: no
+    discard-paths: no
     # base-directory: 'frontend'
