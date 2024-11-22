@@ -51,4 +51,5 @@ phases:
 artifacts:
     files: 
       - imagedefinitions.json
+      discard-paths: no
     # base-directory: 'frontend'
