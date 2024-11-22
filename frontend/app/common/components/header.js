@@ -29,7 +29,7 @@ const Header = () => {
 
       <Flex alignItems={'center'} gap={'40px'}>
         <Link href='/login'>
-          <Box w={'120px'}>Log in</Box>
+          <Box w={'120px'}>Login</Box>
         </Link>
         <Link href='/signup'>
           <Box w={'120px'}>Sign up</Box>
