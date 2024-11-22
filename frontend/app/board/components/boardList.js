@@ -16,6 +16,7 @@ import {
   InputRightElement,
   Stack,
   Text,
+  Link,
 } from '@chakra-ui/react';
 import { FaSearch } from 'react-icons/fa';
 
@@ -233,7 +234,9 @@ const BoardList = () => {
         </Flex>
 
         <Flex justifyContent='flex-end' flex={1}>
-          <Button colorScheme='blue'>글쓰기</Button>
+          <Button colorScheme='blue'>
+            <Link href='/board/create'>글쓰기</Link>
+          </Button>
         </Flex>
       </Flex>
     </Box>
