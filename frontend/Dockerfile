@@ -26,10 +26,6 @@ WORKDIR /app
 # 전체 프로젝트 파일 복사
 COPY . .
 
-# 디버깅을 위한 파일 구조 출력
-RUN ls -la
-RUN ls -la app/common/components || echo "components directory not found"
-
 # npm install 실행
 RUN npm install
 
