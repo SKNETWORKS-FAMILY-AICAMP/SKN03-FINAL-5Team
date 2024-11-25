@@ -28,13 +28,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 # AWS SSM 클라이언트 생성
 ssm = boto3.client('ssm', region_name='ap-northeast-2')
-
 def get_parameter(name, with_decryption=True):
     """AWS Parameter Store에서 값을 가져오는 함수"""
     return ssm.get_parameter(Name=name, WithDecryption=with_decryption)['Parameter']['Value']
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = get_parameter('/interviewdb-info/SECRET_KEY')
+KAKAO_REST_API_KEY = get_parameter('/interviewdb-info/kakao/RESTAPI')
+KAKAO_REDIRECT_URI = "https://localhost:3000/oauth/callback/kakao"
+KAKAO_AUTHORIZATION_URL = "https://kauth.kakao.com/oauth/authorize"
+KAKAO_TOKEN_URL = "https://kauth.kakao.com/oauth/token"
+KAKAO_USER_INFO_URL = "https://kapi.kakao.com/v2/user/me"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -100,6 +104,8 @@ DATABASES = {
     }
 }
 
+# MySQL DB 연결 정보
+DATABASE_URL = f"mysql+pymysql://{get_parameter('/interviewdb-info/DB_USER')}:{get_parameter('/interviewdb-info/DB_PASSWORD', with_decryption=True)}@{get_parameter('/interviewdb-info/DB_HOST')}:{get_parameter('/interviewdb-info/DB_PORT')}/{get_parameter('/interviewdb-info/DB_NAME')}"
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
