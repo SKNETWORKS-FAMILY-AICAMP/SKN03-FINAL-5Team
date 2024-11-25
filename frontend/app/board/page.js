@@ -1,4 +1,4 @@
-import Container from '../common/components/container';
+import Container from '../common/components/Container';
 import Header from '../common/components/header';
 import SideNavigation from '../myPage/components/navigation';
 import BoardList from './components/boardList';
