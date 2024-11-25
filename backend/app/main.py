@@ -15,6 +15,10 @@ from sqlalchemy.orm import Session
 from database import SessionLocal
 from crud import get_user_by_kakao_id, create_user
 
+from sqlalchemy.orm import Session
+import models
+from database import SessionLocal, engine
+
 app = FastAPI()
 
 app.add_middleware(
@@ -101,18 +105,21 @@ async def kakao_callback(code: str, db: Session = Depends(get_db)):
     )
     user_info = user_info_response.json()
 
-    kakao_id = user_info["id"]
-    nickname = user_info["properties"]["nickname"]
-    email = user_info.get("kakao_account", {}).get("email", None)
-
+    # 카카오에서 받은 정보
+    user_id = user_info["id"]  # 카카오 아이디
+    user_name = user_info["properties"]["nickname"]  # 카카오에서 가져온 닉네임
+    user_pw = "default_password"  # 비밀번호는 카카오에서 제공되지 않으므로 기본값 설정
+    user_email = user_info.get("kakao_account", {}).get("email", None)  # 이메일 (없을 수 있음)
+    terms_check = "Y"  # 약관 동의 여부 기본값 "Y"
+    
     # 사용자 정보가 데이터베이스에 있는지 확인
-    db_user = get_user_by_kakao_id(db, kakao_id)
+    db_user = get_user_by_kakao_id(db, user_id)
     if db_user:
         # 이미 존재하는 사용자 로그인
         return {"message": "로그인 성공", "user": db_user}
     else:
         # 새로운 사용자 등록
-        new_user = create_user(db, kakao_id, nickname, email)
+        new_user = create_user(db, user_id, user_name, user_pw, user_email, terms_check)
         return {"message": "회원가입 성공", "user": new_user}
 
 if __name__ == "__main__":
