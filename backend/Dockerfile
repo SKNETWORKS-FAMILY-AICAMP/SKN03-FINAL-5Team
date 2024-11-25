@@ -11,8 +11,8 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # FastAPI 코드와 요구사항 복사
-COPY ./backend /app
-COPY ./requirements.txt /app
+COPY . /app
+COPY requirements.txt /app
 
 # Python 종속성 설치
 RUN pip install -r requirements.txt
