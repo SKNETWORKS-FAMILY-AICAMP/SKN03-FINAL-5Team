@@ -3,12 +3,12 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      "@/common/*": ["./app/common/*"],
-      "@/interview/*": ["./app/interview/*"],
-      "@/login/*": ["./app/login/*"],
-      "@/mypage/*": ["./app/mypage/*"],
-      "@/userinfo/*": ["./app/userinfo/*"],
-      "@/board/*": ["./app/board/*"]
+      "@/common/*": ["./common/*"],
+      "@/interview/*": ["./interview/*"],
+      "@/login/*": ["./login/*"],
+      "@/mypage/*": ["./mypage/*"],
+      "@/userinfo/*": ["./userinfo/*"],
+      "@/board/*": ["./board/*"]
     }
   }
 }
