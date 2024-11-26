@@ -32,9 +32,6 @@ const Header = () => {
         <Link href="/login">
           <Box w={'120px'}>Login</Box>
         </Link>
-        <Link href="/signup">
-          <Box w={'120px'}>Sign up</Box>
-        </Link>
       </Flex>
     </Box>
   );

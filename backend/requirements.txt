@@ -2,3 +2,4 @@
 uvicorn
 python-multipart
 google-cloud-speech
+httpx
