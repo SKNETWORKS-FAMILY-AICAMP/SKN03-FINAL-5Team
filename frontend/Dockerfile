@@ -1,32 +1,24 @@
-# 빌드 스테이지
-FROM node:18 AS builder
+FROM node:18
 
 WORKDIR /app
 
-# 종속성 파일만 먼저 복사하여 캐시 활용
+# ESLint 설정 파일을 먼저 복사
+COPY .eslintrc.json ./
+
+# package.json 및 종속성 파일 복사 및 설치
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
-# 소스 코드 복사 및 빌드
-COPY . .
-RUN npm run build
-
-# 실행 스테이지
-FROM node:18-slim
-
-WORKDIR /app
-
-ENV NODE_ENV=production
+# 환경 변수 설정
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+ENV ESLINT_NO_DEV_ERRORS=true
 
-COPY --from=builder /app/next.config.mjs ./next.config.mjs
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
+# 나머지 소스 코드 복사
+COPY . .
 
-# 비특권 사용자로 전환
-USER node
+# 빌드
+RUN npm run build
 
 EXPOSE 3000
 
