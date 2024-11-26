@@ -49,13 +49,11 @@ async def kakao_callback(code: str, db: Session = Depends(get_db)):
             raise HTTPException(status_code=400, detail="Failed to get user info")
 
         user_info = user_response.json()
-        
         kakao_id = user_info['id'] 
-        
         existing_user = get_user_by_id(db=db, id=str(kakao_id))
         
         if existing_user:
-            return {"message": "로그인 성공", "user": {"name": existing_user.name, "email": existing_user.email}}
+            return {"message": "로그인 성공", "user": {"name": existing_user.user_name, "email": existing_user.user_email, "access_token": access_token}}
         
         return {
             "message": "회원가입 필요",

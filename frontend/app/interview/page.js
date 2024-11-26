@@ -20,7 +20,7 @@ const StepRenderer = ({ steps, setCurrentStep }) => {
     case 3:
       return <InterviewStep setCurrentStep={setCurrentStep} />;
     default:
-      return null; // 또는 기본 컴포넌트를 렌더링할 수 있습니다
+      return null;
   }
 };
 

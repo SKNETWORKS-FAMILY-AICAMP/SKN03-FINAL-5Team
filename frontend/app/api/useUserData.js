@@ -3,32 +3,24 @@ import { deleteCookie, setCookie } from 'cookies-next';
 import { useAtom } from 'jotai';
 import { setBearerAuthorizationAtHttpClient } from '../common/utils/client';
 
-import {
-  accessTokenAtom,
-  isUserLoadedAtom,
-  refreshTokenAtom,
-  userProfileAtom,
-} from '../atom/useUserAtom';
+import { accessTokenAtom, userProfileAtom } from '../atom/useUserAtom';
 
 export const refreshTokenCookieName = 'unailit_refresh-token';
 
 export function useUserData() {
-  const [isUserLoaded, setIsUserLoaded] = useAtom(isUserLoadedAtom);
   const [accessToken, setAccessToken] = useAtom(accessTokenAtom);
-  const [refreshToken, setRefreshToken] = useAtom(refreshTokenAtom);
   const [userProfileData, setUserProfileData] = useAtom(userProfileAtom);
 
   const userLogin = useCallback(
-    ({ accessToken, refreshToken }) => {
+    ({ accessToken }) => {
       setAccessToken(accessToken);
-      setRefreshToken(refreshToken);
-      setCookie(refreshTokenCookieName, refreshToken, {
-        maxAge: 60 * 60 * 24 * 30,
+      setCookie(refreshTokenCookieName, accessToken, {
+        maxAge: 60 * 60 * 24,
         sameSite: 'lax',
       });
       setBearerAuthorizationAtHttpClient(accessToken);
     },
-    [setAccessToken, setRefreshToken]
+    [setAccessToken]
   );
 
   const resetUser = useCallback(() => {
@@ -42,18 +34,13 @@ export function useUserData() {
 
   const userLogout = useCallback(() => {
     setAccessToken('');
-    setRefreshToken('');
     deleteCookie(refreshTokenCookieName);
     resetUser();
-  }, [setAccessToken, setRefreshToken]);
+  }, [setAccessToken]);
 
   return {
-    isUserLoaded,
-    setIsUserLoaded,
-    isLoggedIn:
-      accessToken && refreshToken && accessToken !== '' && refreshToken !== '',
+    isLoggedIn: accessToken && accessToken !== '' ? true : false,
     accessToken,
-    refreshToken,
     userLogin,
     userLogout,
     setUserProfileData,

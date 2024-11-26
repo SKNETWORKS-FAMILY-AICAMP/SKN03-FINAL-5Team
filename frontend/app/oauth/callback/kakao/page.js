@@ -2,8 +2,11 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import { useUserData } from '@/app/api/useUserData';
 
 const KakaoCallbackPage = () => {
+  const { userLogin } = useUserData();
+
   const [code, setCode] = useState(null);
   const router = useRouter();
 
@@ -29,8 +32,11 @@ const KakaoCallbackPage = () => {
         `http://127.0.0.1:8000/login/oauth/code/kakao?code=${code}`
       );
       if (res.status === 200 && res.data.message === '회원가입 필요') {
-        console.log(res.data);
         router.replace('/register');
+      }
+      if (res.status === 200 && res.data.message === '로그인 성공') {
+        userLogin({ accessToken: res.data.user.access_token });
+        router.replace('/');
       }
     } catch (error) {
       console.error('Login failed:', error);

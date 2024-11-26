@@ -6,6 +6,7 @@ import './global.css';
 import Head from 'next/head';
 import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import UserGuard from './common/utils/userGuard';
 
 // const geistSans = localFont({
 //   src: "./fonts/GeistVF.woff",
@@ -37,7 +38,9 @@ export default function RootLayout(props) {
       </Head>
       <body suppressHydrationWarning={true}>
         <QueryClientProvider client={queryClient}>
-          <ChakraProvider>{children}</ChakraProvider>
+          <ChakraProvider>
+            <UserGuard>{children}</UserGuard>
+          </ChakraProvider>
         </QueryClientProvider>
       </body>
     </html>

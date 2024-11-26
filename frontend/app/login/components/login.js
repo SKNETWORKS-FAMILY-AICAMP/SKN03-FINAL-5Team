@@ -1,6 +1,5 @@
 'use client';
 import { Box, VStack, Link, Text, Image, Flex, Spacer } from '@chakra-ui/react';
-import { motion } from 'framer-motion';
 import React from 'react';
 
 const KakaoLoginButton = () => {
