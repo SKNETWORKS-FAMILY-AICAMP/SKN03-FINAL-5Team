@@ -1,12 +1,10 @@
 'use client';
 
-import { Box, Flex, Button } from '@chakra-ui/react';
-import WebcamComponent from './components/webcam';
+import { Box } from '@chakra-ui/react';
 import Header from '../common/components/header';
-import StepComponent from './components/stepComponent';
 import 'regenerator-runtime/runtime';
 import React, { useState } from 'react';
-import Dictaphone from './components/dictaphone';
+// import Dictaphone from './components/dictaphone';
 import StepProgress from '../common/components/progress';
 import UploadStep from './step/uploadStep';
 import Container from '../common/components/container';

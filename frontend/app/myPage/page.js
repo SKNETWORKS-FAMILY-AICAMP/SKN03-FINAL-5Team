@@ -3,6 +3,7 @@ import Header from '../common/components/header';
 import InterviewHistory from './components/interviewHistory';
 import SideNavigation from './components/navigation';
 import { Flex, Box } from '@chakra-ui/react';
+import React from 'react';
 
 function MyPages() {
   return (
