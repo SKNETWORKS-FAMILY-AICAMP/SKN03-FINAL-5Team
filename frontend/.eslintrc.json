@@ -1,18 +1,18 @@
 {
   "extends": [
-    "eslint:recommended",
+    "next",
+    "next/core-web-vitals",
     "plugin:react/recommended",
     "plugin:prettier/recommended"
   ],
-  "plugins": ["react", "prettier"],
   "rules": {
-    "prettier/prettier": "warn",
-    "no-unused-vars": "warn",
-    "react/react-in-jsx-scope": "off"
-  },
-  "settings": {
-    "react": {
-      "version": "detect"
-    }
+    "no-unused-vars": "off",
+    "jsx-a11y/alt-text": "warn",
+    "react/display-name": "off",
+    "react/no-unescaped-entities": "warn",
+    "react-hooks/exhaustive-deps": "warn",
+    "prettier/prettier": ["warn", { "endOfLine": "auto" }],
+    "react/react-in-jsx-scope": "off",
+    "react/prop-types": "off"
   }
 }

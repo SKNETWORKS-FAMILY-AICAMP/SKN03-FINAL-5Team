@@ -76,7 +76,7 @@ const InterviewStep = ({ setCurrentStep }) => {
             p={'40px 0'}
             overflowY={'scroll'}
           >
-            <Text ml={'20px'} fontSize='lg' color='gray.600'>
+            <Text ml={'20px'} fontSize="lg" color="gray.600">
               {timers[currentQuestionIndex] > 0
                 ? `다음 질문까지 남은 시간: ${Math.floor(timers[currentQuestionIndex] / 60)}:${(timers[currentQuestionIndex] % 60).toString().padStart(2, '0')}`
                 : '끝!'}

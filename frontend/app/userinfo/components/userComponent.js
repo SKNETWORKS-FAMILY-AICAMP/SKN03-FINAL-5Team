@@ -1,3 +1,4 @@
+'use client';
 import {
   Box,
   Button,
@@ -5,11 +6,21 @@ import {
   InputGroup,
   InputRightElement,
   Text,
+  useDisclosure,
 } from '@chakra-ui/react';
+import React from 'react';
+
+import { useState } from 'react';
+import WithDrawModal from './withdraw';
+
 const UserComponent = () => {
+  const [onWithDraw, setOnWithDraw] = useState(false);
+
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
   return (
     <Box>
-      <Box maxWidth='800px' margin='auto' p={5} overflowX={'scroll'}>
+      <Box maxWidth="800px" margin="auto" p={5} overflowX={'scroll'}>
         <Box borderBottom={'4px solid black'} pb={'10px'} w={'100%'}>
           <Text fontSize={['24px', '26px', '30px']}>회원 정보</Text>
         </Box>
@@ -18,7 +29,7 @@ const UserComponent = () => {
             이름
           </Box>
           <Box borderRadius={'15px'} p={'5px 10px'} w={'100%'} bg={'white'}>
-            김원철
+            홍길동
           </Box>
         </Box>
         <Box p={'20px 0 20px 0'}>
@@ -26,11 +37,11 @@ const UserComponent = () => {
             이메일
           </Box>
           <InputGroup>
-            <Input type='file' accept='.pdf' display='none' />
+            <Input type="file" accept=".pdf" display="none" />
             <Input
               w={'100%'}
               h={'40px'}
-              placeholder='test@naver.com'
+              placeholder="test@naver.com"
               border={'0'}
               borderRadius={'15px'}
               background={'white'}
@@ -41,15 +52,15 @@ const UserComponent = () => {
                 },
               }}
             />
-            <InputRightElement width='80px' height='100%'>
+            <InputRightElement width="80px" height="100%">
               <Button
                 // onClick={() =>
                 //   document.querySelector('input[type="file"]').click()
                 // }
-                variant='ghost'
-                aria-label='Upload file'
-                fontSize='28px'
-                paddingRight='10px'
+                variant="ghost"
+                aria-label="Upload file"
+                fontSize="28px"
+                paddingRight="10px"
               >
                 <Box fontSize={'md'} color={'gray.500'}>
                   수정하기
@@ -68,11 +79,13 @@ const UserComponent = () => {
             borderRadius={'15px'}
             p={'5px 20px'}
             bg={'white'}
+            onClick={onOpen}
           >
             회원탈퇴
           </Button>
         </Box>
       </Box>
+      <WithDrawModal isOpen={isOpen} onClose={onClose} />
     </Box>
   );
 };

@@ -3,6 +3,7 @@ import { Box, Flex, Image } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import Header from './common/components/header';
 import Container from './common/components/container';
+import React from 'react';
 
 const MotionBox = motion(Box);
 
@@ -12,7 +13,7 @@ export default function Home() {
       <Container>
         <Header />
         <Flex justify={'center'} alignItems={'center'} m={'0 80px'}>
-          <Flex flex='1' justify={'center'}>
+          <Flex flex="1" justify={'center'}>
             <MotionBox
               initial={{ opacity: 0, y: 100 }}
               animate={{ opacity: 1, y: 0 }}
@@ -26,10 +27,10 @@ export default function Home() {
               fontSize={{ xl: '34px', md: '30px' }}
               color={'#0066FF'}
             >
-              <Image w={'500px'} src='/unail_main.png' />
+              <Image w={'500px'} src="/unail_main.png" />
             </MotionBox>
           </Flex>
-          <Flex flex='1' justify={'center'}>
+          <Flex flex="1" justify={'center'}>
             <MotionBox
               initial={{ opacity: 0, y: 100 }}
               animate={{ opacity: 1, y: 0 }}

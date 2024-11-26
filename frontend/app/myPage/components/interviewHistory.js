@@ -1,4 +1,5 @@
 import { Box, Text, VStack, Grid, GridItem, Link } from '@chakra-ui/react';
+import React from 'react';
 
 const InterviewLog = ({ title, date, id }) => {
   return (
@@ -10,7 +11,7 @@ const InterviewLog = ({ title, date, id }) => {
       w={'300px'}
       borderRadius={'16px'}
       cursor={'pointer'}
-      transition='transform 0.2s ease-in-out'
+      transition="transform 0.2s ease-in-out"
       _hover={{ transform: 'translateY(-5px)' }}
     >
       <Link href={`/myPage/${id}`}>
@@ -35,7 +36,7 @@ const InterviewHistory = () => {
       <Box borderBottom={'4px solid black'} pb={'10px'} w={'100%'}>
         <Text fontSize={['24px', '26px', '30px']}>면접 이력</Text>
       </Box>
-      <Grid w={'100%'} pt={'30px'} templateColumns='repeat(3, 1fr)' gap={6}>
+      <Grid w={'100%'} pt={'30px'} templateColumns="repeat(3, 1fr)" gap={6}>
         {interviewData.map((interview) => (
           <GridItem key={interview.id}>
             <InterviewLog

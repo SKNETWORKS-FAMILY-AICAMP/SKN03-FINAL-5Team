@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Webcam from 'react-webcam';
 import { Box, Button, Skeleton } from '@chakra-ui/react';
 import StepProgress from '@/app/common/components/progress';
 
 const WebcamComponent = () => {
-  const webcamRef = React.useRef(null);
-  const mediaRecorderRef = React.useRef(null);
-  const [capturing, setCapturing] = React.useState(false);
-  const [recordedChunks, setRecordedChunks] = React.useState([]);
+  const webcamRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const [capturing, setCapturing] = useState(false);
+  const [recordedChunks, setRecordedChunks] = useState([]);
   const [hasWebcamPermission, setHasWebcamPermission] = useState(false);
 
   useEffect(() => {
@@ -18,10 +18,10 @@ const WebcamComponent = () => {
       .catch(() => setHasWebcamPermission(false));
   }, []);
 
-  const handleStartCaptureClick = React.useCallback(() => {
+  const handleStartCaptureClick = useCallback(() => {
     setCapturing(true);
 
-    const stream = webcamRef.current.video.srcObject; // 원본 스트림 가져오기
+    const stream = webcamRef.current.video.srcObject;
 
     mediaRecorderRef.current = new MediaRecorder(stream, {
       mimeType: 'video/webm',
@@ -34,7 +34,7 @@ const WebcamComponent = () => {
     mediaRecorderRef.current.start(); // 스트림 녹화 시작
   }, [webcamRef, setCapturing, mediaRecorderRef]);
 
-  const handleDataAvailable = React.useCallback(
+  const handleDataAvailable = useCallback(
     ({ data }) => {
       if (data.size > 0) {
         setRecordedChunks((prev) => prev.concat(data));
@@ -43,12 +43,12 @@ const WebcamComponent = () => {
     [setRecordedChunks]
   );
 
-  const handleStopCaptureClick = React.useCallback(() => {
+  const handleStopCaptureClick = useCallback(() => {
     mediaRecorderRef.current.stop();
     setCapturing(false);
   }, [mediaRecorderRef, webcamRef, setCapturing]);
 
-  const handleDownload = React.useCallback(() => {
+  const handleDownload = useCallback(() => {
     if (recordedChunks.length) {
       const blob = new Blob(recordedChunks, { type: 'video/webm' });
       const url = URL.createObjectURL(blob);

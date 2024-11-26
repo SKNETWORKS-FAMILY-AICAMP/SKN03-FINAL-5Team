@@ -1,22 +1,21 @@
+import Container from '@/app/common/components/container';
 import Header from '@/app/common/components/header';
 import SideNavigation from '@/app/myPage/components/navigation';
 import { Box, Flex } from '@chakra-ui/react';
-import Container from '../common/components/container';
-import UserComponent from './components/userComponent';
-import React from 'react';
+import CreateBoard from '../components/createBoard';
 
-function UserInfo() {
+const BoardCreate = () => {
   return (
     <Container>
       <Header />
-      <Flex mt={'50px'} gap={'30px'}>
+      <Flex w={'90%'} justifyContent={'space-between'}>
         <SideNavigation />
         <Box w={'70%'}>
-          <UserComponent />
+          <CreateBoard />
         </Box>
       </Flex>
     </Container>
   );
-}
+};
 
-export default UserInfo;
+export default BoardCreate;
