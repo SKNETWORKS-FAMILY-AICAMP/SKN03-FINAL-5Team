@@ -3,6 +3,7 @@ import Header from '@/app/common/components/header';
 import SideNavigation from '@/app/myPage/components/navigation';
 import { Box, Flex } from '@chakra-ui/react';
 import CreateBoard from '../components/createBoard';
+import React from 'react';
 
 const BoardCreate = () => {
   return (

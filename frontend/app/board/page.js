@@ -1,8 +1,9 @@
-import Container from '../common/components/container';
+import Container from '@/app/common/components/container';
 import Header from '../common/components/header';
 import SideNavigation from '../myPage/components/navigation';
 import BoardList from './components/boardList';
 import { Flex } from '@chakra-ui/react';
+import React from 'react';
 
 function Board() {
   return (
