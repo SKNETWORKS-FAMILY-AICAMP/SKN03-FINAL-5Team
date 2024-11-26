@@ -3,8 +3,6 @@ import { Box, VStack, Link, Text, Image, Flex, Spacer } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import React from 'react';
 
-const MotionBox = motion(Box);
-
 const KakaoLoginButton = () => {
   const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=${process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY}&redirect_uri=${process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI}&scope=profile_nickname`;
 

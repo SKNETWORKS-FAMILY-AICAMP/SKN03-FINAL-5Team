@@ -18,6 +18,7 @@ COPY requirements.txt /app
 RUN pip install -r requirements.txt
 
 # 애플리케이션 실행 포트 설정
+
 EXPOSE 8000
 
 # FastAPI 서버 실행
