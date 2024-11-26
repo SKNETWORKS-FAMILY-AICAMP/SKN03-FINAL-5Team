@@ -30,7 +30,8 @@ from langchain.retrievers import ContextualCompressionRetriever
 from bert_score import score as bert_score
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-
+from .models import Question, Report
+from .db_utils import save_question
 
 config = RunnableConfig(recursion_limit=70, configurable={"thread_id": "THREAD_ID"}) #재귀한도 증가
 
@@ -273,7 +274,7 @@ def record_and_transcribe(state: State) -> State:
 #=============================피드백====================================
 # 피드백 생성 함수
 def generate_feedback(state: State) -> State:
-    answer = state["model_answer"]  #answer_text
+    answer = state["answer_text"]  #answer_text
     ideal_answer = state["ideal_answer"] # 참조 청크
     prompt = evaluation_prompt(answer, ideal_answer)
     
