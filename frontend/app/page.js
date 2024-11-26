@@ -2,7 +2,7 @@
 import { Box, Flex, Image } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import Header from './common/components/header';
-import Container from './common/components/containers';
+import Container from './common/components/container';
 import React from 'react';
 
 const MotionBox = motion(Box);
