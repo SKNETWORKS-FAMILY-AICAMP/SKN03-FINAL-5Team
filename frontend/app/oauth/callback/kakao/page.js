@@ -29,7 +29,7 @@ const KakaoCallbackPage = () => {
         `http://127.0.0.1:8000/login/oauth2/code/kakao?code=${code}`
       );
       if (res.status === 200) {
-        router.replace('/');
+        router.replace('/register');
       }
     } catch (error) {
       console.error('Login failed:', error);
