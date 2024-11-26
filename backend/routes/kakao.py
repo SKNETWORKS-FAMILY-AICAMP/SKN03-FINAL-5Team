@@ -1,18 +1,31 @@
-from fastapi import APIRouter, HTTPException
+# routes/kakao.py
+from fastapi import APIRouter, HTTPException, Depends
 import httpx
-from dotenv import load_dotenv
 import os
-
-load_dotenv()
+from sqlalchemy.orm import Session
+from database import SessionLocal
+from .crud import get_user_by_id 
+from models import User
 
 router = APIRouter()
 
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 kakao_client_id = os.getenv('KAKAO_CLIENT_ID')
-kakao_redirect_uri = os.environ.get('KAKAO_REDIRECT_URI')
+kakao_redirect_uri = os.getenv('KAKAO_REDIRECT_URI')
 
+@router.get("/login/oauth/code/kakao")
+async def kakao_callback(code: str, db: Session = Depends(get_db)):
+    try:
+        user_count = db.query(User).count()  
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"데이터베이스 연결 실패: {str(e)}")
 
-@router.get("/login/oauth2/code/kakao")
-async def kakao_callback(code: str):
     token_url = "https://kauth.kakao.com/oauth/token"
     data = {
         "grant_type": "authorization_code",
@@ -20,7 +33,6 @@ async def kakao_callback(code: str):
         "redirect_uri": kakao_redirect_uri,
         "code": code,
     }
-
     async with httpx.AsyncClient() as client:
         response = await client.post(token_url, data=data)
         if response.status_code != 200:
@@ -37,5 +49,16 @@ async def kakao_callback(code: str):
             raise HTTPException(status_code=400, detail="Failed to get user info")
 
         user_info = user_response.json()
-    
-    return {"user_info": user_info}
+        
+        kakao_id = user_info['id'] 
+        
+        existing_user = get_user_by_id(db=db, id=str(kakao_id))
+        
+        if existing_user:
+            return {"message": "로그인 성공", "user": {"name": existing_user.name, "email": existing_user.email}}
+        
+        return {
+            "message": "회원가입 필요",
+            "kakao_id": kakao_id,
+            "name": user_info['properties']['nickname'],  
+        }

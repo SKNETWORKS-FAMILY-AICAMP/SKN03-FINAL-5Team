@@ -1,13 +1,11 @@
-# models.py
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
-
-Base = declarative_base()
+from database import Base
 
 class User(Base):
-    __tablename__ = 'users'
+    __tablename__ = "user_tb"  # 테이블 이름
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True)
-    email = Column(String, unique=True, index=True)
-    unique_id = Column(String, unique=True, index=True)
+    id = Column(String(45), primary_key=True, index=True) 
+    user_name = Column(String(45))  
+    user_email = Column(String(45)) 
+    terms_check = Column(String(45))
+    user_joined = Column(String(45))

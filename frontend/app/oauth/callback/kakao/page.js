@@ -26,9 +26,10 @@ const KakaoCallbackPage = () => {
   const kakaoLogin = async () => {
     try {
       const res = await axios.get(
-        `http://127.0.0.1:8000/login/oauth2/code/kakao?code=${code}`
+        `http://127.0.0.1:8000/login/oauth/code/kakao?code=${code}`
       );
-      if (res.status === 200) {
+      if (res.status === 200 && res.data.message === '회원가입 필요') {
+        console.log(res.data);
         router.replace('/register');
       }
     } catch (error) {

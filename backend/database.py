@@ -1,18 +1,24 @@
-# database.py
-from sqlalchemy import create_engine
+import boto3
+from sqlalchemy import create_engine, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-DATABASE_URL = "mysql+pymysql://<username>:<password>@<endpoint>:3306/<database_name>"
+# AWS SSM 클라이언트 생성
+ssm = boto3.client('ssm', region_name='ap-northeast-2')
 
-# <username>: RDS 생성 시 설정한 마스터 사용자 이름.
-# <password>: RDS 생성 시 설정한 비밀번호.
-# <endpoint>: RDS 인스턴스의 엔드포인트.
-# <database_name>: 사용할 데이터베이스 이름.
+def get_parameter(name, with_decryption=True):
+    """AWS Parameter Store에서 값을 가져오는 함수"""
+    return ssm.get_parameter(Name=name, WithDecryption=with_decryption)['Parameter']['Value']
 
+# AWS RDS의 MySQL 엔드포인트와 자격 증명을 입력하세요.
+DATABASE_URL = f"mysql+pymysql://{get_parameter('/interviewdb-info/DB_USER')}:{get_parameter('/interviewdb-info/DB_PASSWORD', with_decryption=True)}@{get_parameter('/interviewdb-info/DB_HOST')}:{get_parameter('/interviewdb-info/DB_PORT')}/{get_parameter('/interviewdb-info/DB_NAME')}"
+
+# SQLAlchemy 엔진 및 세션 생성
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
+
 def init_db():
     Base.metadata.create_all(bind=engine)
+

@@ -6,3 +6,8 @@ httpx
 sqlalchemy 
 databases
 pymysql 
+boto3
+PyJWT
+python-decouple
+python-dotenv
+requests
