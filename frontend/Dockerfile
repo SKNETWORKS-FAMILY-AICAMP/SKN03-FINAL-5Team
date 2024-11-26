@@ -2,7 +2,6 @@ FROM node:18
 
 WORKDIR /app
 
-# package.json 및 종속성 파일 복사 및 설치
 COPY package*.json ./
 RUN npm install
 

@@ -1,4 +1,4 @@
-import Container from '../common/components/container';
+import Container from '../common/components/containers';
 import Header from '../common/components/header';
 import InterviewHistory from './components/interviewHistory';
 import SideNavigation from './components/navigation';

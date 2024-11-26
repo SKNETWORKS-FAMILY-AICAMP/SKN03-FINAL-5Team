@@ -1,5 +1,5 @@
 import { Box } from '@chakra-ui/react';
-import Container from '../common/components/container';
+import Container from '../common/components/containers';
 import Header from '../common/components/header';
 import Login from './components/login';
 import React from 'react';

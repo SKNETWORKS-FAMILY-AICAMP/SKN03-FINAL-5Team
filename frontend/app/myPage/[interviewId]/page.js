@@ -1,4 +1,4 @@
-import Container from '@/app/common/components/container';
+import Container from '@/app/common/components/containers';
 import Header from '@/app/common/components/header';
 import { Box, Flex } from '@chakra-ui/react';
 import SideNavigation from '../components/navigation';

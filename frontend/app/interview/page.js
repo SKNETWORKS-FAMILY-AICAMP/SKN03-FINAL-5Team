@@ -7,7 +7,7 @@ import React, { useState } from 'react';
 // import Dictaphone from './components/dictaphone';
 import StepProgress from '../common/components/progress';
 import UploadStep from './step/uploadStep';
-import Container from '../common/components/container';
+import Container from '../common/components/containers';
 import CheckStep from './step/checkStep';
 import InterviewStep from './step/interviewStep';
 
