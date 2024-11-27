@@ -1,7 +1,7 @@
 # routes/auth.py
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from models import User
+from models import User, UserRegister
 from database import SessionLocal
 
 router = APIRouter()
@@ -14,15 +14,20 @@ def get_db():
         db.close()
 
 @router.post("/register")
-async def register(name: str, email: str, id: str, db: Session = Depends(get_db)):
-    # 고유 아이디가 이미 존재하는지 확인
+async def register(user: UserRegister, db: Session = Depends(get_db)):
     existing_user = db.query(User).filter(User.id == id).first()
+    print(existing_user)
     
     if existing_user:
         raise HTTPException(status_code=400, detail="해당 고유 아이디는 이미 존재합니다.")
     
-    # 새 사용자 추가
-    new_user = User(name=name, email=email, id=id)
+    new_user = User(
+        user_name=user.name,
+        user_email=user.email,
+        user_joined=user.user_joined, 
+        id=user.id,
+    )
+    
     db.add(new_user)
     db.commit()
     db.refresh(new_user)

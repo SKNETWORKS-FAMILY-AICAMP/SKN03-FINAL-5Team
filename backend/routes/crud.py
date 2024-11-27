@@ -15,3 +15,7 @@ def create_user(db: Session, name: str, email: str, id: str):
     db.commit()
     db.refresh(db_user)
     return db_user
+
+def update_user(db: Session, user_id: str, update_data: dict):
+    db.query(User).filter(User.id == user_id).update(update_data)
+    db.commit()

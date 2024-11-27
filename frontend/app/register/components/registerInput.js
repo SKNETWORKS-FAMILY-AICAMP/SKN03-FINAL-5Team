@@ -33,12 +33,21 @@ const RegisterInput = () => {
 
   const onRegister = (e) => {
     e.preventDefault();
+    const currentDate = new Date().toISOString().split('T')[0];
+
     const data = {
       name: name,
       email: email,
+      id: 3808083867,
+      user_joined: currentDate,
     };
+
     register(data);
   };
+
+  useEffect(() => {
+    console.log(registerError);
+  }, [registerError]);
 
   useEffect(() => {
     console.log(isRegister);

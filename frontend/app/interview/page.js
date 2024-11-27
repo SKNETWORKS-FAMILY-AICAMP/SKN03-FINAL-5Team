@@ -10,6 +10,7 @@ import UploadStep from './step/uploadStep';
 import Container from '../common/components/container';
 import CheckStep from './step/checkStep';
 import InterviewStep from './step/interviewStep';
+import UserGuard from '../common/utils/userGuard';
 
 const StepRenderer = ({ steps, setCurrentStep }) => {
   switch (steps) {
@@ -20,7 +21,7 @@ const StepRenderer = ({ steps, setCurrentStep }) => {
     case 3:
       return <InterviewStep setCurrentStep={setCurrentStep} />;
     default:
-      return null; // 또는 기본 컴포넌트를 렌더링할 수 있습니다
+      return null;
   }
 };
 
@@ -29,13 +30,15 @@ function InterviewPage() {
   const [currentStep, setCurrentStep] = useState(1);
 
   return (
-    <Box>
-      <Container>
-        <Header />
-        <StepProgress steps={steps} currentStep={currentStep} />
-        <StepRenderer steps={currentStep} setCurrentStep={setCurrentStep} />
-      </Container>
-    </Box>
+    <UserGuard>
+      <Box>
+        <Container>
+          <Header />
+          <StepProgress steps={steps} currentStep={currentStep} />
+          <StepRenderer steps={currentStep} setCurrentStep={setCurrentStep} />
+        </Container>
+      </Box>
+    </UserGuard>
   );
 }
 

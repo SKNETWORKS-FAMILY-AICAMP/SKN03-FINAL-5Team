@@ -1,3 +1,4 @@
+import { atom } from 'jotai';
 // 로딩 여부 atom
 export const isUserLoadedAtom = atom(false);
 

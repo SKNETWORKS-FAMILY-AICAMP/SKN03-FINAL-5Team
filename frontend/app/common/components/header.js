@@ -1,7 +1,20 @@
+'use client';
 import { Box, Image, Flex, Link } from '@chakra-ui/react';
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useUserData } from '@/app/api/useUserData';
 
 const Header = () => {
+  const { isLoggedIn, userLogout } = useUserData();
+
+  const onClickLogout = (event) => {
+    event.preventDefault();
+    userLogout();
+  };
+
+  useEffect(() => {
+    console.log(isLoggedIn);
+  }, [isLoggedIn]);
+
   return (
     <Box
       display={'flex'}
@@ -29,9 +42,15 @@ const Header = () => {
       </Flex>
 
       <Flex alignItems={'center'} gap={'40px'}>
-        <Link href="/login">
-          <Box w={'120px'}>Login</Box>
-        </Link>
+        {isLoggedIn ? (
+          <Box w={'120px'} onClick={onClickLogout} cursor="pointer">
+            Logout
+          </Box>
+        ) : (
+          <Link href="/login">
+            <Box w={'120px'}>Login</Box>
+          </Link>
+        )}
       </Flex>
     </Box>
   );

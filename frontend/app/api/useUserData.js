@@ -13,7 +13,6 @@ import {
 export const refreshTokenCookieName = 'unailit_refresh-token';
 
 export function useUserData() {
-  const [isUserLoaded, setIsUserLoaded] = useAtom(isUserLoadedAtom);
   const [accessToken, setAccessToken] = useAtom(accessTokenAtom);
   const [refreshToken, setRefreshToken] = useAtom(refreshTokenAtom);
   const [userProfileData, setUserProfileData] = useAtom(userProfileAtom);
@@ -48,8 +47,6 @@ export function useUserData() {
   }, [setAccessToken, setRefreshToken]);
 
   return {
-    isUserLoaded,
-    setIsUserLoaded,
     isLoggedIn:
       accessToken && refreshToken && accessToken !== '' && refreshToken !== '',
     accessToken,
