@@ -39,7 +39,6 @@ const RegisterInput = () => {
       name: name,
       email: email,
       id: 3808083867,
-      terms_check: 'true',
       user_joined: currentDate,
     };
 

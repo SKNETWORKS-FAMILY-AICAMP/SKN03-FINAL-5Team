@@ -3,10 +3,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useUserData } from '@/app/api/useUserData';
+import { Center, Spinner, VStack } from '@chakra-ui/react';
 
 const KakaoCallbackPage = () => {
   const { userLogin } = useUserData();
-
   const [code, setCode] = useState(null);
   const router = useRouter();
 
@@ -29,22 +29,40 @@ const KakaoCallbackPage = () => {
   const kakaoLogin = async () => {
     try {
       const res = await axios.get(
-        `http://127.0.0.1:8000/login/oauth/code/kakao?code=${code}`
+        `http://127.0.0.1:8000/login/oauth/code/kakao?code=${code}`,
+        { withCredentials: true }
       );
-      if (res.status === 200 && res.data.message === '회원가입 필요') {
-        router.replace('/register');
-      }
-      if (res.status === 200 && res.data.message === '로그인 성공') {
-        userLogin({ accessToken: res.data.user.access_token });
-        router.replace('/');
+      console.log(res.data);
+      if (res.status === 200) {
+        if (res.data.message === '회원가입 필요') {
+          router.replace('/register');
+        } else if (res.data.message === '로그인 성공') {
+          const { access_token, refresh_token } = res.data.user;
+
+          console.log(res.data);
+          userLogin({
+            accessToken: access_token,
+            refreshToken: refresh_token,
+          });
+          router.replace('/');
+        }
       }
     } catch (error) {
       console.error('Login failed:', error);
-      router.replace('/');
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+      }
+      router.replace('/login');
     }
   };
 
-  return null;
+  return (
+    <Center height="100vh">
+      <VStack spacing={4}>
+        <Spinner size="xl" color="blue.500" thickness="4px" />
+      </VStack>
+    </Center>
+  );
 };
 
 export default KakaoCallbackPage;

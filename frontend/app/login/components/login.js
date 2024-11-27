@@ -24,7 +24,7 @@ const KakaoLoginButton = () => {
 
 const Login = () => {
   return (
-    <Flex direction="column" minHeight="100vh">
+    <Flex direction="column" minHeight="70vh">
       <Spacer />
       <VStack spacing={8} align="center" mb={10}>
         <Text fontSize="4xl" fontWeight="bold">

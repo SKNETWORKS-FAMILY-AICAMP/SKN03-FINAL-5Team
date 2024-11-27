@@ -24,7 +24,6 @@ async def register(user: UserRegister, db: Session = Depends(get_db)):
     new_user = User(
         user_name=user.name,
         user_email=user.email,
-        terms_check=user.terms_check,
         user_joined=user.user_joined, 
         id=user.id,
     )

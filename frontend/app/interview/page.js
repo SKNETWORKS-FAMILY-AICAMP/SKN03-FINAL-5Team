@@ -10,6 +10,7 @@ import UploadStep from './step/uploadStep';
 import Container from '../common/components/container';
 import CheckStep from './step/checkStep';
 import InterviewStep from './step/interviewStep';
+import UserGuard from '../common/utils/userGuard';
 
 const StepRenderer = ({ steps, setCurrentStep }) => {
   switch (steps) {
@@ -29,13 +30,15 @@ function InterviewPage() {
   const [currentStep, setCurrentStep] = useState(1);
 
   return (
-    <Box>
-      <Container>
-        <Header />
-        <StepProgress steps={steps} currentStep={currentStep} />
-        <StepRenderer steps={currentStep} setCurrentStep={setCurrentStep} />
-      </Container>
-    </Box>
+    <UserGuard>
+      <Box>
+        <Container>
+          <Header />
+          <StepProgress steps={steps} currentStep={currentStep} />
+          <StepRenderer steps={currentStep} setCurrentStep={setCurrentStep} />
+        </Container>
+      </Box>
+    </UserGuard>
   );
 }
 
