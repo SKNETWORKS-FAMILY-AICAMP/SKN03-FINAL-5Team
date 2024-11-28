@@ -22,7 +22,7 @@ export function useUserData() {
       setAccessToken(accessToken);
       setRefreshToken(refreshToken);
       setCookie(refreshTokenCookieName, refreshToken, {
-        maxAge: 60 * 60 * 24 * 30,
+        maxAge: 60 * 60 * 24 * 7,
         sameSite: 'lax',
       });
       setBearerAuthorizationAtHttpClient(accessToken);

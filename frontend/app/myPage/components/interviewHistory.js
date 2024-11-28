@@ -1,7 +1,15 @@
+'use client';
+import { useGetInterviewHistory } from '@/app/api/useGetInterviewHistory';
 import { Box, Text, VStack, Grid, GridItem, Link } from '@chakra-ui/react';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { formatDate } from '@/app/common/utils/dayformat';
+import { useGetUserInfo } from '@/app/api/useGetUserInfo';
+import { useUserData } from '@/app/api/useUserData';
+import { getCookie } from 'cookies-next';
+import { refreshTokenCookieName } from '@/app/api/useUserData';
+import { accessTokenCookieName } from '@/app/oauth/callback/kakao/page';
 
-const InterviewLog = ({ title, date, id }) => {
+const InterviewLog = ({ date, id }) => {
   return (
     <Box
       display={'grid'}
@@ -15,21 +23,48 @@ const InterviewLog = ({ title, date, id }) => {
       _hover={{ transform: 'translateY(-5px)' }}
     >
       <Link href={`/myPage/${id}`}>
-        <Text>{title}</Text>
-        <Text>{date}</Text>
+        <Text>{id}번째 면접</Text>
+        <Text>{formatDate(date)}</Text>
       </Link>
     </Box>
   );
 };
 
 const InterviewHistory = () => {
-  const interviewData = [
-    { id: 1, title: '직무 면접[이력서]', date: '2024.11.14' },
-    { id: 2, title: '기술 면접[프론트엔드]', date: '2024.11.15' },
-    { id: 3, title: 'AI 면접[인성]', date: '2024.11.16' },
-    { id: 4, title: '최종 면접[임원]', date: '2024.11.17' },
-    { id: 5, title: '신입 공채 면접', date: '2024.11.18' },
-  ];
+  const [kakaoId, setKakaoId] = useState(null);
+  const { userLogin, setUserProfileData } = useUserData();
+
+  useEffect(() => {
+    const storedKakaoId = localStorage.getItem('id');
+    if (storedKakaoId) {
+      setKakaoId(storedKakaoId);
+    }
+  }, []);
+
+  useEffect(() => {
+    const refreshTokenFromCookie = getCookie(refreshTokenCookieName);
+    const accessTokenFromCookie = getCookie(accessTokenCookieName);
+
+    if (refreshTokenFromCookie && accessTokenFromCookie) {
+      userLogin({
+        accessToken: accessTokenFromCookie,
+        refreshToken: refreshTokenFromCookie,
+      });
+    }
+  }, []);
+
+  const { data: interviewHistoryData, isError: interviewHistoryError } =
+    useGetInterviewHistory(kakaoId);
+
+  const { data: userInfo, isErorr: userInfoError } = useGetUserInfo(kakaoId);
+
+  const [interviewData, setInterviewData] = useState([]);
+
+  useEffect(() => {
+    if (interviewHistoryData) {
+      setInterviewData(interviewHistoryData);
+    }
+  }, [interviewHistoryData]);
 
   return (
     <Box>
@@ -38,11 +73,10 @@ const InterviewHistory = () => {
       </Box>
       <Grid w={'100%'} pt={'30px'} templateColumns="repeat(3, 1fr)" gap={6}>
         {interviewData.map((interview) => (
-          <GridItem key={interview.id}>
+          <GridItem key={interview.interview_id}>
             <InterviewLog
-              title={interview.title}
-              date={interview.date}
-              id={interview.id}
+              date={interview.interview_created}
+              id={interview.interview_id}
             />
           </GridItem>
         ))}
