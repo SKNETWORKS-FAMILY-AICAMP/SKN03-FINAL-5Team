@@ -40,9 +40,7 @@ export default function RootLayout(props) {
       <body suppressHydrationWarning={true}>
         <QueryClientProvider client={queryClient}>
           <ChakraProvider>
-            {/* <UserGuard> */}
             <UserProvider>{children}</UserProvider>
-            {/* </UserGuard> */}
           </ChakraProvider>
         </QueryClientProvider>
       </body>

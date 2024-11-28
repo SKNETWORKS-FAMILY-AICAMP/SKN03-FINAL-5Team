@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 from routes.transcribe import router as transcribe_router
 from routes.kakao import router as kakao_router
 from routes.auth import router as auth_router
+from routes.interview import router as interview_router
+from routes.userinfo import router as userinfo_router
 
 from database import init_db
 
@@ -25,6 +27,8 @@ init_db()
 app.include_router(auth_router)
 app.include_router(transcribe_router)
 app.include_router(kakao_router)
+app.include_router(interview_router)
+app.include_router(userinfo_router)
 
 if __name__ == "__main__":
     import uvicorn

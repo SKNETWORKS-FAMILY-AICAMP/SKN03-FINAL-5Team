@@ -12,9 +12,11 @@ import React from 'react';
 
 import { useState } from 'react';
 import WithDrawModal from './withdraw';
+import { useUserData } from '@/app/api/useUserData';
 
 const UserComponent = () => {
   const [onWithDraw, setOnWithDraw] = useState(false);
+  const { userProfileData } = useUserData();
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -29,7 +31,7 @@ const UserComponent = () => {
             이름
           </Box>
           <Box borderRadius={'15px'} p={'5px 10px'} w={'100%'} bg={'white'}>
-            홍길동
+            {userProfileData.userInfo.name}
           </Box>
         </Box>
         <Box p={'20px 0 20px 0'}>
@@ -45,6 +47,7 @@ const UserComponent = () => {
               border={'0'}
               borderRadius={'15px'}
               background={'white'}
+              value={userProfileData.userInfo.email}
               readOnly
               sx={{
                 '::placeholder': {

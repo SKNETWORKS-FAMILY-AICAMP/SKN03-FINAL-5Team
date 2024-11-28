@@ -5,7 +5,7 @@ import Header from './common/components/header';
 import Container from './common/components/container';
 import React from 'react';
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 export default function Home() {
   return (

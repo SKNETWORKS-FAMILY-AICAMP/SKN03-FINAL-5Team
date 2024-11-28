@@ -1,15 +1,20 @@
-# routes/kakao.py
 from fastapi import APIRouter, HTTPException, Depends, Request
 from fastapi.responses import JSONResponse
 import httpx
 import os
 from sqlalchemy.orm import Session
 from database import SessionLocal
-from .crud import get_user_by_id, update_user
+from .crud import get_user_by_id, update_user,get_user_by_refresh_token, update_user_refresh_token
 from models import User
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
+import jwt
+
+
 
 router = APIRouter()
+
+load_dotenv()
 
 def get_db():
     db = SessionLocal()
@@ -21,8 +26,11 @@ def get_db():
 kakao_client_id = os.getenv('KAKAO_CLIENT_ID')
 kakao_redirect_uri = os.getenv('KAKAO_REDIRECT_URI')
 
-ACCESS_TOKEN_EXPIRE_DAYS = 1  # 24 hours
-REFRESH_TOKEN_EXPIRE_DAYS = 30  # 30 days
+ACCESS_TOKEN_EXPIRE_MINUTES = 1
+REFRESH_TOKEN_EXPIRE_DAYS = 1 
+
+SECRET_KEY = os.getenv('SECRET_KEY')
+ALGORITHM = os.getenv('ALGORITHM')
 
 @router.get("/login/oauth/code/kakao")
 async def kakao_callback(code: str, db: Session = Depends(get_db)):
@@ -56,94 +64,77 @@ async def kakao_callback(code: str, db: Session = Depends(get_db)):
 
         user_info = user_response.json()
         kakao_id = user_info['id'] 
-        existing_user = get_user_by_id(db=db, id=str(kakao_id))
-        
+        existing_user = get_user_by_id(db=db, user_id=int(kakao_id))
+
     if existing_user:
-        # 기존 사용자 로그인 처리
-        access_token_expiry = datetime.utcnow() + timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
+
+        access_token_expiry = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        to_access_token_encode = {
+            'type': 'access_token',
+            'userId': kakao_id,
+            'iat': datetime.utcnow(),
+            'exp': access_token_expiry 
+        }
+
+
+        encoded_access_token_jwt = jwt.encode(to_access_token_encode, SECRET_KEY, algorithm=ALGORITHM)
         refresh_token_expiry = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
-        update_user(db, existing_user.id, {
-            "access_token": access_token,
-            "refresh_token": refresh_token,
-            "access_token_expiry": access_token_expiry,
-            "refresh_token_expiry": refresh_token_expiry
+
+        to_refresh_token_encode = {
+            'type': 'refresh_token',
+            'userId': kakao_id,
+            'iat': datetime.utcnow(),
+            'exp': refresh_token_expiry 
+        }
+
+        encoded_refresh_token_jwt = jwt.encode(to_refresh_token_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+        update_user_refresh_token(db, existing_user.id, {
+            "refresh_token": encoded_refresh_token_jwt,
         })
+        
         
         response = JSONResponse(content={
             "message": "로그인 성공", 
             "user": {
+                "id": kakao_id,
                 "name": existing_user.user_name, 
                 "email": existing_user.user_email,
-                "access_token": access_token,
-                "refresh_token": refresh_token
+                "access_token": encoded_access_token_jwt,
+                "refresh_token": encoded_refresh_token_jwt
             },
         })
-        response.set_cookie(key="access_token", value=access_token, httponly=True, secure=True, samesite='lax', expires=ACCESS_TOKEN_EXPIRE_DAYS * 24 * 3600)
-        response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=True, samesite='lax', expires=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600)
         return response
     
-    # 회원가입이 필요한 경우
     return JSONResponse(content={
         "message": "회원가입 필요",
         "kakao_id": kakao_id,
         "name": user_info['properties']['nickname'],
-        "tokens": {
-            "access_token": access_token,
-            "refresh_token": refresh_token
-        }
     })
+
 
 @router.post("/refresh")
-async def refresh_token(request: Request, db: Session = Depends(get_db)):
-    body = await request.json()  # 요청의 바디를 JSON으로 파싱
-    refresh_token = body.get("refresh_token")  # 바디에서 리프레시 토큰 가져오기
-
-    if not refresh_token:
-        raise HTTPException(status_code=400, detail="Refresh token not found")
-
-    user = db.query(User).filter(User.refresh_token == refresh_token).first()
-    if not user or user.refresh_token_expiry < datetime.utcnow():
-        raise HTTPException(status_code=401, detail="Invalid or expired refresh token")
-
-    token_url = "https://kauth.kakao.com/oauth/token"
-    data = {
-        "grant_type": "refresh_token",
-        "client_id": kakao_client_id,
-        "refresh_token": refresh_token,
-    }
+async def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
+    try:
+        payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("userId")
+        
+        user = get_user_by_refresh_token(db, user_id, refresh_token)
+        if not user:
+            raise HTTPException(status_code=401, detail="유효하지 않은 리프레시 토큰입니다.")
+        
+        access_token_expiry = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        new_access_token = {
+            'type': 'access_token',
+            'userId': user_id,
+            'iat': datetime.utcnow(),
+            'exp': access_token_expiry
+        }
+        
+        encoded_access_token = jwt.encode(new_access_token, SECRET_KEY, algorithm=ALGORITHM)
+        return {"access_token": encoded_access_token}
     
-    async with httpx.AsyncClient() as client:
-        response = await client.post(token_url, data=data)
-        if response.status_code != 200:
-            raise HTTPException(status_code=400, detail="Failed to refresh token")
-
-        token_data = response.json()
-        new_access_token = token_data.get("access_token")
-        new_refresh_token = token_data.get("refresh_token", refresh_token)
-
-    # Update user with new tokens and expiry
-    access_token_expiry = datetime.utcnow() + timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
-    refresh_token_expiry = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
-    
-    update_user(db, user.id, {
-        "access_token": new_access_token,
-        "refresh_token": new_refresh_token,
-        "access_token_expiry": access_token_expiry,
-        "refresh_token_expiry": refresh_token_expiry
-    })
-
-    response = JSONResponse(content={
-        "message": "Token refreshed successfully", 
-        "user": {
-            "name": user.user_name, 
-            "email": user.user_email,
-            "access_token": new_access_token,
-            "refresh_token": new_refresh_token
-        },
-    })
-    
-    # Set cookies for the new tokens
-    response.set_cookie(key="access_token", value=new_access_token, httponly=True, secure=True, samesite='lax', expires=ACCESS_TOKEN_EXPIRE_DAYS * 24 * 3600)
-    response.set_cookie(key="refresh_token", value=new_refresh_token, httponly=True, secure=True, samesite='lax', expires=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600)
-    
-    return response
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="리프레시 토큰이 만료되었습니다.")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="유효하지 않은 리프레시 토큰입니다.")
