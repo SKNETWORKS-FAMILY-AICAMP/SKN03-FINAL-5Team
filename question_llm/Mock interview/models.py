@@ -1,29 +1,8 @@
-from sqlalchemy import BigInteger, CheckConstraint, Column, DateTime, ForeignKey, Index, Integer, String, Date
+# coding: utf-8
+from sqlalchemy import BigInteger, CheckConstraint, Column, DateTime, ForeignKey, Index, Integer, String
 from sqlalchemy.dialects.mysql import DATETIME, LONGTEXT, SMALLINT, TINYINT, VARCHAR
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
-from backend.database import Base
-from datetime import date  
-from pydantic import BaseModel
-
-
-class UserTb(Base):
-    __tablename__ = 'user_tb'
-
-    id = Column(VARCHAR(45), primary_key=True)
-    user_name = Column(String(45), nullable=False)
-    user_email = Column(String(45), nullable=False)
-    user_joined = Column(DateTime, nullable=False)
-    access_token = Column(String(255))
-    refresh_token = Column(String(255))
-    access_token_expiry = Column(DateTime)
-    refresh_token_expiry = Column(DateTime)
-
-class UserRegister(BaseModel):
-    name: str
-    email: str
-    id: int
-    user_joined: date
 
 Base = declarative_base()
 metadata = Base.metadata
@@ -78,6 +57,15 @@ class DjangoSession(Base):
     session_key = Column(String(40), primary_key=True)
     session_data = Column(LONGTEXT, nullable=False)
     expire_date = Column(DATETIME(fsp=6), nullable=False, index=True)
+
+
+class UserTb(Base):
+    __tablename__ = 'user_tb'
+
+    id = Column(VARCHAR(45), primary_key=True)
+    user_name = Column(String(45), nullable=False)
+    user_email = Column(String(45), nullable=False)
+    user_joined = Column(DateTime, nullable=False)
 
 
 class TokenTb(UserTb):
@@ -218,4 +206,3 @@ class QuestionTb(Base):
     question_vector_path = Column(VARCHAR(255), nullable=False)
 
     interview = relationship('InterviewTb')
-

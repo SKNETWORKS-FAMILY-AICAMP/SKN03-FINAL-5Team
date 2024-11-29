@@ -1,5 +1,4 @@
 import os
-from dotenv import load_dotenv
 from typing import List, Dict
 import pandas as pd
 from langchain_openai import ChatOpenAI
@@ -30,13 +29,12 @@ from langchain.retrievers import ContextualCompressionRetriever
 from bert_score import score as bert_score
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-from .models import Question, Report
-from .db_utils import save_question
+from db_utils import save_question_to_db , save_report_to_db, update_question_in_db
 
 config = RunnableConfig(recursion_limit=70, configurable={"thread_id": "THREAD_ID"}) #재귀한도 증가
 
 
-load_dotenv()
+
 
 # "gpt-4" "gpt-4o-mini"
 # ChatOpenAI 클라이언트 생성 함수
@@ -45,7 +43,7 @@ def get_client():
         model="gpt-4o",
         streaming=True,
         openai_api_key=os.getenv("OPENAI_API_KEY")
-    )
+
 
 # ChatOpenAI 인스턴스 생성
 chat = get_client()
@@ -54,7 +52,7 @@ chat = get_client()
 class State(TypedDict):
     # resume_text: Optional[str] = None
     # project_text: Optional[str] = None
-    tech_keywords: Annotated[str, "multiple"] = None
+    tech_keywords: Optional[str]
     ideal_answer: Optional[str] = None # 참고자료
     model_answer: Optional[str] = None # 모범답안
     question: Optional[str] = None
@@ -67,12 +65,12 @@ class State(TypedDict):
     max_questions: Optional[int] = 5
     selected_keyword: Optional[str] = None
     evaluation_results: Optional[List[Dict]]
-
+    cosine_scores: Optional[List[float]]
 
 # FAISS 데이터베이스 로드
 
 vector_db_high = FAISS.load_local(
-    folder_path="high_db",
+    folder_path="C:/dev/SKN03-FINAL-5Team-git/question_llm/high_db/",
     index_name="python_high_chunk700",
     embeddings=OpenAIEmbeddings(),
     allow_dangerous_deserialization=True,
@@ -80,7 +78,7 @@ vector_db_high = FAISS.load_local(
 
 
 vector_db_low = FAISS.load_local(
-    folder_path="low_db",
+    folder_path="C:/dev/SKN03-FINAL-5Team-git/question_llm/low_db",
     index_name="python_low_chunk700",
     embeddings=OpenAIEmbeddings(),
     allow_dangerous_deserialization=True,
@@ -163,10 +161,10 @@ def extract_keywords_from_resume(resume_text: str) -> str:
 #==========================질문생성===============================
 
 # 질문 생성 노드
-fix_question = ["자기소개를 부탁드립니다", "자신의 성격의 장단점을 말씀해주세요", "갈등이나 문제를 해결한 경험이 있다면 이야기 해주세요"]
 
-def generate_question(state: State) -> State:
+def generate_question(state: State, interview_id: int) -> State:
     tech_keywords = state["tech_keywords"]
+    
     question_count = state["question_count"]
 
     # 기본 변수 초기화
@@ -226,20 +224,22 @@ def generate_question(state: State) -> State:
 
     # ChatGPT를 사용하여 질문 생성
     response = chat.invoke([SystemMessage(content=query_prompt)])
+    question_text = response.content.strip()
 
-    # CSV로 질문 저장
-    pd.DataFrame([{
-        "Question_Count": question_count,
-        "Selected_Level": selected_level,
-        "Question": response.content.strip(),
-        "Reference_Docs": reference_docs,
-        "Selected_Keywords": selected_keyword,
-    }]).to_csv("question_generation_log.csv", mode='a', index=False, header=not pd.io.common.file_exists("question_generation_log.csv"))
+    # 데이터베이스에 저장
+    save_question_to_db(
+        interview_id=interview_id,
+        job_question=question_text,
+        job_answer="N/A",
+        job_solution="N/A",
+        job_score=0,
+        question_vector="0.0, 0.0, 0.0"
+    )
 
     # 새로운 상태 반환
     return {
         **state,
-        "question": response.content.strip(),
+        "question": question_text,
         "reference_docs": reference_docs,
         "ideal_answer": retrieved_content.strip(),
         "question_count": question_count + 1,
@@ -261,27 +261,37 @@ def generate_model_answer(state: State) -> State:
 #====================답변녹음=====================================
 
 # 답변 녹음 및 변환 노드
-def record_and_transcribe(state: State) -> State:
+def record_and_transcribe(state: State, interview_id: int) -> State:
     # Google STT를 통해 텍스트화 된 답변을 변수로 저장
     
     answer_text = real_time_transcription()
-    return {
-        **state,
-        "answer_text": answer_text
-    }
+    state["answer_text"] = answer_text
 
+    # 답변 데이터를 업데이트
+    update_question_in_db(
+        interview_id=interview_id,
+        job_answer=answer_text
+    )
+
+    return state
 
 #=============================피드백====================================
 # 피드백 생성 함수
-def generate_feedback(state: State) -> State:
+def generate_feedback(state: State, interview_id: int) -> State:
     answer = state["answer_text"]  #answer_text
     ideal_answer = state["ideal_answer"] # 참조 청크
     prompt = evaluation_prompt(answer, ideal_answer)
     
     response = chat.invoke([SystemMessage(content=prompt)])
-    
-    return {**state, "feedback": response.content.strip()}
+    feedback = response.content.strip()
 
+    # 피드백 저장
+    update_question_in_db(
+        interview_id=interview_id,
+        job_solution=feedback  # 피드백을 해결책으로 저장
+    )
+
+    return {**state, "feedback": feedback}
 #========================================================================
 
 # 평가지표용 번역 함수
@@ -294,88 +304,57 @@ def translate_text(text: str, target_language: str = "en") -> str:
 # RAGAS 평가 로직을 integrate하여 answer 평가하는 노드
 #============================= 면접자의 답변 평가 노드==============================
 
-def evaluate_answer(state: State) -> State:
+def evaluate_answer(state: State, question_id: int) -> State:
     # 면접자의 실제 답변과 이상적인 답변을 변수에 저장
     answer_text = state["answer_text"] # 면접자의 답변
     model_answer = state["model_answer"] #모델의 모범답안
-    ideal_answer = state["ideal_answer"] #청크
+    # ideal_answer = state["ideal_answer"] #청크
     feedback = state["feedback"]  # 피드백 값 추가
 
     if not answer_text or not model_answer:
         print("Error: Missing answer_text or ideal_answer for evaluation.")
         return {**state, "evaluation": {"answer_relevancy": 0.0, "faithfulness": 0.0, "context_precision": 0.0, "context_recall": 0.0}}
     
-    translated_contexts = translate_text(ideal_answer, target_language="ko")
     
-    
-    # 평가용 데이터셋 생성
-    # RAGAS는 특정 형식의 데이터셋을 요구하기 때문에, 면접 질문과 답변, 이상적 답변을 포함하여 데이터프레임으로 구성
-    df = pd.DataFrame([{
-        "question": state["question"],  # 면접 질문
-        "answer": answer_text,       # 면접자의 실제 답변 answer_text
-        "ground_truth": model_answer,       # 이상적인 답변
-        "contexts": json.dumps([translated_contexts])   #JSON 직렬화된 리스트로 설정 // # 평가에 사용할 컨텍스트 
-    }])
-    # 데이터셋 변환
-    # 생성된 데이터프레임을 RAGAS의 평가 형식에 맞게 Dataset 형식으로 변환합니다.
-    test_dataset = Dataset.from_pandas(df)
 
-    # RAGAS는 컨텍스트를 리스트로 받기 때문에, 이를 처리하여 평가를 준비합니다.
-    test_dataset = test_dataset.map(lambda example: {"contexts": ast.literal_eval(example["contexts"])})
-
-    # RAGAS 평가 적용
-    # evaluate 함수는 데이터셋을 평가
-    # - answer_relevancy: 답변의 질문 관련성
-    # - faithfulness: 답변의 정확성
-    # - context_precision: 컨텍스트의 세부 일치도
-    # - context_recall: 컨텍스트 재현율
-    result = evaluate(
-        dataset=test_dataset,
-        metrics=[answer_relevancy, faithfulness, context_precision, context_recall],
-    )
-
-    # 결과를 데이터프레임으로 변환
-    # 평가 결과를 result_df로 변환하여, 이를 데이터프레임 형식으로 확인할 수 있게 합니다.
-    result_df = result.to_pandas()
-    
-    # # 2. BERTScore 계산
-    # precision, recall, f1 = bert_score([answer_text], [model_answer], lang="ko", verbose=False)
-
-    # 3. SBERT를 사용한 코사인 유사도 계산
+    # SBERT 코사인 유사도 계산
     answer_embedding = sbert_model.encode(answer_text)
     model_answer_embedding = sbert_model.encode(model_answer)
     cosine_sim = cosine_similarity([answer_embedding], [model_answer_embedding])[0][0]
+    job_score = round(cosine_sim * 100, 2)  # 퍼센트 점수로 변환
 
-    # 평가 결과에 면접 질문과 면접자 답변을 추가
-    # 평가 데이터 구성
-    evaluation = {
+    # 코사인 유사도를 state["cosine_scores"]에 추가
+    if "cosine_scores" not in state or state["cosine_scores"] is None:
+        state["cosine_scores"] = []  # 초기화
+    state["cosine_scores"].append(cosine_sim)  # 점수 추가
+
+    # 평가 결과를 데이터베이스에 업데이트
+    try:
+        update_question_in_db(
+            question_id=question_id,
+            interview_id=interview_id,
+            job_question=state["question"],  # 질문 텍스트
+            job_answer=answer_text,  # 면접자의 답변
+            job_solution=model_answer,  # 모범 답안
+            job_score=job_score,  # 평가 점수
+        )
+        print(f"Question updated successfully for question_id {question_id}")
+    except Exception as e:
+        print(f"Error updating question in DB: {e}")
+
+    # 평가 데이터를 `state`에 저장
+    evaluation_data = {
         "Question": state["question"],
         "Answer": answer_text,
         "Ideal_Answer": model_answer,
         "Feedback": feedback,
         "SBERT_Cosine_Similarity": cosine_sim,
-        "Question_Relevancy": result_df.iloc[0].get("question_relevancy", 0.0),
-        "Faithfulness": result_df.iloc[0].get("faithfulness", 0.0),
-        "Context_Precision": result_df.iloc[0].get("context_precision", 0.0),
-        "Context_Recall": result_df.iloc[0].get("context_recall", 0.0)
+        "job_score": job_score,
     }
 
-    evaluation_df = pd.DataFrame([evaluation])
-
-    # "BERTScore_F1": [f1[0]],  # F1 Score
-    # 최종 결과 데이터프레임 생성
-    # 평가 결과와 추가 데이터를 결합하여, 각 평가 결과에 대해 질문과 답변 정보를 함께 저장
-    final_df = pd.concat([evaluation_df, result_df], axis=1)
-
-    # CSV 파일에 평가 결과 저장
-    # 평가 결과 CSV 저장
-    final_df.to_csv("mock_interview_results.csv", mode='a', index=False, header=not pd.io.common.file_exists("mock_interview_results.csv"))
-
-    # 상태에 평가 결과 저장
     if "evaluation_results" not in state or not state["evaluation_results"]:
         state["evaluation_results"] = []
-    state["evaluation_results"].append(evaluation)
-
+    state["evaluation_results"].append(evaluation_data)
 
     # 새로운 상태 반환
     return state
@@ -424,10 +403,6 @@ def evaluate_question(state: State) -> State:
     final_df = pd.concat([additional_data, result_df], axis=1)
     
     # 평가 결과 저장
-    final_df.to_csv("mock_interview_question_evaluation.csv", mode='a', index=False, header=not pd.io.common.file_exists("mock_interview_question_evaluation.csv"))
-    
-    
-    print("Question evaluation saved to 'mock_interview_question_evaluation.csv'")  # 저장 확인 메시지
 
     # 새로운 상태 반환
     return {**state, "question_evaluation": result_df.iloc[0].to_dict()}
@@ -463,23 +438,28 @@ def update_evaluation_results(state: State) -> State:
     return state
 
 #==========================면접최종평가=======================
-def generate_final_evaluation(state: State) -> State:
-    """
-    LangGraph의 마지막 단계에서 GPT를 호출하여 최종 평가를 생성.
-    """
-    # State에서 평가 데이터를 가져옴
-    evaluation_results = pd.DataFrame(state["evaluation_results"])
+def generate_final_evaluation(state: State, interview_id: int) -> State:
+    # 코사인 유사도 평균 계산
+    cosine_scores = state.get("cosine_scores", [])
+    if cosine_scores:
+        average_score = sum(cosine_scores) / len(cosine_scores)
+    else:
+        average_score = 0.0
 
-    # GPT를 사용하여 최종 평가 생성
-    prompt = generate_final_evaluation_prompt(evaluation_results)
-    response = chat.invoke([SystemMessage(content=prompt)])
-    final_feedback = json.loads(response.content.strip())
+    # 최종 보고서 저장
+    final_feedback = state.get("final_feedback", {})
+    save_report_to_db(
+        interview_id=interview_id,
+        strength=final_feedback.get("strength", ""),
+        weakness=final_feedback.get("weakness", ""),
+        ai_summary=final_feedback.get("ai_summary", ""),
+        detail_feedback=final_feedback.get("detail_feedback", ""),
+        attitude=final_feedback.get("attitude", ""),
+        report_score=round(average_score * 100, 2),  # 평균 점수로 총점 저장
+    )
 
-    # 상태에 최종 피드백 저장
-    state["final_feedback"] = final_feedback
-
-    # CSV로 저장
-    pd.DataFrame([final_feedback]).to_csv("final_feedback.csv", mode='w', index=False)
+    # 상태에 총점 저장
+    state["final_feedback"]["report_score"] = round(average_score * 100, 2)
 
     return state
 
@@ -549,22 +529,21 @@ initial_state = {
     "question_count": 0,
     "max_questions": 5
 }
-
+interview_id=1
 
 #=====================================면접실행==============================================
 # 모의면접 실행 함수
 def run_mock_interview(compiled_graph, initial_state):
-    # 녹화 시작
     start_video_recording()
 
-    # LangGraph 실행
     try:
         for chunk in compiled_graph.stream(initial_state, config=config):
+            # `generate_question` 호출 시 `interview_id` 전달
+            if "generate_question" in chunk:
+                generate_question(chunk)
             print("Current chunk state:", chunk)
     finally:
-        # 녹화 종료
         stop_video_recording()
-
 
 
 run_mock_interview(compiled_graph, initial_state)
