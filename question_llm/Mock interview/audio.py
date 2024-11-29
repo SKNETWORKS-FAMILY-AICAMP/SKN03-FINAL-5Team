@@ -11,6 +11,7 @@ import queue
 load_dotenv()
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
 =======
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = ""
@@ -18,6 +19,9 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = ""
 =======
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = 
 >>>>>>> 515a96c (최종)
+=======
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.getenv("OPENAI_API_KEY")
+>>>>>>> 4c04a2a (.)
 
 # 오디오 설정
 STREAMING_LIMIT = 240000  # 4 minutes

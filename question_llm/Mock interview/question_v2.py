@@ -44,12 +44,16 @@ def get_client():
         streaming=True,
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         openai_api_key=os.getenv("OPENAI_API_KEY")
 =======
         openai_api_key=''
 =======
         openai_api_key=
 >>>>>>> 515a96c (최종)
+=======
+        openai_api_key=os.getenv("OPENAI_API_KEY")
+>>>>>>> 4c04a2a (.)
     ) 
 >>>>>>> 1741a1b (키값제외)
 
