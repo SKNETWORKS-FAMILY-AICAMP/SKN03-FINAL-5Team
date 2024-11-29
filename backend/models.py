@@ -31,6 +31,16 @@ class UserRegister(BaseModel):
 class Interview(Base):
     __tablename__ = "interview_tb"
 
-    interview_id = Column(Integer, primary_key=True, index=True)  # 인터뷰 ID
-    user_id = Column(Integer)  # 사용자 ID (외래 키)
-    interview_created = Column(DateTime)  # 인터뷰 생성 시간
+    interview_id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer) 
+    interview_created = Column(DateTime)  
+
+class Board(Base):
+    __tablename__ = "board_tb"
+    
+    idx = Column(Integer, primary_key=True, autoincrement=True)
+    writer = Column(String(30), nullable=False)
+    title = Column(String(30), nullable=False)
+    content = Column(String(100), nullable=False)
+    post_date = Column(DateTime, nullable=False, default=func.now())
+    del_yn = Column(String(1), nullable=False, default='Y')

@@ -6,15 +6,15 @@ import { useRouter } from 'next/navigation';
 const developmentApiUrl =
   process.env['API_URL_DEVELOPMENT'] || 'http://127.0.0.1:8000';
 const productionApiUrl =
-  process.env['API_URL_PRODUCTION'] || 'https://unaitit/api';
+  process.env['API_URL_PRODUCTION'] || 'https://unaitit.com';
 
 const refreshTokenCookieName = 'unailit_refresh-token';
 const accessTokenCookieName = 'unailit_access-token';
 
 export const instance = axios.create({
   baseURL:
-    process.env['NEXT_PUBLIC_MODE'] === 'development'
-      ? developmentApiUrl
+    process.env.NODE_ENV === 'production'
+      ? productionApiUrl
       : developmentApiUrl,
 });
 
@@ -42,7 +42,8 @@ instance.interceptors.response.use(
           }
         );
         const { access_token, refresh_token } = response.data;
-        setCookie(refreshTokenCookieName, refreshToken, {
+
+        setCookie(refreshTokenCookieName, refresh_token, {
           maxAge: 60 * 60 * 24 * 1,
           sameSite: 'lax',
         });
