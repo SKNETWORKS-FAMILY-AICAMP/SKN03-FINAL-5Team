@@ -42,7 +42,12 @@ def get_client():
     return ChatOpenAI(
         model="gpt-4o",
         streaming=True,
+<<<<<<< HEAD
         openai_api_key=os.getenv("OPENAI_API_KEY")
+=======
+        openai_api_key=''
+    ) 
+>>>>>>> 1741a1b (키값제외)
 
 
 # ChatOpenAI 인스턴스 생성
