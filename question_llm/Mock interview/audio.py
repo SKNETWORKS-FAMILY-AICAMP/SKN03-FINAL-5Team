@@ -10,10 +10,14 @@ import queue
 # .env 파일의 환경 변수 로드
 load_dotenv()
 <<<<<<< HEAD
+<<<<<<< HEAD
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
 =======
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = ""
 >>>>>>> 1741a1b (키값제외)
+=======
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = 
+>>>>>>> 515a96c (최종)
 
 # 오디오 설정
 STREAMING_LIMIT = 240000  # 4 minutes
