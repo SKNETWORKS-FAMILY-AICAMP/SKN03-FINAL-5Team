@@ -12,6 +12,8 @@ export function UserProvider({ children }) {
   const router = useRouter();
   const [kakaoId, setKakaoId] = useState(null);
 
+  const pathname = usePathname();
+
   const {
     userLogin,
     userLogout,
@@ -42,11 +44,11 @@ export function UserProvider({ children }) {
   useEffect(() => {
     if (hasCookie(refreshTokenCookieName)) {
       const refreshTokenFromCookie = getCookie(refreshTokenCookieName);
-      const accessTokenFromCookie = getCookie(accessTokenCookieName);
+      const access_token = localStorage.getItem('access_token');
 
-      if (refreshTokenFromCookie && accessTokenFromCookie) {
+      if (refreshTokenFromCookie && access_token) {
         userLogin({
-          accessToken: accessTokenFromCookie,
+          accessToken: access_token,
           refreshToken: refreshTokenFromCookie,
         });
         if (userInfo) {

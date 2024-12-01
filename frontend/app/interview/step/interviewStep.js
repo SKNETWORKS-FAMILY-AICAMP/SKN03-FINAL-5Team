@@ -2,11 +2,14 @@ import { Box, Flex, Button, Text } from '@chakra-ui/react';
 import React, { useState, useEffect } from 'react';
 import WebcamComponent from '../components/webcam';
 import ChatComponent from '../components/chatComponent';
+import SpeechToText from '../components/getaudio';
 
 const InterviewStep = ({ setCurrentStep }) => {
-  const [questions, setQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [timers, setTimers] = useState([]); // 각 질문에 대한 타이머 배열
+  const [isRecording, setIsRecording] = useState(false);
+  const [timers, setTimers] = useState({ countdown: 10, recording: 10 });
+  const [questions, setQuestions] = useState([]);
+  const [isInterviewComplete, setIsInterviewComplete] = useState(false);
 
   const allQuestions = [
     '파이썬에서 매직매소드를 로직에 구현한 경험에 대해 말해보세요',
@@ -14,60 +17,57 @@ const InterviewStep = ({ setCurrentStep }) => {
     '파이썬에서 가장 큰 값을 리턴하는 함수를 설명해주세요',
   ];
 
-  const nextStep = () => {
-    setCurrentStep((prevSteps) => prevSteps + 1);
-  };
+  useEffect(() => {
+    setQuestions([allQuestions[currentQuestionIndex]]);
+  }, []);
 
   useEffect(() => {
-    setTimers(Array(allQuestions.length).fill(10));
-    const questionInterval = setInterval(() => {
-      if (currentQuestionIndex < allQuestions.length) {
-        setQuestions((prevQuestions) => [
-          ...prevQuestions,
-          allQuestions[currentQuestionIndex],
-        ]);
-        setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
-      } else {
-        clearInterval(questionInterval); // 모든 질문이 추가되면 인터벌 종료
-      }
-    }, 10000);
+    if (isInterviewComplete) return; 
 
-    return () => clearInterval(questionInterval); // 컴포넌트 언마운트 시 인터벌 정리
-  }, [currentQuestionIndex]);
-
-  useEffect(() => {
-    if (currentQuestionIndex < allQuestions.length) {
+    if (timers.countdown > 0 && !isRecording) {
       const countdownInterval = setInterval(() => {
-        setTimers((prevTimers) => {
-          const newTimers = [...prevTimers];
-          if (newTimers[currentQuestionIndex] > 0) {
-            newTimers[currentQuestionIndex] -= 1;
-          } else {
-            clearInterval(countdownInterval);
-            if (currentQuestionIndex < allQuestions.length - 1) {
-              setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
-              newTimers[currentQuestionIndex + 1] = 10;
-            }
-          }
-          return newTimers;
-        });
+        setTimers((prev) => ({ ...prev, countdown: prev.countdown - 1 }));
       }, 1000);
-
       return () => clearInterval(countdownInterval);
+    } else if (timers.countdown === 0 && !isRecording) {
+      setIsRecording(true);
+      setTimers((prev) => ({ ...prev, recording: 10 }));
     }
-  }, [currentQuestionIndex]);
+  }, [timers.countdown, isRecording, isInterviewComplete]);
+
+  useEffect(() => {
+    if (isInterviewComplete) return; 
+
+    if (timers.recording > 0 && isRecording) {
+      const recordingInterval = setInterval(() => {
+        setTimers((prev) => ({ ...prev, recording: prev.recording - 1 }));
+      }, 1000);
+      return () => clearInterval(recordingInterval);
+    } else if (timers.recording === 0 && isRecording) {
+      setIsRecording(false);
+      nextQuestion();
+    }
+  }, [timers.recording, isRecording, isInterviewComplete]);
+
+  const nextQuestion = () => {
+    if (currentQuestionIndex < allQuestions.length - 1) {
+      setCurrentQuestionIndex((prev) => prev + 1);
+      setQuestions((prev) => [...prev, allQuestions[currentQuestionIndex + 1]]);
+      setTimers({ countdown: 10, recording: 10 });
+    } else {
+      setIsInterviewComplete(true);
+      console.log('모든 질문 완료');
+    }
+  };
 
   return (
     <Box>
       <Flex justify={'space-around'} mb={'20px'}>
         <Box>
           <WebcamComponent />
-          <Box
-            background={'#DFE2FB'}
-            h={'100px'}
-            minW={'100%'}
-            mt={'30px'}
-          ></Box>
+          <Box background={'#DFE2FB'} h={'100px'} minW={'100%'} mt={'30px'}>
+            <SpeechToText isRecording={isRecording} />
+          </Box>
         </Box>
         <Box minW={'40%'}>
           <Box
@@ -77,9 +77,11 @@ const InterviewStep = ({ setCurrentStep }) => {
             overflowY={'scroll'}
           >
             <Text ml={'20px'} fontSize="lg" color="gray.600">
-              {timers[currentQuestionIndex] > 0
-                ? `다음 질문까지 남은 시간: ${Math.floor(timers[currentQuestionIndex] / 60)}:${(timers[currentQuestionIndex] % 60).toString().padStart(2, '0')}`
-                : '끝!'}
+              {isInterviewComplete
+                ? '모든 질문이 완료되었습니다.'
+                : isRecording
+                  ? `녹음 중: ${timers.recording}초 남음`
+                  : `답변 준비 시간: ${timers.countdown}초`}
             </Text>
             {questions.map((item, index) => (
               <Box m={'20px 0'} key={index}>
@@ -95,9 +97,16 @@ const InterviewStep = ({ setCurrentStep }) => {
             background={'#DFE2FB'}
             fontFamily={'inter'}
             mt={'30px'}
-            onClick={nextStep}
+            onClick={
+              isInterviewComplete
+                ? () => setCurrentStep((prev) => prev + 1)
+                : nextQuestion
+            }
+            isDisabled={
+              !isInterviewComplete && (isRecording || timers.countdown > 0)
+            }
           >
-            면접 완료
+            {isInterviewComplete ? '면접 완료' : '다음 질문으로 이동'}
           </Button>
         </Box>
       </Flex>

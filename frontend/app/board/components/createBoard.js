@@ -9,11 +9,22 @@ import {
   Button,
   Link,
 } from '@chakra-ui/react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { usePostBardMutation } from '@/app/api/useBoardClient';
 
 const CreateBoard = () => {
+  const { mutate: postBoard, isError: postBoardError } = usePostBardMutation();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [id, setId] = useState(null);
+
+  const Id = localStorage.getItem('id');
+
+  useEffect(() => {
+    if (Id) {
+      setId(localStorage.getItem('id'));
+    }
+  }, [Id]);
 
   const onChngeTitle = (e) => {
     setTitle(e.target.value);
@@ -27,7 +38,12 @@ const CreateBoard = () => {
     const data = {
       title: title,
       content: content,
+      id: id,
+      post_date: new Date().toISOString(),
+      del_yn: 'N',
     };
+
+    postBoard(data);
   };
 
   return (
@@ -71,7 +87,7 @@ const CreateBoard = () => {
       <Flex justifyContent={'flex-end'} gap={'10px'} mt={'10px'}>
         <Button onClick={onClickSubmit}>확인</Button>
         <Button>
-          <Link href='/board'>취소</Link>
+          <Link href="/board">취소</Link>
         </Button>
       </Flex>
     </Box>

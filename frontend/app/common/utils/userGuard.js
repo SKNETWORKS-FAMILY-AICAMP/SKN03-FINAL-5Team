@@ -15,7 +15,8 @@ const UserGuard = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const accessToken = getCookie(accessTokenCookieName);
+    const accessToken = localStorage.getItem('access_token');
+
     const unprotectedRoutes = ['/', '/about', '/login'];
 
     if (!accessToken && !unprotectedRoutes.includes(pathname)) {
