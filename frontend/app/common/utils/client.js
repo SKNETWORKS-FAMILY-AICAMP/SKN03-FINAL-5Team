@@ -1,6 +1,6 @@
 import { HttpError } from './HttpError';
 import axios from 'axios';
-import { getCookie, setCookie } from 'cookies-next';
+import { getCookie } from 'cookies-next';
 import { useRouter } from 'next/navigation';
 
 const developmentApiUrl =
@@ -9,7 +9,6 @@ const productionApiUrl =
   process.env['API_URL_PRODUCTION'] || 'https://unaitit.com';
 
 const refreshTokenCookieName = 'unailit_refresh-token';
-const accessTokenCookieName = 'unailit_access-token';
 
 export const instance = axios.create({
   baseURL:
@@ -41,20 +40,13 @@ instance.interceptors.response.use(
             params: { refresh_token: refreshToken },
           }
         );
-        const { access_token, refresh_token } = response.data;
+        const { access_token } = response.data;
 
-        setCookie(refreshTokenCookieName, refresh_token, {
-          maxAge: 60 * 60 * 24 * 1,
-          sameSite: 'lax',
-        });
-        setCookie(accessTokenCookieName, access_token, {
-          maxAge: 1 * 60,
-          sameSite: 'lax',
-        });
+        localStorage.setItem('access_token', access_token);
+
         setBearerAuthorizationAtHttpClient(access_token);
         return instance(originalRequest);
       } catch (refreshError) {
-        console.log('err');
         refreshTokenFailedCallback();
         throw new HttpError('세션이 만료되었습니다. 다시 로그인해주세요.', 401);
       }

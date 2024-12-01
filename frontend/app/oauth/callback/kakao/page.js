@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useUserData } from '@/app/api/useUserData';
 import { Center, Spinner, VStack } from '@chakra-ui/react';
-import { setCookie } from 'cookies-next';
 
 export const accessTokenCookieName = 'unailit_access-token';
 
@@ -42,10 +41,7 @@ const KakaoCallbackPage = () => {
           const { access_token, refresh_token, id } = res.data.user;
           localStorage.setItem('id', id);
 
-          setCookie(accessTokenCookieName, access_token, {
-            maxAge: 15 * 60,
-            sameSite: 'lax',
-          });
+          localStorage.setItem('access_token', access_token);
 
           userLogin({
             accessToken: access_token,

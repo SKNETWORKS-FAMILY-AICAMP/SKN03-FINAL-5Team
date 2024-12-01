@@ -2,7 +2,6 @@ from sqlalchemy import Column, Integer, String, Date, DateTime, ForeignKey
 from database import Base
 from datetime import date, datetime
 from pydantic import BaseModel
-from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 class User(Base):
@@ -35,12 +34,13 @@ class Interview(Base):
     user_id = Column(Integer) 
     interview_created = Column(DateTime)  
 
+    
 class Board(Base):
     __tablename__ = "board_tb"
-    
-    idx = Column(Integer, primary_key=True, autoincrement=True)
-    writer = Column(String(30), nullable=False)
-    title = Column(String(30), nullable=False)
-    content = Column(String(100), nullable=False)
-    post_date = Column(DateTime, nullable=False, default=func.now())
+
+    idx = Column(Integer, primary_key=True, autoincrement=True)  # 게시판 아이디
+    id = Column(String(45), nullable=False)  # 사용자 아이디 (ERD의 id 컬럼)
+    title = Column(String(255), nullable=False)  # 제목
+    content = Column(String(255), nullable=False)  # 내용
+    post_date = Column(DateTime, nullable=False, default=func.now())  # 게시판 업로드 날짜
     del_yn = Column(String(1), nullable=False, default='Y')
