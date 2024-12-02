@@ -1,16 +1,18 @@
 from sqlalchemy import BigInteger, CheckConstraint, Column, DateTime, ForeignKey, Index, Integer, String, Date
 from sqlalchemy.dialects.mysql import DATETIME, LONGTEXT, SMALLINT, TINYINT, VARCHAR
 from sqlalchemy.orm import relationship
+from sqlalchemy.orm import configure_mappers
 from sqlalchemy.ext.declarative import declarative_base
 from backend.database import Base
 from datetime import date  
 from pydantic import BaseModel
-
+Base = declarative_base()
+metadata = Base.metadata
 
 class UserTb(Base):
     __tablename__ = 'user_tb'
 
-    id = Column(VARCHAR(45), primary_key=True)
+    id = Column(String(45), primary_key=True)
     user_name = Column(String(45), nullable=False)
     user_email = Column(String(45), nullable=False)
     user_joined = Column(DateTime, nullable=False)
@@ -19,15 +21,40 @@ class UserTb(Base):
     access_token_expiry = Column(DateTime)
     refresh_token_expiry = Column(DateTime)
 
+    # BoardTb와의 관계 설정
+    boards = relationship("BoardTb", back_populates="user")
+
+
 class UserRegister(BaseModel):
     name: str
     email: str
     id: int
     user_joined: date
 
-Base = declarative_base()
-metadata = Base.metadata
 
+
+class BoardTb(Base):
+    __tablename__ = 'board_tb'
+    __table_args__ = (
+        CheckConstraint("(`del_yn` in ('Y', 'N'))"),
+    )
+
+    idx = Column(Integer, primary_key=True)
+    id = Column(ForeignKey('user_tb.id', ondelete='CASCADE', onupdate='CASCADE'), index=True)
+    title = Column(String(50), nullable=False)
+    content = Column(String(255), nullable=False)
+    post_date = Column(DateTime, nullable=False)
+    del_yn = Column(String(1), nullable=False)
+
+    # UserTb와의 관계 설정
+    user = relationship("UserTb", back_populates="boards")
+
+# 모든 클래스 정의 후 관계 설정
+UserTb.boards = relationship("BoardTb", back_populates="user")
+BoardTb.user = relationship("UserTb", back_populates="boards")
+
+# 매퍼 초기화
+configure_mappers()
 
 class AuthGroup(Base):
     __tablename__ = 'auth_group'
@@ -116,20 +143,6 @@ class AuthUserGroup(Base):
     user = relationship('AuthUser')
 
 
-class BoardTb(Base):
-    __tablename__ = 'board_tb'
-    __table_args__ = (
-        CheckConstraint("(`del_yn` in (_utf8mb4'Y',_utf8mb4'N'))"),
-    )
-
-    idx = Column(Integer, primary_key=True)
-    id = Column(ForeignKey('user_tb.id', ondelete='CASCADE', onupdate='CASCADE'), index=True)
-    title = Column(String(50), nullable=False)
-    content = Column(String(255), nullable=False)
-    post_date = Column(DateTime, nullable=False)
-    del_yn = Column(String(1), nullable=False)
-
-    user_tb = relationship('UserTb')
 
 
 class DjangoAdminLog(Base):
@@ -163,7 +176,8 @@ class InterviewTb(Base):
     resume_path = Column(VARCHAR(255), nullable=False)
 
     user = relationship('UserTb')
-
+    questions = relationship("QuestionTb", back_populates="interview")
+    report = relationship("ReportTb", back_populates="interview")
 
 class ReportTb(InterviewTb):
     __tablename__ = 'report_tb'
@@ -177,7 +191,8 @@ class ReportTb(InterviewTb):
     report_score = Column(Integer, nullable=False)
     report_created = Column(DateTime, nullable=False)
 
-
+    interview = relationship("InterviewTb", back_populates="report")
+    
 class AuthGroupPermission(Base):
     __tablename__ = 'auth_group_permissions'
     __table_args__ = (
@@ -209,7 +224,7 @@ class AuthUserUserPermission(Base):
 class QuestionTb(Base):
     __tablename__ = 'question_tb'
 
-    question_id = Column(Integer, primary_key=True)
+    question_id = Column(Integer, primary_key=True, autoincrement=True)
     interview_id = Column(ForeignKey('interview_tb.interview_id', ondelete='CASCADE', onupdate='CASCADE'), index=True)
     job_question = Column(String(255), nullable=False)
     job_answer = Column(String(255), nullable=False)

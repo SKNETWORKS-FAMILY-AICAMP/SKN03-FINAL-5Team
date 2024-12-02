@@ -144,19 +144,17 @@ def generate_final_evaluation_prompt(evaluation_results: pd.DataFrame) -> str:
         # 프롬프트 템플릿 생성
         prompt = (
                 "다음은 사용자의 모의 면접 결과입니다. 질문, 답변, 평가를 기반으로 사용자의 강점, 약점, "
-                "한줄평, 그리고 총점을 산출해 주세요.\n\n"
+                "한줄평을 산출해 주세요.\n\n"
                 "면접 결과:\n"
                 f"{json.dumps(evaluation_json, ensure_ascii=False, indent=2)}\n\n"
                 "강점:\n- 주요 강점을 3가지로 정리해 주세요.\n\n"
                 "약점:\n- 주요 약점을 3가지로 정리해 주세요.\n\n"
                 "한줄평:\n- 사용자를 위한 한줄평을 작성해 주세요.\n\n"
-                "총점:\n- 100점 만점으로 총점을 계산해 주세요.\n\n"
                 "결과를 아래와 같은 JSON 형식으로 반환해 주세요:\n"
                 "{\n"
                 "  \"strengths\": [\"강점 1\", \"강점 2\", \"강점 3\"],\n"
                 "  \"weaknesses\": [\"약점 1\", \"약점 2\", \"약점 3\"],\n"
                 "  \"summary\": \"한줄평\",\n"
-                "  \"total_score\": 85\n"
                 "}"
         )
         return prompt
