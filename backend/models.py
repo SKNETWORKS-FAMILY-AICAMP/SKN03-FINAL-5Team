@@ -1,24 +1,17 @@
-from sqlalchemy import Column, Integer, String, Date, DateTime, ForeignKey
-from database import Base
-from datetime import date, datetime
 from sqlalchemy import BigInteger, CheckConstraint, Column, DateTime, ForeignKey, Index, Integer, String, Date
 from sqlalchemy.dialects.mysql import DATETIME, LONGTEXT, SMALLINT, TINYINT, VARCHAR
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import configure_mappers
 from sqlalchemy.ext.declarative import declarative_base
+from backend.database import Base
+from datetime import date  
 from pydantic import BaseModel
-<<<<<<< HEAD
 Base = declarative_base()
 metadata = Base.metadata
-=======
-from sqlalchemy.sql import func
 
-from sqlalchemy import Column, Integer, String, Date, DateTime, ForeignKey
+class UserTb(Base):
+    __tablename__ = 'user_tb'
 
->>>>>>> origin/main
-
-
-<<<<<<< HEAD
     id = Column(String(45), primary_key=True)
     user_name = Column(String(45), nullable=False)
     user_email = Column(String(45), nullable=False)
@@ -27,25 +20,6 @@ from sqlalchemy import Column, Integer, String, Date, DateTime, ForeignKey
     refresh_token = Column(String(255))
     access_token_expiry = Column(DateTime)
     refresh_token_expiry = Column(DateTime)
-=======
-class User(Base):
-    __tablename__ = "user_tb"  
-
-    id = Column(String(45), primary_key=True, index=True) 
-    user_name = Column(String(45))  
-    user_email = Column(String(45)) 
-    user_joined = Column(Date)  
-
-
-class UserToken(Base):
-    __tablename__ = "token_tb"
-
-    id = Column(String(45), ForeignKey("user_tb.id"), primary_key=True)  
-    refresh_token = Column(String(255), nullable=True)
-    refresh_token_created = Column(DateTime(timezone=True), server_default=func.now())
-
-
->>>>>>> origin/main
 
     # BoardTb와의 관계 설정
     boards = relationship("BoardTb", back_populates="user")
@@ -57,31 +31,6 @@ class UserRegister(BaseModel):
     id: int
     user_joined: date
 
-<<<<<<< HEAD
-=======
-class Interview(Base):
-    __tablename__ = "interview_tb"
-
-    interview_id = Column(Integer, primary_key=True, index=True) 
-    user_id = Column(String(45), nullable=False)                 
-    user_job = Column(String(255), nullable=True)                
-    job_talent = Column(String(255), nullable=True)              
-    interview_time = Column(DateTime, nullable=True)             
-    interview_created = Column(DateTime, nullable=False)         
-    resume_path = Column(String(255), nullable=True) 
-
-    
-class Board(Base):
-    __tablename__ = "board_tb"
-
-    idx = Column(Integer, primary_key=True, autoincrement=True)  
-    id = Column(String(45), nullable=False)  
-    title = Column(String(255), nullable=False)  
-    content = Column(String(255), nullable=False)  
-    post_date = Column(DateTime, nullable=False, default=func.now())  
-    del_yn = Column(String(1), nullable=False, default='Y')
-
->>>>>>> origin/main
 
 
 class BoardTb(Base):
@@ -158,6 +107,14 @@ class DjangoSession(Base):
     expire_date = Column(DATETIME(fsp=6), nullable=False, index=True)
 
 
+class TokenTb(UserTb):
+    __tablename__ = 'token_tb'
+
+    id = Column(ForeignKey('user_tb.id', ondelete='CASCADE', onupdate='CASCADE'), primary_key=True)
+    refresh_token = Column(String(255), nullable=False)
+    refresh_token_created = Column(DateTime, nullable=False)
+
+
 class AuthPermission(Base):
     __tablename__ = 'auth_permission'
     __table_args__ = (
@@ -207,7 +164,6 @@ class DjangoAdminLog(Base):
     user = relationship('AuthUser')
 
 
-<<<<<<< HEAD
 class InterviewTb(Base):
     __tablename__ = 'interview_tb'
 
@@ -222,11 +178,8 @@ class InterviewTb(Base):
     user = relationship('UserTb')
     questions = relationship("QuestionTb", back_populates="interview")
     report = relationship("ReportTb", back_populates="interview")
-=======
 
->>>>>>> origin/main
-
-class ReportTb(Interview):
+class ReportTb(InterviewTb):
     __tablename__ = 'report_tb'
 
     interview_id = Column(ForeignKey('interview_tb.interview_id', ondelete='CASCADE', onupdate='CASCADE'), primary_key=True)
@@ -279,4 +232,5 @@ class QuestionTb(Base):
     job_score = Column(Integer, nullable=False)
     question_vector_path = Column(VARCHAR(255), nullable=False)
 
-    interview = relationship('Interview')
+    interview = relationship('InterviewTb')
+
