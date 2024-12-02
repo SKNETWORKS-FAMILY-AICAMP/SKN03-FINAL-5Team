@@ -10,7 +10,6 @@ import {
   Button,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
-import { httpClient } from '@/app/common/utils/client';
 import { useRegister } from '@/app/api/useRegister';
 
 const RegisterInput = () => {
@@ -34,24 +33,17 @@ const RegisterInput = () => {
   const onRegister = (e) => {
     e.preventDefault();
     const currentDate = new Date().toISOString().split('T')[0];
+    const kakaoId = 'id';
 
     const data = {
       name: name,
       email: email,
-      id: 3808083867,
+      id: kakaoId,
       user_joined: currentDate,
     };
 
     register(data);
   };
-
-  useEffect(() => {
-    console.log(registerError);
-  }, [registerError]);
-
-  useEffect(() => {
-    console.log(isRegister);
-  }, [isRegister]);
 
   return (
     <Flex direction="column" minHeight="100vh">

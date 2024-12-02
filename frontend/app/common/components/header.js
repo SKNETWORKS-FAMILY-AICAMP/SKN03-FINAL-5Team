@@ -2,18 +2,18 @@
 import { Box, Image, Flex, Link } from '@chakra-ui/react';
 import React, { useEffect } from 'react';
 import { useUserData } from '@/app/api/useUserData';
+import { useRouter } from 'next/navigation';
 
 const Header = () => {
   const { isLoggedIn, userLogout } = useUserData();
 
+  const router = useRouter();
+
   const onClickLogout = (event) => {
     event.preventDefault();
     userLogout();
+    router.push('/login');
   };
-
-  useEffect(() => {
-    console.log(isLoggedIn);
-  }, [isLoggedIn]);
 
   return (
     <Box

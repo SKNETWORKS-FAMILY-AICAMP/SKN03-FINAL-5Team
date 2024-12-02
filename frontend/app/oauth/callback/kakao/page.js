@@ -5,6 +5,8 @@ import axios from 'axios';
 import { useUserData } from '@/app/api/useUserData';
 import { Center, Spinner, VStack } from '@chakra-ui/react';
 
+export const accessTokenCookieName = 'unailit_access-token';
+
 const KakaoCallbackPage = () => {
   const { userLogin } = useUserData();
   const [code, setCode] = useState(null);
@@ -32,18 +34,20 @@ const KakaoCallbackPage = () => {
         `http://127.0.0.1:8000/login/oauth/code/kakao?code=${code}`,
         { withCredentials: true }
       );
-      console.log(res.data);
       if (res.status === 200) {
         if (res.data.message === '회원가입 필요') {
           router.replace('/register');
         } else if (res.data.message === '로그인 성공') {
-          const { access_token, refresh_token } = res.data.user;
+          const { access_token, refresh_token, id } = res.data.user;
+          localStorage.setItem('id', id);
 
-          console.log(res.data);
+          localStorage.setItem('access_token', access_token);
+
           userLogin({
             accessToken: access_token,
             refreshToken: refresh_token,
           });
+
           router.replace('/');
         }
       }

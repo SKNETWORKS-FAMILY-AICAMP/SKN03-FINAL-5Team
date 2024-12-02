@@ -16,7 +16,6 @@ def get_db():
 @router.post("/register")
 async def register(user: UserRegister, db: Session = Depends(get_db)):
     existing_user = db.query(User).filter(User.id == id).first()
-    print(existing_user)
     
     if existing_user:
         raise HTTPException(status_code=400, detail="해당 고유 아이디는 이미 존재합니다.")

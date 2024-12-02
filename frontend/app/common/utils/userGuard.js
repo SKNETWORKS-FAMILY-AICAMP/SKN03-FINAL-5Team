@@ -2,17 +2,21 @@
 
 import { useEffect, useState } from 'react';
 import { useCookies } from 'react-cookie';
+import { hasCookie, getCookie, deleteCookie } from 'cookies-next';
 import { useRouter, usePathname } from 'next/navigation';
 import { Spinner, Flex } from '@chakra-ui/react';
+import { refreshTokenCookieName } from '@/app/api/useUserData';
+import { accessTokenCookieName } from '@/app/oauth/callback/kakao/page';
 
 const UserGuard = ({ children }) => {
-  const [cookies] = useCookies(['unailit_refresh-token']);
+  const accessToken = getCookie(accessTokenCookieName);
   const router = useRouter();
   const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const accessToken = cookies['unailit_refresh-token'];
+    const accessToken = localStorage.getItem('access_token');
+
     const unprotectedRoutes = ['/', '/about', '/login'];
 
     if (!accessToken && !unprotectedRoutes.includes(pathname)) {
@@ -20,9 +24,8 @@ const UserGuard = ({ children }) => {
     } else {
       setIsLoading(false);
     }
-  }, [cookies, router, pathname]);
+  }, [accessToken, router, pathname]);
 
-  // 홈페이지와 about 페이지는 항상 children을 렌더링
   if (pathname === '/' || pathname === '/about') {
     return <>{children}</>;
   }

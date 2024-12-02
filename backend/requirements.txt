@@ -11,3 +11,17 @@ PyJWT
 python-decouple
 python-dotenv
 requests
+django
+pymysql
+django-allauth
+pandas
+cryptography
+torch
+finance-datareader
+torchinfo
+beautifulsoup4
+plotly
+scikit-learn
+matplotlib
+gunicorn
+node

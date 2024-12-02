@@ -1,58 +1,67 @@
 import React, { useEffect, useState } from 'react';
-import { useRefresh } from '@/app/api/useRefresh'; // 리프레시 뮤테이션 훅
-import { hasCookie, getCookie } from 'cookies-next';
+import { hasCookie, getCookie, deleteCookie } from 'cookies-next';
 import { useUserData } from '@/app/api/useUserData';
-import { Center, Spinner, VStack } from '@chakra-ui/react';
+import { accessTokenCookieName } from '@/app/oauth/callback/kakao/page';
+import { useRouter, usePathname } from 'next/navigation';
+import { useGetUserInfo } from '@/app/api/useGetUserInfo';
+import { setRefreshTokenFailedCallback } from './client';
 
 const refreshTokenCookieName = 'unailit_refresh-token';
 
 export function UserProvider({ children }) {
-  const { userLogin } = useUserData();
+  const router = useRouter();
+  const [kakaoId, setKakaoId] = useState(null);
 
-  const [isUserLoaded, setIsUserLoaded] = useState(false);
+  const pathname = usePathname();
+
   const {
-    mutate: refresh,
-    data: refreshData,
-    error: refreshError,
-  } = useRefresh();
-
-  const initializeUserSession = () => {
-    if (hasCookie(refreshTokenCookieName)) {
-      const refreshTokenFromCookie = getCookie(refreshTokenCookieName);
-      if (typeof refreshTokenFromCookie !== 'string') {
-        throw new Error('유저 세션 초기화 도중 문제가 발생했습니다.');
-      }
-      refresh({ refresh_token: refreshTokenFromCookie });
-    } else {
-      setIsUserLoaded(true);
-    }
-  };
+    userLogin,
+    userLogout,
+    accessToken,
+    refreshToken,
+    userProfileData,
+    setUserProfileData,
+  } = useUserData();
 
   useEffect(() => {
-    initializeUserSession();
+    const storedKakaoId = localStorage.getItem('id');
+    if (storedKakaoId) {
+      setKakaoId(storedKakaoId);
+    }
   }, []);
 
-  useEffect(() => {
-    if (refreshData) {
-      userLogin({
-        accessToken: refreshData.user.access_token,
-        refreshToken: refreshData.user.refresh_token,
-      });
-      setIsUserLoaded(true);
-    }
-  }, [refreshData]);
+  const { data: userInfo, isErorr: userInfoError } = useGetUserInfo(kakaoId);
 
-  return (
-    <>
-      {isUserLoaded ? (
-        children
-      ) : (
-        <Center height="100vh">
-          <VStack spacing={4}>
-            <Spinner size="xl" color="blue.500" thickness="4px" />
-          </VStack>
-        </Center>
-      )}
-    </>
-  );
+  useEffect(() => {
+    setRefreshTokenFailedCallback(() => {
+      console.log('Redirecting to login page');
+      if (pathname !== '/' || pathname !== '/about') {
+        router.push('/login');
+      }
+    });
+  }, [router]);
+
+  useEffect(() => {
+    if (hasCookie(refreshTokenCookieName)) {
+      const refreshTokenFromCookie = getCookie(refreshTokenCookieName);
+      const access_token = localStorage.getItem('access_token');
+
+      if (refreshTokenFromCookie && access_token) {
+        userLogin({
+          accessToken: access_token,
+          refreshToken: refreshTokenFromCookie,
+        });
+        if (userInfo) {
+          setUserProfileData({
+            userInfo: {
+              name: userInfo.name,
+              email: userInfo.email,
+            },
+          });
+        }
+      }
+    }
+  }, [userInfo, accessToken, refreshToken]);
+
+  return <>{children}</>;
 }

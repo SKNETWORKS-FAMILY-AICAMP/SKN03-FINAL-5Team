@@ -4,7 +4,6 @@ import { Box } from '@chakra-ui/react';
 import Header from '../common/components/header';
 import 'regenerator-runtime/runtime';
 import React, { useState } from 'react';
-// import Dictaphone from './components/dictaphone';
 import StepProgress from '../common/components/progress';
 import UploadStep from './step/uploadStep';
 import Container from '../common/components/container';

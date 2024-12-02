@@ -1,10 +1,17 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
-const SpeechToText = () => {
-  const [isRecording, setIsRecording] = useState(false);
+const SpeechToText = ({ isRecording }) => {
   const [transcript, setTranscript] = useState('');
   const mediaRecorder = useRef(null);
   const audioChunks = useRef([]);
+
+  useEffect(() => {
+    if (isRecording) {
+      startRecording();
+    } else {
+      stopRecording();
+    }
+  }, [isRecording]);
 
   const startRecording = async () => {
     try {
@@ -20,12 +27,6 @@ const SpeechToText = () => {
       mediaRecorder.current.onstop = sendAudioToServer;
 
       mediaRecorder.current.start();
-      setIsRecording(true);
-
-      // 10초 후 녹음 중지
-      setTimeout(() => {
-        stopRecording();
-      }, 10000);
     } catch (error) {
       console.error('Error starting recording:', error);
     }
@@ -34,7 +35,6 @@ const SpeechToText = () => {
   const stopRecording = () => {
     if (mediaRecorder.current && mediaRecorder.current.state !== 'inactive') {
       mediaRecorder.current.stop();
-      setIsRecording(false);
     }
   };
 
@@ -59,13 +59,8 @@ const SpeechToText = () => {
 
   return (
     <div>
-      <button onClick={isRecording ? stopRecording : startRecording}>
-        {isRecording ? 'Stop Recording' : 'Start Recording'}
-      </button>
-      <div>
-        <h3>Transcript:</h3>
-        <p>{transcript}</p>
-      </div>
+      <h3>Transcript:</h3>
+      <p>{transcript}</p>
     </div>
   );
 };

@@ -3,11 +3,11 @@ import { httpClient } from '../common/utils/client';
 
 export function useRefresh() {
   return useMutation({
-    mutationFn: (data) =>
+    mutationFn: ({ refresh_token }) =>
       httpClient({
         method: 'post',
         url: '/refresh',
-        data,
+        params: { refresh_token },
       }),
   });
 }

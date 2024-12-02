@@ -9,17 +9,15 @@ import React from 'react';
 function MyPages() {
   return (
     <UserGuard>
-      <UserGuard>
-        <Container>
-          <Header />
-          <Flex mt={'50px'} gap={'30px'}>
-            <SideNavigation />
-            <Box w={'70%'}>
-              <InterviewHistory />
-            </Box>
-          </Flex>
-        </Container>
-      </UserGuard>
+      <Container>
+        <Header />
+        <Flex mt={'50px'} gap={'30px'}>
+          <SideNavigation />
+          <Box w={'70%'}>
+            <InterviewHistory />
+          </Box>
+        </Flex>
+      </Container>
     </UserGuard>
   );
 }
