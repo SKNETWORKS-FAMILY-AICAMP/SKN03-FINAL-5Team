@@ -9,7 +9,7 @@ from models import User
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import jwt
-from utils.get_parameter import get_parameter
+from util.get_parameter import get_parameter
 
 
 router = APIRouter()
