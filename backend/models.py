@@ -1,4 +1,4 @@
-from sqlalchemy import BigInteger, CheckConstraint, Column, DateTime, ForeignKey, Index, Integer, String, Date
+from sqlalchemy import BigInteger, CheckConstraint, Column, DateTime, ForeignKey, Index, Integer, String, Date, Text
 from sqlalchemy.dialects.mysql import DATETIME, LONGTEXT, SMALLINT, TINYINT, VARCHAR
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import configure_mappers
@@ -179,18 +179,19 @@ class InterviewTb(Base):
     questions = relationship("QuestionTb", back_populates="interview")
     report = relationship("ReportTb", back_populates="interview")
 
-class ReportTb(InterviewTb):
+class ReportTb(Base):
     __tablename__ = 'report_tb'
 
     interview_id = Column(ForeignKey('interview_tb.interview_id', ondelete='CASCADE', onupdate='CASCADE'), primary_key=True)
     strength = Column(String(255), nullable=False)
     weakness = Column(String(255), nullable=False)
-    ai_summary = Column(DateTime, nullable=False)
-    detail_feedback = Column(DateTime, nullable=False)
-    attitude_feedback = Column(VARCHAR(255), nullable=False)
+    ai_summary = Column(Text, nullable=False)  # TEXT로 수정
+    detail_feedback = Column(Text, nullable=False)  # TEXT로 수정
+    attitude_feedback = Column(String(255), nullable=False)
     report_score = Column(Integer, nullable=False)
     report_created = Column(DateTime, nullable=False)
 
+    # InterviewTb와의 관계 설정
     interview = relationship("InterviewTb", back_populates="report")
     
 class AuthGroupPermission(Base):

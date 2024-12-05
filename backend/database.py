@@ -11,7 +11,7 @@ def get_parameter(name, with_decryption=True):
 
 DATABASE_URL = f"mysql+pymysql://{get_parameter('/interviewdb-info/DB_USER')}:{get_parameter('/interviewdb-info/DB_PASSWORD', with_decryption=True)}@{get_parameter('/interviewdb-info/DB_HOST')}:{get_parameter('/interviewdb-info/DB_PORT')}/{get_parameter('/interviewdb-info/DB_NAME')}"
 
-engine = create_engine(DATABASE_URL)
+engine = create_engine(DATABASE_URL, echo=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 

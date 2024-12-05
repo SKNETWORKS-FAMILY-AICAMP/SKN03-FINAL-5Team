@@ -1,8 +1,9 @@
 from sqlalchemy.exc import SQLAlchemyError
 from datetime import  datetime
 import sys
-from typing import List
+from typing import List, Dict
 import os
+from sqlalchemy.orm import Session
 
 # 프로젝트 루트 경로를 sys.path에 추가
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
@@ -136,3 +137,4 @@ def save_report_to_db(interview_id, strength, weakness, ai_summary, detail_feedb
         print(f"Error saving report to DB: {e}")
     finally:
         db_session.close()
+
