@@ -9,10 +9,6 @@ import queue
 
 # .env 파일의 환경 변수 로드
 load_dotenv()
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/main
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
 
 
