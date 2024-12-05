@@ -25,3 +25,5 @@ scikit-learn
 matplotlib
 gunicorn
 node
+ragas
+sentence-transformers

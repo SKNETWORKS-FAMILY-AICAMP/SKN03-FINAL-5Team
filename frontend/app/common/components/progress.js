@@ -3,32 +3,32 @@ import { Stack, HStack, Circle, Text, Box } from '@chakra-ui/react';
 
 const StepProgress = ({ steps, currentStep }) => {
   return (
-    <Stack m={'20px 0 50px 0'}>
+    <Stack m={'20px 0 40px 0'}>
       <HStack
         spacing={0}
-        justify='center'
-        position='relative'
-        alignItems='center'
+        justify="center"
+        position="relative"
+        alignItems="center"
       >
         {steps.map((step, index) => (
           <React.Fragment key={index}>
             {index > 0 && (
               <Box
-                w='200px'
-                h='20px'
+                w="200px"
+                h="20px"
                 bg={'#DFE2FB'}
-                position='relative'
+                position="relative"
                 zIndex={1}
               />
             )}
             <Circle
-              size='60px'
+              size="60px"
               bg={index < currentStep ? '#0066FF' : '#DFE2FB'}
               color={'white'}
-              position='relative'
+              position="relative"
               zIndex={2}
             >
-              <Text fontSize='sm' fontWeight='bold'>
+              <Text fontSize="sm" fontWeight="bold">
                 {(() => {
                   switch (index) {
                     case 0:

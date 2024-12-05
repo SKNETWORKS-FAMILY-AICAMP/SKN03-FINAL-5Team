@@ -22,3 +22,15 @@ export function usePostBardMutation() {
       }),
   });
 }
+
+export function useGetBoardDetailQuery(id) {
+  return useQuery({
+    queryKey: [`board/read/${id}`],
+    queryFn: () =>
+      httpClient({
+        method: 'get',
+        url: `board/read/${id}`,
+        enabled: !!id,
+      }),
+  });
+}

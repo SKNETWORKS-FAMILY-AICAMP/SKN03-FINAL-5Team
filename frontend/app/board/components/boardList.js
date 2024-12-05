@@ -21,8 +21,10 @@ import {
 import { FaSearch } from 'react-icons/fa';
 import { useGetBoardQuery } from '@/app/api/useBoardClient';
 import { formatDate } from '@/app/common/utils/dayformat';
+import { useRouter } from 'next/navigation';
 
 const BoardList = () => {
+  const router = useRouter();
   const { data: boardList, isError: boardError } = useGetBoardQuery();
   const [posts, setPosts] = useState([]);
 
@@ -55,6 +57,10 @@ const BoardList = () => {
   // 페이지 변경 함수
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+  const onClickBoard = (idx) => {
+    router.push(`/board/${idx}`);
+  };
+
   return (
     <Box p={5} w={'100%'}>
       <Flex justifyContent="space-between" alignItems="center" mb={5}>
@@ -82,21 +88,25 @@ const BoardList = () => {
       <Table variant="simple">
         <Thead>
           <Tr>
-            <Th>번호</Th>
+            <Th>글 번호</Th>
             <Th>제목</Th>
-            <Th>글쓴이</Th>
             <Th>작성시간</Th>
           </Tr>
         </Thead>
         <Tbody>
-          {currentPosts.map((post) => (
-            <Tr key={post.idx}>
-              <Td>{post.idx}</Td>
-              <Td>{post.title}</Td>
-              <Td>{post.author}</Td>
-              <Td>{formatDate(post.post_date)}</Td>
-            </Tr>
-          ))}
+          {currentPosts
+            .sort((a, b) => new Date(b.post_date) - new Date(a.post_date))
+            .map((post) => (
+              <Tr
+                key={post.idx}
+                onClick={() => onClickBoard(post.idx)}
+                cursor={'pointer'}
+              >
+                <Td>{post.idx}</Td>
+                <Td>{post.title}</Td>
+                <Td>{formatDate(post.post_date)}</Td>
+              </Tr>
+            ))}
         </Tbody>
       </Table>
 

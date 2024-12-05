@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 
-const SpeechToText = ({ isRecording }) => {
+const SpeechToText = ({ isRecording, onTranscriptUpdate }) => {
   const [transcript, setTranscript] = useState('');
   const mediaRecorder = useRef(null);
   const audioChunks = useRef([]);
@@ -50,6 +50,7 @@ const SpeechToText = ({ isRecording }) => {
       });
       const data = await response.json();
       setTranscript(data.transcript);
+      onTranscriptUpdate(data.transcript);
     } catch (error) {
       console.error('Error sending audio to server:', error);
     }
