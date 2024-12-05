@@ -10,6 +10,7 @@ from routes.userinfo import router as userinfo_router
 from routes import board_router  
 from database import init_db
 
+
 load_dotenv()
 
 app = FastAPI()

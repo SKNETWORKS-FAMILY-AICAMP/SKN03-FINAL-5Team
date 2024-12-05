@@ -27,3 +27,4 @@ gunicorn
 node
 ragas
 sentence-transformers
+pydantic

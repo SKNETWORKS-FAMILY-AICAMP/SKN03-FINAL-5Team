@@ -1,9 +1,11 @@
 import boto3
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
+
 ssm = boto3.client('ssm', region_name='ap-northeast-2')
+
 
 def get_parameter(name, with_decryption=True):
     """AWS Parameter Store에서 값을 가져오는 함수"""
