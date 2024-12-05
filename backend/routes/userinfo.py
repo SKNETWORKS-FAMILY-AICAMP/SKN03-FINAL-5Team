@@ -5,12 +5,15 @@ from database import SessionLocal
 import jwt
 from dotenv import load_dotenv
 import os
-
+from util.get_parameter import get_parameter
 
 router = APIRouter()
 
-SECRET_KEY = os.getenv('SECRET_KEY')
-ALGORITHM = os.getenv('ALGORITHM')
+# SECRET_KEY = os.getenv('SECRET_KEY')
+# ALGORITHM = os.getenv('ALGORITHM')
+
+SECRET_KEY = get_parameter('/interviewdb-info/SECRET_KEY')
+ALGORITHM = get_parameter('/interviewdb-info/ALGORITHM')
 
 def get_db():
     db = SessionLocal()
@@ -18,6 +21,7 @@ def get_db():
         yield db
     finally:
         db.close()
+
 
 async def get_bearer_token(authorization: str = Header(None)):
     if authorization is None or not authorization.startswith("Bearer "):
@@ -44,3 +48,4 @@ async def read_user(user_id: int, db: Session = Depends(get_db), token: str = De
         "name": user.user_name,
         "email": user.user_email,
     }
+

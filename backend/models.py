@@ -233,5 +233,9 @@ class QuestionTb(Base):
     job_score = Column(Integer, nullable=False)
     question_vector_path = Column(VARCHAR(255), nullable=False)
 
+<<<<<<< HEAD
     interview = relationship('InterviewTb')
+=======
+    interview = relationship('Interview')
+>>>>>>> origin/main
 

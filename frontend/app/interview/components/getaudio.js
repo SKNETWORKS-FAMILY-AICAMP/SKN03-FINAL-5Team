@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 
-const SpeechToText = ({ isRecording }) => {
+const SpeechToText = ({ isRecording, onTranscriptUpdate }) => {
   const [transcript, setTranscript] = useState('');
   const mediaRecorder = useRef(null);
   const audioChunks = useRef([]);
@@ -44,12 +44,13 @@ const SpeechToText = ({ isRecording }) => {
     formData.append('audio', audioBlob, 'recording.webm');
 
     try {
-      const response = await fetch('http://localhost:8000/transcribe', {
+      const response = await fetch('https://www.aiunailit.com/transcribe', {
         method: 'POST',
         body: formData,
       });
       const data = await response.json();
       setTranscript(data.transcript);
+      onTranscriptUpdate(data.transcript);
     } catch (error) {
       console.error('Error sending audio to server:', error);
     }

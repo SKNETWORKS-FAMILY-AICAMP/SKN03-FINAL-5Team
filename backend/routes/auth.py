@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from models import User, UserRegister
 from database import SessionLocal
 
+
 router = APIRouter()
 
 def get_db():
@@ -12,6 +13,7 @@ def get_db():
         yield db
     finally:
         db.close()
+
 
 @router.post("/register")
 async def register(user: UserRegister, db: Session = Depends(get_db)):

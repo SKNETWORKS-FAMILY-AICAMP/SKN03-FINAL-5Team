@@ -10,29 +10,28 @@ from routes.userinfo import router as userinfo_router
 from routes import board_router  
 from database import init_db
 
+
 load_dotenv()
 
 app = FastAPI()
-app.include_router(board_router.router)  
+
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 init_db()
 
+app.include_router(board_router.router)  
 app.include_router(auth_router)
 app.include_router(transcribe_router)
 app.include_router(kakao_router)
-app.include_router(interview_router)
-app.include_router(userinfo_router)
+app.include_router(interview_router,tags=["interview"] )
+app.include_router(userinfo_router, tags=["user"])
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
 
 if __name__ == "__main__":
     import uvicorn
