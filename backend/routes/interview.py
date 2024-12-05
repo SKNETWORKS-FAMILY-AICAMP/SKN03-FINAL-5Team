@@ -21,7 +21,7 @@ from langchain.retrievers.document_compressors import CrossEncoderReranker
 from langchain.retrievers import ContextualCompressionRetriever
 from langchain.schema import SystemMessage
 from .db_utils import save_question_to_db , save_report_to_db, update_question_in_db
-from utils.get_parameter import get_parameter
+from util.get_parameter import get_parameter
 
 
 

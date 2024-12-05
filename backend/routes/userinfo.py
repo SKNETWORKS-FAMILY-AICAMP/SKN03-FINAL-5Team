@@ -5,7 +5,7 @@ from database import SessionLocal
 import jwt
 from dotenv import load_dotenv
 import os
-from utils.get_parameter import get_parameter
+from util.get_parameter import get_parameter
 
 router = APIRouter()
 
