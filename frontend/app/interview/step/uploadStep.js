@@ -8,15 +8,15 @@ import {
   InputGroup,
   InputRightElement,
 } from '@chakra-ui/react';
-import { FaUpload } from 'react-icons/fa'; // 파일 업로드 아이콘
-import React, { useState } from 'react';
+import { FaUpload } from 'react-icons/fa';
+import React, { useEffect, useState } from 'react';
 import { useAtom } from 'jotai';
 import { fileNameAtom, jobInterestAtom, desiredTraitsAtom } from '../atom/atom';
 
 const UploadStep = ({ setCurrentStep }) => {
-  const [fileName, setFileName] = useAtom(fileNameAtom); // 상태 가져오기
-  const [jobInterest, setJobInterest] = useAtom(jobInterestAtom); // 상태 가져오기
-  const [desiredTraits, setDesiredTraits] = useAtom(desiredTraitsAtom); // 상태 가져오기
+  const [fileName, setFileName] = useAtom(fileNameAtom);
+  const [jobInterest, setJobInterest] = useAtom(jobInterestAtom);
+  const [desiredTraits, setDesiredTraits] = useAtom(desiredTraitsAtom);
 
   const nextStep = () => {
     setCurrentStep((prevSteps) => prevSteps + 1);
@@ -31,7 +31,6 @@ const UploadStep = ({ setCurrentStep }) => {
     if (file) {
       setFileName(file.name);
       console.log('Uploaded file:', file.name);
-      // 여기서 파일 업로드 로직을 추가
     }
   };
 
@@ -44,7 +43,7 @@ const UploadStep = ({ setCurrentStep }) => {
             <Input
               w={'100%'}
               h={'80px'}
-              placeholder='관심 직무를 입력하세요'
+              placeholder="관심 직무를 입력하세요"
               value={jobInterest}
               onChange={(e) => setJobInterest(e.target.value)}
               border={'0'}
@@ -63,7 +62,7 @@ const UploadStep = ({ setCurrentStep }) => {
             <Input
               w={'100%'}
               h={'80px'}
-              placeholder='원하는 기업의 인재상을 모두 입력하세요 ex) 협업능력, 사고력·실행력, 패기'
+              placeholder="원하는 기업의 인재상을 모두 입력하세요 ex) 협업능력, 사고력·실행력, 패기"
               border={'0'}
               borderRadius={'0'}
               value={desiredTraits}
@@ -81,20 +80,20 @@ const UploadStep = ({ setCurrentStep }) => {
             <Box fontSize={'30px'}>이력서</Box>
             <InputGroup>
               <Input
-                type='file'
-                accept='.pdf'
+                type="file"
+                accept=".pdf"
                 onChange={handleFileUpload}
-                display='none' // 숨김 처리
+                display="none"
               />
               <Input
                 w={'100%'}
                 h={'80px'}
-                value={fileName} // 상태에서 파일명 가져오기
-                placeholder='이곳에 이력서 파일을 업로드해주세요 (pdf 파일만 가능)'
+                value={fileName}
+                placeholder="이곳에 이력서 파일을 업로드해주세요 (pdf 파일만 가능)"
                 border={'0'}
                 borderRadius={'0'}
                 background={'white'}
-                readOnly // 읽기 전용으로 설정하여 사용자가 직접 수정하지 못하도록 함
+                readOnly
                 sx={{
                   '::placeholder': {
                     color: 'gray.500',
@@ -102,15 +101,15 @@ const UploadStep = ({ setCurrentStep }) => {
                   },
                 }}
               />
-              <InputRightElement width='80px' height='100%'>
+              <InputRightElement width="80px" height="100%">
                 <Button
                   onClick={() =>
                     document.querySelector('input[type="file"]').click()
-                  } // 파일 선택 창 열기
-                  variant='ghost'
-                  aria-label='Upload file'
-                  fontSize='28px'
-                  paddingRight='10px' // 오른쪽 패딩 추가
+                  }
+                  variant="ghost"
+                  aria-label="Upload file"
+                  fontSize="28px"
+                  paddingRight="10px"
                 >
                   <FaUpload />
                 </Button>

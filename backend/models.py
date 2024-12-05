@@ -215,3 +215,4 @@ class QuestionTb(Base):
     question_vector_path = Column(VARCHAR(255), nullable=False)
 
     interview = relationship('Interview')
+
