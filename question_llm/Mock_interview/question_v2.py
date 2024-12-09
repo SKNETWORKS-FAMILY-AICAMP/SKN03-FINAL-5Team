@@ -1,6 +1,7 @@
 import os
 from typing import List, Dict
 import pandas as pd
+import numpy as np
 from langchain_openai import ChatOpenAI
 from typing_extensions import TypedDict, Optional
 from langgraph.graph import StateGraph, START, END
@@ -29,9 +30,14 @@ from langchain.retrievers import ContextualCompressionRetriever
 from bert_score import score as bert_score
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-from db_utils import save_question_to_db , save_report_to_db, update_question_in_db
+from db_utils import create_new_interview, save_question_to_db , save_report_to_db, update_question_in_db, initialize_questions
+from datetime import datetime
 
+<<<<<<< HEAD
+config = RunnableConfig(recursion_limit=1000, configurable={"thread_id": "THREAD_ID"}) #재귀한도 증가
+=======
 config = RunnableConfig(recursion_limit=70, configurable={"thread_id": "THREAD_ID"}) 
+>>>>>>> origin/main
 
 
 
@@ -43,7 +49,12 @@ def get_client():
         model="gpt-4o",
         streaming=True,
         openai_api_key=os.getenv("OPENAI_API_KEY")
+<<<<<<< HEAD
+        )
+
+=======
     ) 
+>>>>>>> origin/main
 
 
 # ChatOpenAI 인스턴스 생성
@@ -67,7 +78,9 @@ class State(TypedDict):
     selected_keyword: Optional[str] = None
     evaluation_results: Optional[List[Dict]]
     cosine_scores: Optional[List[float]]
-
+    interview_id: Optional[int] = None  # 추가
+    question_id: Optional[int] = None   # 추가
+    final_feedback: Optional[Dict] = None  # 추가
 # FAISS 데이터베이스 로드
 
 vector_db_high = FAISS.load_local(
@@ -164,6 +177,8 @@ def extract_keywords_from_resume(resume_text: str) -> str:
 # 질문 생성 노드
 
 def generate_question(state: State, interview_id: int) -> State:
+    print(state)
+
     tech_keywords = state["tech_keywords"]
     
     question_count = state["question_count"]
@@ -228,71 +243,106 @@ def generate_question(state: State, interview_id: int) -> State:
     question_text = response.content.strip()
 
     # 데이터베이스에 저장
-    save_question_to_db(
+    question_id = save_question_to_db(
         interview_id=interview_id,
         job_question=question_text,
         job_answer="N/A",
         job_solution="N/A",
         job_score=0,
-        question_vector="0.0, 0.0, 0.0"
+        question_vector_path="default/path/vector.json"
     )
+    if question_id is None:
+        raise ValueError("Failed to obtain question_id from database.")
 
-    # 새로운 상태 반환
+    print(f"Generated question_id: {question_id}")
+
+    # 상태 변경 사항 반환
     return {
-        **state,
+        "selected_keyword": selected_keyword,
         "question": question_text,
         "reference_docs": reference_docs,
         "ideal_answer": retrieved_content.strip(),
-        "question_count": question_count + 1,
+        "question_count": state["question_count"] + 1,
+        "question_id": question_id,
     }
 
 #=====================모범답안 생성===============================
-def generate_model_answer(state: State) -> State:
-    """
-    모범 답안을 생성하여 상태에 추가합니다.
-    """
+def generate_model_answer(state: State) -> Dict:
     question = state["question"]
     retrieved_content = state["ideal_answer"]
     prompt = model_answer(question, retrieved_content)
     
     response = chat.invoke([SystemMessage(content=prompt)])
     
-    return {**state, "model_answer": response.content.strip()}
+    # 상태 전체를 반환하지 않고, 변경된 부분만 반환
+    return {"model_answer": response.content.strip()}
+
 
 #====================답변녹음=====================================
 
 # 답변 녹음 및 변환 노드
-def record_and_transcribe(state: State, interview_id: int) -> State:
-    # Google STT를 통해 텍스트화 된 답변을 변수로 저장
-    
-    answer_text = real_time_transcription()
-    state["answer_text"] = answer_text
+def record_and_transcribe(state: State, interview_id: int = None, question_id: int = None) -> Dict:
+    if interview_id is None:
+        interview_id = state.get("interview_id")
+    if question_id is None:
+        question_id = state.get("question_id")
 
-    # 답변 데이터를 업데이트
+    if interview_id is None or question_id is None:
+        raise ValueError("interview_id 또는 question_id가 상태에 없습니다.")
+    
+    print(f"Debug: Entering record_and_transcribe with state: {state}")
+    print(f"Debug: interview_id={interview_id}, question_id={question_id}")
+
+    # 답변 녹음 및 변환
+    answer_text = real_time_transcription()
+    print(f"Debug: Transcribed answer_text={answer_text}")
+
+    # 데이터베이스 업데이트
     update_question_in_db(
+        question_id=question_id,
         interview_id=interview_id,
-        job_answer=answer_text
+        job_question=state.get("question", "N/A"),
+        job_answer=answer_text,
+        job_solution=state.get("model_answer", "N/A"),
+        job_score=0
     )
 
-    return state
+    # 상태 변경 사항 반환
+    return {
+        "answer_text": answer_text
+    }
 
 #=============================피드백====================================
 # 피드백 생성 함수
-def generate_feedback(state: State, interview_id: int) -> State:
-    answer = state["answer_text"]  #answer_text
-    ideal_answer = state["ideal_answer"] # 참조 청크
+def generate_feedback(state: State, interview_id: int = None, question_id: int = None) -> Dict:
+    # 인터뷰 ID와 질문 ID 가져오기
+    if interview_id is None:
+        interview_id = state.get("interview_id")
+    if question_id is None:
+        question_id = state.get("question_id")
+    if interview_id is None or question_id is None:
+        raise ValueError("interview_id 또는 question_id가 상태에 없습니다.")
+    
+    answer = state["answer_text"]
+    ideal_answer = state["ideal_answer"]
     prompt = evaluation_prompt(answer, ideal_answer)
     
     response = chat.invoke([SystemMessage(content=prompt)])
     feedback = response.content.strip()
-
-    # 피드백 저장
+    
+    # 데이터베이스 업데이트
     update_question_in_db(
+        question_id=question_id,
         interview_id=interview_id,
-        job_solution=feedback  # 피드백을 해결책으로 저장
+        job_question=state["question"],
+        job_answer=answer,
+        job_solution=state["model_answer"],
+        job_score=0
     )
+    
+    # 변경된 부분만 반환
+    return {"feedback": feedback}
 
-    return {**state, "feedback": feedback}
 #========================================================================
 
 # 평가지표용 번역 함수
@@ -305,45 +355,67 @@ def translate_text(text: str, target_language: str = "en") -> str:
 # RAGAS 평가 로직을 integrate하여 answer 평가하는 노드
 #============================= 면접자의 답변 평가 노드==============================
 
-def evaluate_answer(state: State, question_id: int) -> State:
-    # 면접자의 실제 답변과 이상적인 답변을 변수에 저장
-    answer_text = state["answer_text"] # 면접자의 답변
-    model_answer = state["model_answer"] #모델의 모범답안
-    # ideal_answer = state["ideal_answer"] #청크
-    feedback = state["feedback"]  # 피드백 값 추가
-
-    if not answer_text or not model_answer:
-        print("Error: Missing answer_text or ideal_answer for evaluation.")
-        return {**state, "evaluation": {"answer_relevancy": 0.0, "faithfulness": 0.0, "context_precision": 0.0, "context_recall": 0.0}}
+def evaluate_answer(state: State, interview_id: int = None, question_id: int = None) -> Dict:
+    # 인터뷰 ID와 질문 ID 가져오기
+    if interview_id is None:
+        interview_id = state.get("interview_id")
+    if question_id is None:
+        question_id = state.get("question_id")
+    if interview_id is None or question_id is None:
+        raise ValueError("interview_id 또는 question_id가 상태에 없습니다.")
     
+    answer_text = state["answer_text"]
+    model_answer = state["model_answer"]
+    feedback = state["feedback"]
     
-
-    # SBERT 코사인 유사도 계산
+    # answer_text가 없을 경우 처리
+    if not answer_text:
+        print("면접자가 답변을 제공하지 않았습니다. 평가를 건너뜁니다.")
+        # 평가 결과에 '무응답'으로 표시하거나 적절한 조치를 취합니다.
+        evaluation_data = {
+            "Question": state["question"],
+            "Answer": "무응답",
+            "Ideal_Answer": model_answer,
+            "Feedback": feedback,
+            "SBERT_Cosine_Similarity": 0.0,
+            "job_score": 0.0,
+        }
+        
+        # 기존의 evaluation_results에 추가
+        evaluation_results = state.get("evaluation_results", [])
+        evaluation_results.append(evaluation_data)
+        
+        # 상태 업데이트
+        return {
+            "evaluation_results": evaluation_results,
+        }
+    
+    # model_answer가 없는 경우 처리
+    if not model_answer:
+        print("Error: model_answer가 없습니다.")
+        raise ValueError("model_answer가 없습니다.")
+    
+    # 정상적인 경우 평가 수행
     answer_embedding = sbert_model.encode(answer_text)
     model_answer_embedding = sbert_model.encode(model_answer)
     cosine_sim = cosine_similarity([answer_embedding], [model_answer_embedding])[0][0]
-    job_score = round(cosine_sim * 100, 2)  # 퍼센트 점수로 변환
-
-    # 코사인 유사도를 state["cosine_scores"]에 추가
-    if "cosine_scores" not in state or state["cosine_scores"] is None:
-        state["cosine_scores"] = []  # 초기화
-    state["cosine_scores"].append(cosine_sim)  # 점수 추가
-
-    # 평가 결과를 데이터베이스에 업데이트
-    try:
-        update_question_in_db(
-            question_id=question_id,
-            interview_id=interview_id,
-            job_question=state["question"],  # 질문 텍스트
-            job_answer=answer_text,  # 면접자의 답변
-            job_solution=model_answer,  # 모범 답안
-            job_score=job_score,  # 평가 점수
-        )
-        print(f"Question updated successfully for question_id {question_id}")
-    except Exception as e:
-        print(f"Error updating question in DB: {e}")
-
-    # 평가 데이터를 `state`에 저장
+    job_score = round(cosine_sim * 100, 2)
+    
+    # 코사인 유사도 저장
+    cosine_scores = state.get("cosine_scores", [])
+    cosine_scores.append(cosine_sim)
+    
+    # 데이터베이스 업데이트
+    update_question_in_db(
+        question_id=state["question_id"],
+        interview_id=state["interview_id"],
+        job_question=state["question"],
+        job_answer=answer_text,
+        job_solution=model_answer,
+        job_score=job_score,
+    )
+    
+    # 평가 결과 저장
     evaluation_data = {
         "Question": state["question"],
         "Answer": answer_text,
@@ -352,13 +424,17 @@ def evaluate_answer(state: State, question_id: int) -> State:
         "SBERT_Cosine_Similarity": cosine_sim,
         "job_score": job_score,
     }
+    evaluation_results = state.get("evaluation_results", [])
+    evaluation_results.append(evaluation_data)
+    
+    # 상태 업데이트
+    return {
+        "cosine_scores": cosine_scores,
+        "evaluation_results": evaluation_results,
+        "evaluation": evaluation_data,  # update_evaluation_results에서 참조
+    }
 
-    if "evaluation_results" not in state or not state["evaluation_results"]:
-        state["evaluation_results"] = []
-    state["evaluation_results"].append(evaluation_data)
 
-    # 새로운 상태 반환
-    return state
 
 #=========================질문 평가=============================
 
@@ -411,19 +487,20 @@ def evaluate_question(state: State) -> State:
 #=======================평가데이터 누적=========================
 
 def update_evaluation_results(state: State) -> State:
-    """
-    State 내의 evaluation_results에 평가 데이터를 누적 저장.
-    """
-    # 현재 평가 데이터를 가져옴
-    evaluation = state["evaluation"]
+    if "evaluation" not in state or not state["evaluation"]:
+        state["evaluation"] = {}  # 기본값으로 초기화
 
     # 새 데이터를 준비
+    evaluation = state["evaluation"]
+    
+    # 새 데이터를 준비
     new_data = {
-        "Question": evaluation["Question"],
-        "Answer": evaluation["Answer"],
-        "Ideal_Answer": evaluation["Ideal_Answer"],
-        "Feedback": evaluation["Feedback"],
-        "SBERT_Cosine_Similarity": evaluation["SBERT_Cosine_Similarity"],
+        "Question": evaluation.get("Question", "질문 없음"),
+        "Answer": evaluation.get("Answer", "답변 없음"),
+        "Ideal_Answer": evaluation.get("Ideal_Answer", ""),
+        "Feedback": evaluation.get("Feedback", ""),
+        "SBERT_Cosine_Similarity": evaluation.get("SBERT_Cosine_Similarity", 0.0),
+        "job_score": evaluation.get("job_score", 0.0),
         "Question_Relevancy": evaluation.get("question_relevancy", 0.0),
         "Faithfulness": evaluation.get("faithfulness", 0.0),
         "Context_Precision": evaluation.get("context_precision", 0.0),
@@ -438,30 +515,67 @@ def update_evaluation_results(state: State) -> State:
     state["evaluation_results"].append(new_data)
     return state
 
+
+#=============float32를 Python의 기본 float 타입으로 변환========
+def convert_to_serializable(obj):
+    if isinstance(obj, np.float32):
+        return float(obj)  # Python float으로 변환
+    raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
+
+
 #==========================면접최종평가=======================
 def generate_final_evaluation(state: State, interview_id: int) -> State:
-    # 코사인 유사도 평균 계산
+    print(f"Before update, state['final_feedback']: {state.get('final_feedback')}")
+    evaluation_results = state.get("evaluation_results", [])
+    evaluation_df = pd.DataFrame(evaluation_results)
+
+    # GPT를 사용하여 최종 평가 생성
+    prompt = generate_final_evaluation_prompt(evaluation_df)
+    try:
+        response = chat.invoke([SystemMessage(content=prompt)])
+        final_feedback = json.loads(
+            json.dumps(response.content.strip(), default=convert_to_serializable)
+        )
+    except Exception as e:
+        print(f"Error generating final_feedback: {e}")
+        # 빈 피드백 생성
+        final_feedback = {
+            "strength": "",
+            "weakness": "",
+            "ai_summary": "",
+            "detail_feedback": "",
+            "attitude": ""
+        }
+
+        # 상태의 final_feedback이 딕셔너리가 아닐 경우 초기화
+    if not isinstance(state.get("final_feedback"), dict):
+        state["final_feedback"] = {}
+
+    state["final_feedback"] = final_feedback
+
+    # 평균 점수 계산
     cosine_scores = state.get("cosine_scores", [])
     if cosine_scores:
-        average_score = sum(cosine_scores) / len(cosine_scores)
+        # NumPy 배열 또는 float32로 인해 문제가 발생하지 않도록 변환
+        average_score = sum(map(float, cosine_scores)) / len(cosine_scores)
     else:
         average_score = 0.0
-
-    # 최종 보고서 저장
-    final_feedback = state.get("final_feedback", {})
-    save_report_to_db(
-        interview_id=interview_id,
-        strength=final_feedback.get("strength", ""),
-        weakness=final_feedback.get("weakness", ""),
-        ai_summary=final_feedback.get("ai_summary", ""),
-        detail_feedback=final_feedback.get("detail_feedback", ""),
-        attitude=final_feedback.get("attitude", ""),
-        report_score=round(average_score * 100, 2),  # 평균 점수로 총점 저장
-    )
+    report_score = round(average_score * 100, 2)
 
     # 상태에 총점 저장
-    state["final_feedback"]["report_score"] = round(average_score * 100, 2)
+    state["final_feedback"]["report_score"] = report_score
 
+    # 최종 보고서 저장
+    save_report_to_db(
+        interview_id=state["interview_id"],
+        strength=state["final_feedback"].get("strength", ""),
+        weakness=state["final_feedback"].get("weakness", ""),
+        ai_summary=state["final_feedback"].get("ai_summary", ""),
+        detail_feedback=state["final_feedback"].get("detail_feedback", ""),
+        attitude=state["final_feedback"].get("attitude", ""),
+        report_score=report_score,
+    )
+    print(f"After update, state['final_feedback']: {state.get('final_feedback')}")  # 디버깅 추가
     return state
 
 
@@ -478,14 +592,19 @@ def check_stop_condition(state: State) -> str:
 # 그래프 생성
 mock_interview_graph = StateGraph(State)
 
-# 노드 추가
-mock_interview_graph.add_node("generate_question", generate_question)
+# 노드 추가 (raw_output=True 설정)
+# 노드 추가 (raw_output=True 제거)
+mock_interview_graph.add_node("generate_question", lambda state: generate_question(state, state.get("interview_id")))
 mock_interview_graph.add_node("generate_model_answer", generate_model_answer)
-mock_interview_graph.add_node("record_and_transcribe", record_and_transcribe)
-mock_interview_graph.add_node("evaluate_answer", evaluate_answer)
+mock_interview_graph.add_node("record_and_transcribe", lambda state: record_and_transcribe(state, state.get("interview_id"), state.get("question_id")))
+mock_interview_graph.add_node("generate_feedback", lambda state: generate_feedback(state, state.get("interview_id"), state.get("question_id")))
 mock_interview_graph.add_node("evaluate_question", evaluate_question)
-mock_interview_graph.add_node("generate_feedback", generate_feedback)
-mock_interview_graph.add_node("generate_final_evaluation", generate_final_evaluation)
+mock_interview_graph.add_node("evaluate_answer", lambda state: evaluate_answer(state, state.get("interview_id"), state.get("question_id")))
+mock_interview_graph.add_node("generate_final_evaluation", lambda state: generate_final_evaluation(state, state.get("interview_id")))
+mock_interview_graph.add_node("update_evaluation_results", update_evaluation_results)
+
+
+
 
 # 엣지 추가
 mock_interview_graph.add_edge(START, "generate_question")
@@ -494,11 +613,11 @@ mock_interview_graph.add_edge("generate_model_answer", "record_and_transcribe")
 mock_interview_graph.add_edge("record_and_transcribe", "generate_feedback")
 mock_interview_graph.add_edge("generate_feedback", "evaluate_question")
 mock_interview_graph.add_edge("evaluate_question", "evaluate_answer")
-
+mock_interview_graph.add_edge("evaluate_answer", "update_evaluation_results")
 
 # 조건부 엣지 추가 (종료 조건에 따라 인터뷰를 반복하거나 종료)
 mock_interview_graph.add_conditional_edges(
-    "evaluate_answer",
+    "update_evaluation_results",
     check_stop_condition,
     {
         "continue_interview": "generate_question",
@@ -521,32 +640,77 @@ compiled_graph = mock_interview_graph.compile()
 # 그래프 실행 예시
 # resume_text = 이력서 정보
 # project_text = 프로젝트 정보
-initial_state = {
+
     # "resume_text": resume_text,
     # "python, binary file, argument, context, lambda, parameter",
     # "project_text": "사용자의 프로젝트 정보",
-    "tech_keywords": "python, binary file, argument, context, lambda, parameter,class, callback,contiguous, coroutine, dictionary, expression, f-string, function, IDLE, iterable, list, method, module, statement", 
+
+USER_ID = 1  # 사용자 ID
+USER_JOB = "백엔드 개발자"  # 지원 직무
+JOB_TALENT = "Python, Django, IDLE"  # 기술 능력
+RESUME_PATH = "c:/path/to/resume.pdf"  # 이력서 경로 (없을 경우 None)
+
+interview_id = create_new_interview(user_id=USER_ID, user_job=USER_JOB, job_talent=JOB_TALENT, resume_path=RESUME_PATH, interview_time=datetime.now() )
+
+if not interview_id:
+    print("Error: Failed to create new interview. Exiting...")
+    exit()
+
+print(f"Interview created with ID: {interview_id}")
+
+# 초기 상태 설정
+initial_state = {
+    "tech_keywords": JOB_TALENT,  # 기술 키워드
     "is_stop": False,
     "question_count": 0,
-    "max_questions": 5
+    "max_questions": 5,
+    "final_feedback": {},
+    "interview_id": interview_id,
+    "user_id": USER_ID,          # 현재 사용자 ID
+    "user_job": USER_JOB,        # 사용자가 지원하는 직무
+    "job_talent": JOB_TALENT,    # 직무 관련 기술 또는 역량
+    "interview_time": datetime.now(),    # 면접 시간
+    "interview_created": datetime.now(), # 면접 생성 시간
+    "resume_path": RESUME_PATH,  # 이력서 경로
 }
-interview_id=1
 
 #=====================================면접실행==============================================
 # 모의면접 실행 함수
-def run_mock_interview(compiled_graph, initial_state):
+# initialize_questions 함수와 question_ids 리스트 제거
+# question_ids = initialize_questions(interview_id, max_questions=5)
+def run_mock_interview(compiled_graph, initial_state, interview_id: int):
     start_video_recording()
+    current_state = initial_state.copy()
+
+    # 재귀 한도 설정을 포함한 config 정의
+    config = RunnableConfig(recursion_limit=1000)
 
     try:
-        for chunk in compiled_graph.stream(initial_state, config=config):
-            # `generate_question` 호출 시 `interview_id` 전달
-            if "generate_question" in chunk:
-                generate_question(chunk)
-            print("Current chunk state:", chunk)
+        for index, chunk in enumerate(compiled_graph.stream(current_state, config=config)):
+            # 노드 출력 추출
+            node_name, node_output = next(iter(chunk.items()))
+            current_state.update(node_output)
+
+            # 디버깅 정보 출력
+            print(f"Step {index} 후의 상태: {current_state}")
+            print(f"Step {index}에서의 interview_id: {current_state.get('interview_id')}")
+            print(f"Step {index}에서의 question_id: {current_state.get('question_id')}")
+
+            # 추가 로직
+            if node_name == "record_and_transcribe":
+                question_id = current_state.get("question_id")
+                if question_id is None:
+                    raise ValueError("녹음 및 변환 단계에서 question_id가 없습니다.")
+
+        print("모의 면접이 성공적으로 완료되었습니다.")
+
+    except Exception as e:
+        print(f"모의 면접 중 오류 발생: {e}")
     finally:
         stop_video_recording()
 
 
-run_mock_interview(compiled_graph, initial_state)
+
+run_mock_interview(compiled_graph, initial_state, interview_id)
 
 
