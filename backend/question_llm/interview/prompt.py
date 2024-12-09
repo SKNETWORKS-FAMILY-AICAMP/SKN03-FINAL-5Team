@@ -35,13 +35,13 @@ def question_prompt():
         """
         return prompt.strip()
 
-def evaluation_prompt(question: str, retrieved_content: str) -> str:
+def evaluation_prompt(question: str, model_answer: str) -> str:
         prompt = f"""
         면접 평가 요구사항
         - 당신은 면접 질의에 대해 철저히 평가하는 분석가입니다
         - 분석가는 면접자의 답변에 대해 평가항목에 따라 평가하고 두 문장 이내의 피드백을 남긴다
         사용자의 질문: "{question}"
-        참조 자료: "{retrieved_content}"
+        모범답안: "{model_answer}"
         
         # 평가항목
         - 논리성: 답변의 논리성을 검증한다. 예) 인과관계의 명확성, 주장과 근거의 정당성
@@ -130,33 +130,37 @@ def model_answer(question: str, retrieved_content: str) -> str:
         
         return prompt.strip()
 
-def generate_final_evaluation_prompt(evaluation_results: pd.DataFrame) -> str:
+def generate_final_evaluation_prompt(evaluation_results: List[Dict]) -> str:
         """
         GPT 모델에 전달할 최종 평가 프롬프트를 생성합니다.
+
         Args:
-        evaluation_results (pd.DataFrame): 지금까지의 모든 평가 데이터
+                evaluation_results (List[Dict]): 지금까지의 모든 평가 데이터가 담긴 리스트
+
         Returns:
-        str: GPT 모델에 전달할 프롬프트
+                str: GPT 모델에 전달할 프롬프트
         """
-        # DataFrame 데이터를 JSON 형식으로 변환
-        evaluation_json = evaluation_results.to_dict(orient="records")
+        # 리스트 데이터를 JSON 형식으로 변환
+        try:
+                evaluation_json = json.dumps(evaluation_results, ensure_ascii=False, indent=2)
+        except Exception as e:
+                raise ValueError(f"Error serializing evaluation_results to JSON: {e}")
 
         # 프롬프트 템플릿 생성
         prompt = (
                 "다음은 사용자의 모의 면접 결과입니다. 질문, 답변, 평가를 기반으로 사용자의 강점, 약점, "
-                "한줄평, 그리고 총점을 산출해 주세요.\n\n"
+                "한줄평을 산출해 주세요.\n\n"
                 "면접 결과:\n"
-                f"{json.dumps(evaluation_json, ensure_ascii=False, indent=2)}\n\n"
+                f"{evaluation_json}\n\n"
                 "강점:\n- 주요 강점을 3가지로 정리해 주세요.\n\n"
                 "약점:\n- 주요 약점을 3가지로 정리해 주세요.\n\n"
                 "한줄평:\n- 사용자를 위한 한줄평을 작성해 주세요.\n\n"
-                "총점:\n- 100점 만점으로 총점을 계산해 주세요.\n\n"
                 "결과를 아래와 같은 JSON 형식으로 반환해 주세요:\n"
                 "{\n"
                 "  \"strengths\": [\"강점 1\", \"강점 2\", \"강점 3\"],\n"
                 "  \"weaknesses\": [\"약점 1\", \"약점 2\", \"약점 3\"],\n"
-                "  \"summary\": \"한줄평\",\n"
-                "  \"total_score\": 85\n"
+                "  \"ai_summary\": \"한줄평\"\n"
                 "}"
         )
+
         return prompt

@@ -4,40 +4,44 @@ import WebcamComponent from '../components/webcam';
 import ChatComponent from '../components/chatComponent';
 import SpeechToText from '../components/getaudio';
 import { useFetchQuestion } from './hook/getQuestion';
+import { useRouter } from 'next/navigation';
+import { useFetchAnswer } from './hook/getAnswer';
 
 const InterviewStep = React.memo(() => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
-  const [timers, setTimers] = useState({ countdown: 20, recording: 10 });
+  const [timers, setTimers] = useState({ countdown: 10, recording: 5 });
   const [questions, setQuestions] = useState([]);
   const [isInterviewComplete, setIsInterviewComplete] = useState(false);
   const [interviewData, setInterviewData] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const { questionList } = useFetchQuestion();
+  const router = useRouter();
+  const { questionList, questionAnswerList, interviewId } = useFetchQuestion();
+
+  const { getAnswerFunction } = useFetchAnswer();
 
   useEffect(() => {
     if (questionList.length > 0) {
-      const questionsArray = questionList.map((item) => item.question);
-      setQuestions(questionsArray);
+      setQuestions(questionList);
       setLoading(false);
       startTimers();
     }
   }, [questionList]);
 
-  useEffect(() => {
-    console.log(questionList);
-  }, [questionList]);
-
   const startTimers = () => {
-    setTimers({ countdown: 20, recording: 10 });
+    setTimers({ countdown: 10, recording: 5 });
     setIsRecording(false);
   };
 
   const handleTranscriptUpdate = (newTranscript) => {
     setInterviewData((prev) => [
       ...prev,
-      { question: questions[currentQuestionIndex], answer: newTranscript },
+      {
+        question: questions[currentQuestionIndex],
+        solution: questionAnswerList[currentQuestionIndex],
+        answer: newTranscript,
+      },
     ]);
   };
 
@@ -73,16 +77,26 @@ const InterviewStep = React.memo(() => {
   const nextQuestion = () => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
-      setTimers({ countdown: 10, recording: 10 });
+      setTimers({ countdown: 20, recording: 10 }); // 타이머 초기화
     } else {
       setIsInterviewComplete(true);
     }
   };
 
   const onSubmitAnswer = () => {
-    console.log(interviewData);
-  };
+    const answersFromFrontend = interviewData.map((data) => ({
+      interview_id: interviewId, // 인터뷰 ID 추가
+      question: data.question,
+      answer: data.answer,
+      solution: data.solution, // 필요하다면 솔루션 추가
+    }));
 
+    // API 호출
+    getAnswerFunction({
+      interview_id: interviewId,
+      answers: answersFromFrontend,
+    });
+  };
   return (
     <Box>
       <Flex justify={'space-around'} mb={'20px'}>
@@ -104,7 +118,7 @@ const InterviewStep = React.memo(() => {
           >
             {loading ? (
               <Flex justify="center" align="center" h="100%">
-                <Spinner size="xl" color="blue.500" thickness="4px" />
+                <Spinner size="xl" />
                 <Text ml={3}>로딩 중...</Text>
               </Flex>
             ) : (
@@ -117,8 +131,10 @@ const InterviewStep = React.memo(() => {
                       : `답변 준비 시간: ${timers.countdown}초`}
                 </Text>
                 <Box m={'20px'}>
+                  {/* 현재 질문에 애니메이션 효과 적용 */}
                   <Flex alignItems={'center'} ml={'5px'}>
                     <ChatComponent
+                      key={currentQuestionIndex} // key를 사용하여 리렌더링 유도
                       index={currentQuestionIndex}
                       question={questions[currentQuestionIndex]}
                     />

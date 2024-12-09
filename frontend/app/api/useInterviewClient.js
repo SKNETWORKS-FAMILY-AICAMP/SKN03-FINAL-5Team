@@ -7,11 +7,18 @@ export function useGetQuestionMutation() {
       httpClient({
         method: 'post',
         url: '/generate_question',
-        data: {
-          tech_keywords: 'python, java, react',
-          question_count: 0,
-          max_questions: 5,
-        },
+        data: ['python', 'java', 'react'],
+      }),
+  });
+}
+
+export function usePostEvaluationMutation() {
+  return useMutation({
+    mutationFn: (data) =>
+      httpClient({
+        method: 'post',
+        url: '/evaluate_answers',
+        data: data,
       }),
   });
 }

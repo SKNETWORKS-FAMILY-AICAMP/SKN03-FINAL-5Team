@@ -1,12 +1,11 @@
 from fastapi import APIRouter, File, UploadFile, HTTPException
 from google.cloud import speech
+from google.oauth2 import service_account  # Import the service_account module
 import subprocess
 from util.get_parameter import get_parameter
+import json
+
 router = APIRouter()
-
-
-
-
 
 def convert_webm_to_flac(webm_content):
     process = subprocess.Popen(['ffmpeg', '-i', 'pipe:0', '-f', 'flac', '-'],
@@ -22,7 +21,7 @@ def convert_webm_to_flac(webm_content):
 async def transcribe_audio(audio: UploadFile = File(...)):
     account_key = get_parameter("/gcp/service-account-key")
 
-        # JSON 문자열을 Python dict로 변환
+    # JSON 문자열을 Python dict로 변환
     service_account_info = json.loads(account_key)
 
     # Google Cloud Speech-to-Text 클라이언트 생성

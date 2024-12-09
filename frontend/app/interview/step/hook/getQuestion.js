@@ -1,14 +1,22 @@
 import { useState, useEffect } from 'react';
 import { useGetQuestionMutation } from '@/app/api/useInterviewClient';
 import { useAtom } from 'jotai';
-import { questionListAtom } from '../atom/interviewAtom';
+import {
+  questionListAtom,
+  questionAnswerListAtom,
+  interviewIdAtom,
+} from '../atom/interviewAtom';
 
 export const useFetchQuestion = () => {
   const [questionList, setQuestionList] = useAtom(questionListAtom);
+  const [questionAnswerList, setQuestionAnswerList] = useAtom(
+    questionAnswerListAtom
+  );
+  const [interviewId, setInterviewId] = useAtom(interviewIdAtom);
 
   const {
     mutate: getQuestion,
-    data: question,
+    data: questionData,
     isError: QuestionError,
   } = useGetQuestionMutation();
   const [hasCalledGetQuestion, setHasCalledGetQuestion] = useState(false);
@@ -21,10 +29,16 @@ export const useFetchQuestion = () => {
   }, [hasCalledGetQuestion, getQuestion]);
 
   useEffect(() => {
-    if (question && question.length > 0) {
-      setQuestionList(question);
+    if (questionData && questionData.questions) {
+      console.log(questionData);
+      const jobQuestions = questionData.questions.map((q) => q.job_question);
+      const jobSolutions = questionData.questions.map((q) => q.job_solution);
+      const interviewId = questionData.interview_id;
+      setQuestionList(jobQuestions);
+      setQuestionAnswerList(jobSolutions);
+      setInterviewId(interviewId);
     }
-  }, [question]);
+  }, [questionData]);
 
-  return { questionList };
+  return { questionList, questionAnswerList, interviewId };
 };

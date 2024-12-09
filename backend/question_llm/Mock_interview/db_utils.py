@@ -1,12 +1,6 @@
 from sqlalchemy.exc import SQLAlchemyError
-import sys
-import os
-
-# 프로젝트 루트 경로를 sys.path에 추가
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
-
-from backend.database import SessionLocal
-from backend.models import QuestionTb, ReportTb
+from database import SessionLocal
+from models import QuestionTb, ReportTb
 
 
 # 데이터베이스 세션 생성

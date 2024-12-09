@@ -1,14 +1,16 @@
-from sqlalchemy import Column, Integer, String, Date, DateTime, ForeignKey
-from database import Base
-from datetime import date, datetime
-from sqlalchemy import BigInteger, CheckConstraint, Column, DateTime, ForeignKey, Index, Integer, String, Date
+from sqlalchemy import BigInteger, CheckConstraint, Column, DateTime, ForeignKey, Index, Integer, String, Date, Text
 from sqlalchemy.dialects.mysql import DATETIME, LONGTEXT, SMALLINT, TINYINT, VARCHAR
 from sqlalchemy.orm import relationship
+from sqlalchemy.orm import configure_mappers
 from sqlalchemy.ext.declarative import declarative_base
+from database import Base
 from pydantic import BaseModel
+from datetime import date, datetime
 from sqlalchemy.sql import func
+from typing import List
 
-from sqlalchemy import Column, Integer, String, Date, DateTime, ForeignKey
+
+
 
 
 
@@ -216,3 +218,13 @@ class QuestionTb(Base):
 
     interview = relationship('Interview')
 
+
+class Answer(BaseModel):
+    interview_id: int
+    question: str
+    answer: str
+    solution: str
+
+class EvaluateAnswersRequest(BaseModel):
+    interview_id: int
+    answers: List[Answer]
