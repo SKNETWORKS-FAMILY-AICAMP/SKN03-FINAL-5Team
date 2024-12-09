@@ -6,10 +6,9 @@ from sqlalchemy.exc import SQLAlchemyError
 from datetime import  datetime
 from sqlalchemy.orm import Session
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 
-from backend.database import SessionLocal
-from backend.models import QuestionTb, ReportTb, InterviewTb
+from database import SessionLocal
+from models import QuestionTb, ReportTb, Interview
 
 def update_question_in_db(
     question_id: int,
@@ -67,8 +66,6 @@ def save_questions_to_db(interview_id: int, questions: List[Dict], db_session):
 
 
 
-from backend.models import ReportTb
-
 def save_report_to_db(report_data: Dict, db_session):
     """
     보고서 데이터를 DB에 저장합니다.
@@ -103,7 +100,7 @@ def create_new_interview(user_id: int, user_job: str, job_talent: str, resume_pa
     """
     try:
         # 인터뷰 데이터 생성
-        new_interview = InterviewTb(
+        new_interview = Interview(
             user_id=user_id,
             user_job=user_job,
             job_talent=job_talent,
@@ -165,7 +162,8 @@ def save_evaluated_answers_to_db(
                 job_question=answer["question"],
                 job_answer=answer["answer"],
                 job_solution=answer["model_answer"],
-                job_score=answer["score"],  # 평가 점수 저장
+                # job_score=answer["score"],  # 평가 점수 저장
+                job_score=0,  # 평가 점수 저장
                 question_vector_path="default/path/vector.json",
             )
             db_session.add(db_record)

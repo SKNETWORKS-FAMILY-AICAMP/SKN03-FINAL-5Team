@@ -1,11 +1,11 @@
 import random
 import pandas as pd
 from typing import List, Dict
-from database_utils import save_questions_to_db
-from prompt import question_prompt, model_answer
+from .database_utils import save_questions_to_db
+from .prompt import question_prompt, model_answer
 from datetime import datetime
 from langchain_openai import ChatOpenAI
-from database_utils import create_new_interview
+from .database_utils import create_new_interview
 import os
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
@@ -33,21 +33,25 @@ chat = get_client()
 embeddings = OpenAIEmbeddings(openai_api_key=os.getenv("OPENAI_API_KEY"))
 
 
+# 현재 파일의 디렉토리 경로를 가져옵니다.
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# 상위 디렉토리로 이동합니다 (필요한 만큼 반복).
+parent_dir = os.path.dirname(current_dir)
+
 vector_db_high = FAISS.load_local(
-    folder_path="C:/dev/SKN03-FINAL-5Team-git/question_llm/high_db/",
+    folder_path=os.path.join(parent_dir, "high_db"),
     index_name="python_high_chunk700",
     embeddings=OpenAIEmbeddings(),
     allow_dangerous_deserialization=True,
 )
 
-
 vector_db_low = FAISS.load_local(
-    folder_path="C:/dev/SKN03-FINAL-5Team-git/question_llm/low_db",
+    folder_path=os.path.join(parent_dir, "low_db"),
     index_name="python_low_chunk700",
     embeddings=OpenAIEmbeddings(),
     allow_dangerous_deserialization=True,
 )
-
 
 
 def cross_encoder_reranker(query, db_level="low", top_k=3):
@@ -99,12 +103,13 @@ def generate_questions(keywords: List[str], interview_id: int, db_session) -> pd
         pd.DataFrame: 생성된 질문과 관련 데이터
     """
     questions = []
-    db_allocation = ["low"] * 3 + ["high"] * 2  # 3개는 low, 2개는 high
+    db_allocation = ["low"] * 1 + ["high"] * 1  # 3개는 low, 2개는 high
     random.shuffle(db_allocation)  # 랜덤 순서로 DB 검색 레벨 결정
 
     for db_level in db_allocation:
         # 키워드 선택
         keyword = random.choice(keywords)
+        print('db_allow')
 
         # 검색
         search_results = cross_encoder_reranker(query=keyword, db_level=db_level, top_k=1)
@@ -117,6 +122,7 @@ def generate_questions(keywords: List[str], interview_id: int, db_session) -> pd
         if search_results:
             retrieved_content = search_results[0].page_content
             reference_docs = search_results[0].metadata.get("source", "출처를 알 수 없음")
+            print('결과 처리')
         else:
             # 결과가 없으면 기본 메시지 설정
             retrieved_content = "관련 문서를 찾을 수 없습니다."

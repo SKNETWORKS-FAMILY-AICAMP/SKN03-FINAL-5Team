@@ -3,7 +3,7 @@ from langchain_openai import ChatOpenAI
 from langchain.schema import SystemMessage
 from datetime import datetime
 import os
-from database_utils import save_report_to_db
+from .database_utils import save_report_to_db
 def get_client():
     return ChatOpenAI(
         model="gpt-4o",

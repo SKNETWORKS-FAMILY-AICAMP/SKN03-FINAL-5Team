@@ -2,8 +2,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
 from langchain_openai import ChatOpenAI
 from langchain.schema import SystemMessage
-from database_utils import update_question_in_db
-from prompt import evaluation_prompt
+from .database_utils import update_question_in_db
+from .prompt import evaluation_prompt
 import os
 import pandas as pd
 from typing import List, Dict

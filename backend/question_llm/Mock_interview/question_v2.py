@@ -33,11 +33,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from db_utils import create_new_interview, save_question_to_db , save_report_to_db, update_question_in_db, initialize_questions
 from datetime import datetime
 
-<<<<<<< HEAD
-config = RunnableConfig(recursion_limit=1000, configurable={"thread_id": "THREAD_ID"}) #재귀한도 증가
-=======
 config = RunnableConfig(recursion_limit=70, configurable={"thread_id": "THREAD_ID"}) 
->>>>>>> origin/main
 
 
 
@@ -49,12 +45,7 @@ def get_client():
         model="gpt-4o",
         streaming=True,
         openai_api_key=os.getenv("OPENAI_API_KEY")
-<<<<<<< HEAD
-        )
-
-=======
     ) 
->>>>>>> origin/main
 
 
 # ChatOpenAI 인스턴스 생성

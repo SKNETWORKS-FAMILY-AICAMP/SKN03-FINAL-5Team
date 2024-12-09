@@ -16,9 +16,6 @@ COPY . .
 # 빌드
 RUN npm run build
 
-RUN apt-get update && apt-get install -y awscli
-
-
 EXPOSE 3000
 
 CMD ["npm", "start"]
