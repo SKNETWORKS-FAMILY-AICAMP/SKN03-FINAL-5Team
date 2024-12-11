@@ -45,14 +45,14 @@ parent_dir = os.path.dirname(current_dir)
 vector_db_high = FAISS.load_local(
     folder_path=os.path.join(parent_dir, "high_db"),
     index_name="python_high_chunk700",
-    embeddings=OpenAIEmbeddings(),
+    embeddings=OpenAIEmbeddings(openai_api_key=openai_api_key),
     allow_dangerous_deserialization=True,
 )
 
 vector_db_low = FAISS.load_local(
     folder_path=os.path.join(parent_dir, "low_db"),
     index_name="python_low_chunk700",
-    embeddings=OpenAIEmbeddings(),
+    embeddings=OpenAIEmbeddings(openai_api_key=openai_api_key),
     allow_dangerous_deserialization=True,
 )
 
