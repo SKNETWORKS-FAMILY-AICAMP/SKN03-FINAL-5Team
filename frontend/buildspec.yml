@@ -3,7 +3,7 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      nodejs: 14
+      nodejs: 20
   pre_build:
     commands:
       - npm install
@@ -12,9 +12,15 @@ phases:
       - npm run build
   post_build:
     commands:
-      - aws s3 sync out s3://sk-unailit/frontend --delete
+      - aws s3 sync ./out s3://code-build-frontend --delete
 
 artifacts:
   files:
-    - '**/*'
-  base-directory: out
+    - './next/**/*'
+    - 'public/**/*'
+    - 'package.json'
+
+  cache:
+    paths:
+      - 'node_modules/**/*'
+      - '.next/cache/**/*'
