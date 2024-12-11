@@ -11,12 +11,16 @@ from langchain.schema import SystemMessage
 import os
 import pandas as pd
 from datetime import datetime
+from util.get_parameter import get_parameter
+
+
 
 USER_ID = 1  # 사용자 ID
 USER_JOB = "백엔드 개발자"  # 지원 직무
 JOB_TALENT = "Python", "Django", "IDLE"  # 기술 능력 받아와야 함
 RESUME_PATH = "c:/path/to/resume.pdf"  # 이력서 경로 (없을 경우 None)
 
+openai_api_key = get_parameter('/TEST/CICD/STREAMLIT/OPENAI_API_KEY')
 
 model = SentenceTransformer("snunlp/KR-SBERT-V40K-klueNLI-augSTS")
 
@@ -24,7 +28,7 @@ def get_client():
     return ChatOpenAI(
         model="gpt-4o",
         streaming=True,
-        openai_api_key=os.getenv("OPENAI_API_KEY")
+        openai_api_key=openai_api_key
         )
 
 # ChatOpenAI 인스턴스 생성

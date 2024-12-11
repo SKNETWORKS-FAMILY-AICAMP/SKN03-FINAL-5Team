@@ -16,21 +16,24 @@ from langchain.retrievers import ContextualCompressionRetriever
 from langchain.schema import SystemMessage
 from dotenv import load_dotenv
 import uuid  # 고유 ID 생성에 사용
+from util.get_parameter import get_parameter
 
 load_dotenv()
 
+
+openai_api_key = get_parameter('/TEST/CICD/STREAMLIT/OPENAI_API_KEY')
 
 def get_client():
     return ChatOpenAI(
         model="gpt-4o",
         streaming=True,
-        openai_api_key=os.getenv("OPENAI_API_KEY")
+        openai_api_key=openai_api_key
         )
 
 # ChatOpenAI 인스턴스 생성
 chat = get_client()
 
-embeddings = OpenAIEmbeddings(openai_api_key=os.getenv("OPENAI_API_KEY"))
+embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
 
 
 # 현재 파일의 디렉토리 경로를 가져옵니다.

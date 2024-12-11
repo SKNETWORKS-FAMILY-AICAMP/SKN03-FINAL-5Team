@@ -9,11 +9,11 @@ from util.get_parameter import get_parameter
 
 router = APIRouter()
 
-SECRET_KEY = os.getenv('SECRET_KEY')
-ALGORITHM = os.getenv('ALGORITHM')
+# SECRET_KEY = os.getenv('SECRET_KEY')
+# ALGORITHM = os.getenv('ALGORITHM')
 
-# SECRET_KEY = get_parameter('/interviewdb-info/SECRET_KEY')
-# ALGORITHM = get_parameter('/interviewdb-info/ALGORITHM')
+SECRET_KEY = get_parameter('/interviewdb-info/SECRET_KEY')
+ALGORITHM = get_parameter('/interviewdb-info/ALGORITHM')
 
 def get_db():
     db = SessionLocal()
