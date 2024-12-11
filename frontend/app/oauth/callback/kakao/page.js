@@ -32,7 +32,7 @@ const KakaoCallbackPage = () => {
     try {
       const res = await axios.get(
         // `http://127.0.0.1:8000/login/oauth/code/kakao?code=${code}`,
-        `https://aiunailit.com/login/oauth/code/kakao?code=${code}`,
+        `http://3.35.157.81:8000/login/oauth/code/kakao?code=${code}`,
         { withCredentials: true }
       );
       if (res.status === 200) {
