@@ -44,7 +44,7 @@ const SpeechToText = ({ isRecording, onTranscriptUpdate }) => {
     formData.append('audio', audioBlob, 'recording.webm');
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/transcribe', {
+      const response = await fetch('http://3.35.157.81:8000/transcribe', {
         method: 'POST',
         body: formData,
       });
