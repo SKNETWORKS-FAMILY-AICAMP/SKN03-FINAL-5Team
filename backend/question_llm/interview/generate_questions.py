@@ -103,8 +103,8 @@ def generate_questions(keywords: List[str], interview_id: int, db_session) -> pd
         pd.DataFrame: 생성된 질문과 관련 데이터
     """
     questions = []
-    db_allocation = ["low"] * 1 + ["high"] * 1  # 3개는 low, 2개는 high
-    random.shuffle(db_allocation)  # 랜덤 순서로 DB 검색 레벨 결정
+    db_allocation = ["low"] * 1 + ["high"] * 1  
+    random.shuffle(db_allocation) 
 
     for db_level in db_allocation:
         # 키워드 선택
@@ -157,7 +157,6 @@ def generate_questions(keywords: List[str], interview_id: int, db_session) -> pd
     return questions
 
 
-    # return pd.DataFrame(questions)
 
 
     

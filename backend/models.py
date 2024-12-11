@@ -164,14 +164,14 @@ class DjangoAdminLog(Base):
 
 
 
-class ReportTb(Interview):
+class ReportTb(Base):
     __tablename__ = 'report_tb'
 
     interview_id = Column(ForeignKey('interview_tb.interview_id', ondelete='CASCADE', onupdate='CASCADE'), primary_key=True)
     strength = Column(String(255), nullable=False)
     weakness = Column(String(255), nullable=False)
     ai_summary = Column(DateTime, nullable=False)
-    detail_feedback = Column(DateTime, nullable=False)
+    detail_feedback = Column(String, nullable=False)
     attitude_feedback = Column(VARCHAR(255), nullable=False)
     report_score = Column(Integer, nullable=False)
     report_created = Column(DateTime, nullable=False)

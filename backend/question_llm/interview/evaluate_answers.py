@@ -24,7 +24,10 @@ chat = get_client()
 def evaluate_answer(interview_id, question, answer, model_answer, model):
     if not answer:
         return {
-            
+            "interview_id": interview_id,
+            "question": question,
+            "answer": "",
+            "model_answer": model_answer,
             "feedback": "무응답",
             "score": 0.0,
             "cosine_similarity": 0.0,

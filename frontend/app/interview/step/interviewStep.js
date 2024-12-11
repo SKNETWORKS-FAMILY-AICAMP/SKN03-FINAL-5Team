@@ -77,7 +77,7 @@ const InterviewStep = React.memo(() => {
   const nextQuestion = () => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
-      setTimers({ countdown: 20, recording: 10 }); // 타이머 초기화
+      setTimers({ countdown: 10, recording: 10 }); // 타이머 초기화
     } else {
       setIsInterviewComplete(true);
     }
