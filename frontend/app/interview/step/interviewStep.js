@@ -19,7 +19,7 @@ const InterviewStep = React.memo(() => {
   const router = useRouter();
   const { questionList, questionAnswerList, interviewId } = useFetchQuestion();
 
-  const { getAnswerFunction } = useFetchAnswer();
+  const { getAnswerFunction, isLoading } = useFetchAnswer();
 
   useEffect(() => {
     if (questionList.length > 0) {
@@ -85,13 +85,12 @@ const InterviewStep = React.memo(() => {
 
   const onSubmitAnswer = () => {
     const answersFromFrontend = interviewData.map((data) => ({
-      interview_id: interviewId, // 인터뷰 ID 추가
+      interview_id: interviewId,
       question: data.question,
       answer: data.answer,
-      solution: data.solution, // 필요하다면 솔루션 추가
+      solution: data.solution,
     }));
 
-    // API 호출
     getAnswerFunction({
       interview_id: interviewId,
       answers: answersFromFrontend,
@@ -143,21 +142,28 @@ const InterviewStep = React.memo(() => {
               </>
             )}
           </Box>
-          <Button
-            w={'100%'}
-            h={'100px'}
-            background={'#DFE2FB'}
-            fontFamily={'inter'}
-            mt={'30px'}
-            onClick={onSubmitAnswer}
-            isDisabled={
-              !isInterviewComplete && (isRecording || timers.countdown > 0)
-            }
-          >
-            {isInterviewComplete && interviewData.length === questions.length
-              ? '면접 완료'
-              : '진행중'}
-          </Button>
+          {isLoading ? (
+            <Spinner size="xl" />
+          ) : (
+            <Button
+              w={'100%'}
+              h={'100px'}
+              background={'#DFE2FB'}
+              fontFamily={'inter'}
+              mt={'30px'}
+              onClick={onSubmitAnswer}
+              isDisabled={
+                !isInterviewComplete &&
+                (isRecording ||
+                  (timers.countdown > 0 &&
+                    interviewData.length !== questions.length))
+              }
+            >
+              {isInterviewComplete && interviewData.length === questions.length
+                ? '면접 완료'
+                : '진행중'}
+            </Button>
+          )}
         </Box>
       </Flex>
     </Box>
