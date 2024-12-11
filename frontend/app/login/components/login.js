@@ -3,7 +3,6 @@ import { VStack, Text, Flex, Spacer, Link } from '@chakra-ui/react';
 import KakaoLoginButton from './kakaoLoginButton';
 
 const Login = ({ KAKAO_REST_API_KEY, KAKAO_REDIRECT_URI }) => {
-
   return (
     <Flex direction="column" minHeight="70vh">
       <Spacer />
