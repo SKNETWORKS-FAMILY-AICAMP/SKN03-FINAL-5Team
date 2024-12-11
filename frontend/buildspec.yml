@@ -16,11 +16,11 @@ phases:
 
 artifacts:
   files:
-    - './next/**/*'
-    - 'public/**/*'
-    - 'package.json'
+    - 'frontend/./next/**/*'
+    - 'frontend/public/**/*'
+    - 'frontend/package.json'
 
   cache:
     paths:
-      - 'node_modules/**/*'
-      - '.next/cache/**/*'
+      - 'frontend/node_modules/**/*'
+      - 'frontend/.next/cache/**/*'
