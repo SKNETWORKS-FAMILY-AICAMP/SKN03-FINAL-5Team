@@ -11,7 +11,6 @@ const WebcamComponent = () => {
   const [hasWebcamPermission, setHasWebcamPermission] = useState(false);
 
   useEffect(() => {
-    // 웹캠 권한 확인
     navigator.mediaDevices
       .getUserMedia({ video: true })
       .then(() => setHasWebcamPermission(true))
@@ -91,33 +90,6 @@ const WebcamComponent = () => {
           <Skeleton width='100%' height='100%' borderRadius='16px' />
         )}
       </Box>
-      {/* <Box mt='10px' mb={'20px'}>
-        {hasWebcamPermission ? (
-          <>
-            {capturing ? (
-              <Button onClick={handleStopCaptureClick} colorScheme='red'>
-                Stop Capture
-              </Button>
-            ) : (
-              <Button onClick={handleStartCaptureClick} colorScheme='green'>
-                Start Capture
-              </Button>
-            )}
-            {recordedChunks.length > 0 && (
-              <Button onClick={handleDownload} colorScheme='blue' ml='10px'>
-                Download
-              </Button>
-            )}
-          </>
-        ) : (
-          <Button
-            onClick={() => alert('웹캠 권한이 필요합니다.')}
-            colorScheme='yellow'
-          >
-            웹캠 권한 요청
-          </Button>
-        )}
-      </Box> */}
     </Box>
   );
 };
