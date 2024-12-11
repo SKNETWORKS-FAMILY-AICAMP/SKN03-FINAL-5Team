@@ -1,13 +1,11 @@
-version: 0.2
-
 phases:
   install:
     runtime-versions:
       nodejs: 20
-  pre_build:
     commands:
+      - cd frontend
       - npm install
-  build:
+  pre_build:
     commands:
       - npm run build
   post_build:
@@ -16,11 +14,11 @@ phases:
 
 artifacts:
   files:
-    - 'frontend/./next/**/*'
-    - 'frontend/public/**/*'
-    - 'frontend/package.json'
+    - '.next/**/*'
+    - 'public/**/*'
+    - 'package.json'
 
-  cache:
-    paths:
-      - 'frontend/node_modules/**/*'
-      - 'frontend/.next/cache/**/*'
+cache:
+  paths:
+    - 'node_modules/**/*'
+    - '.next/cache/**/*'
