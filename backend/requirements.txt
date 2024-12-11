@@ -4,7 +4,6 @@ python-multipart
 google-cloud-speech
 httpx
 sqlalchemy 
-databases
 pymysql 
 boto3
 PyJWT

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from .auth import get_db  # DB 세션 의존성
 from routes import board_crud, board_schema
+from models import Board
 
 router = APIRouter(prefix="/board")
 
@@ -28,3 +29,11 @@ async def delete_post_yn(post_idx: int, db: Session = Depends(get_db)):
 @router.delete("/delete/{post_idx}", description="게시글 영구 삭제")
 async def delete_post(post_idx: int, db: Session = Depends(get_db)):
     return board_crud.delete_post(post_idx, db)
+
+
+@router.get("/api/all-board-ids")
+def get_all_board_ids(db: Session = Depends(get_db)):
+    board_ids = db.query(Board.idx).all()
+    result = [id[0] for id in board_ids]
+    print(result) 
+    return result

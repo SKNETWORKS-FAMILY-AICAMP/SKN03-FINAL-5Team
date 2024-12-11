@@ -124,3 +124,6 @@ def save_report_to_db(
         db_session.rollback()
         print(f"Error saving report to DB: {e}")
         raise e
+
+
+
