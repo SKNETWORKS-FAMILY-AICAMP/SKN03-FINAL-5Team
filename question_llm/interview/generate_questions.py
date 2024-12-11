@@ -61,6 +61,7 @@ def cross_encoder_reranker(query, db_level="low", top_k=3):
     Returns:
         List[Document]: 적합도가 높은 문서 리스트
     """
+    
     # DB 선택
     vector_db = vector_db_high if db_level == "high" else vector_db_low
 
@@ -147,11 +148,10 @@ def generate_questions(keywords: List[str], interview_id: int, db_session) -> pd
             "question_vector_path": "default/path/vector.json",  # 기본 벡터 경로
         })
     
-    # DataFrame으로 변환 후 반환
+    
     return questions
 
 
-    # return pd.DataFrame(questions)
 
 
     

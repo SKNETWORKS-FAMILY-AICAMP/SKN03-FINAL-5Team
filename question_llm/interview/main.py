@@ -12,11 +12,6 @@ import os
 import pandas as pd
 from datetime import datetime
 
-USER_ID = 1  # 사용자 ID
-USER_JOB = "백엔드 개발자"  # 지원 직무
-JOB_TALENT = "Python", "Django", "IDLE"  # 기술 능력 받아와야 함
-RESUME_PATH = "c:/path/to/resume.pdf"  # 이력서 경로 (없을 경우 None)
-
 
 model = SentenceTransformer("snunlp/KR-SBERT-V40K-klueNLI-augSTS")
 
@@ -39,7 +34,7 @@ def main():
     """
     USER_ID = 1
     USER_JOB = "백엔드 개발자"
-    JOB_TALENT = "Python, Django, REST API, git, Docker"
+    JOB_TALENT = "Python"
     RESUME_PATH = "path/to/resume.pdf"
 
     try:
