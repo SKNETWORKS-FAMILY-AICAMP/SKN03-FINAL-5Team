@@ -12,7 +12,7 @@ phases:
       - npm run build
   post_build:
     commands:
-      - aws s3 sync out s3://frontend --delete
+      - aws s3 sync out s3://sk-unailit/frontend --delete
 
 artifacts:
   files:
