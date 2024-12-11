@@ -22,3 +22,27 @@ export function usePostEvaluationMutation() {
       }),
   });
 }
+
+export function useGetInterviewLogQuery(interview_id) {
+  return useQuery({
+    queryKey: [`/interviews/${interview_id}/questions`],
+    queryFn: () =>
+      httpClient({
+        method: 'get',
+        url: `/interviews/${interview_id}/questions`,
+      }),
+    enabled: !!interview_id,
+  });
+}
+
+export function useGetInterviewReport(interview_id) {
+  return useQuery({
+    queryKey: [`/interviews/${interview_id}/report`],
+    queryFn: () =>
+      httpClient({
+        method: 'get',
+        url: `/interviews/${interview_id}/report`,
+      }),
+    enabled: !!interview_id,
+  });
+}

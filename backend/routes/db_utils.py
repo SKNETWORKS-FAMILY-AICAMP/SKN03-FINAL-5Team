@@ -91,3 +91,36 @@ def save_report_to_db(interview_id, strength, weakness, ai_summary, detail_feedb
         print(f"Error saving report to DB: {e}")
     finally:
         db_session.close()
+
+
+def save_report_to_db(
+    interview_id: int,
+    strength: str,
+    weakness: str,
+    ai_summary: str,
+    detail_feedback: str,
+    attitude: str,
+    report_score: int,
+    db_session: Session
+):
+    """
+    ReportTb 테이블에 데이터를 저장합니다.
+    """
+    try:
+        report = ReportTb(
+            interview_id=interview_id,
+            strength=strength,
+            weakness=weakness,
+            ai_summary=ai_summary,
+            detail_feedback=detail_feedback,
+            attitude_feedback=attitude,
+            report_score=report_score,
+            report_created=datetime.now(),  # 생성 시간 추가
+        )
+        db_session.add(report)
+        db_session.commit()
+        print("Report saved successfully!")
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error saving report to DB: {e}")
+        raise e

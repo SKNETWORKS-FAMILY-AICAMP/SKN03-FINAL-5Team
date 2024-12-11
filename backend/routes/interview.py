@@ -11,8 +11,9 @@ from question_llm.interview.database_utils import save_questions_to_db, save_eva
 from question_llm.interview.collect_answer import collect_answers
 from question_llm.interview.generate_report import generate_report
 from question_llm.interview.evaluate_answers import evaluate_answer
-from models import EvaluateAnswersRequest
+from models import EvaluateAnswersRequest, Interview, QuestionTb, ReportTb
 from sentence_transformers import SentenceTransformer
+import asyncio
 
 
 router = APIRouter()
@@ -52,8 +53,8 @@ def makequestion(keywords: List[str],db_session: Session):  # db_session을 인�
         print(f"Interview created with ID: {interview_id}")
 
         questions = generate_questions(keywords, interview_id, db_session)
-        for question in questions:
-            save_questions_to_db(interview_id, questions, db_session)
+        
+        save_questions_to_db(interview_id, questions, db_session)
         
         return questions, interview_id
     except SQLAlchemyError as e:
@@ -67,7 +68,7 @@ def makequestion(keywords: List[str],db_session: Session):  # db_session을 인�
 async def generate_interview_questions(keywords: List[str], db: Session = Depends(get_db)):
     try:
         questions, interview_id = makequestion(keywords, db)  # db를 인자로 전달
-        print(keywords)
+        
         
         return {"message": "Questions generated successfully", "interview_id": interview_id, "questions": questions}
     except Exception as e:
@@ -76,46 +77,44 @@ async def generate_interview_questions(keywords: List[str], db: Session = Depend
 
 
 
-
 @router.post("/evaluate_answers")
 async def evaluate_answers(request: EvaluateAnswersRequest, db: Session = Depends(get_db)):
     try:
-        print(request)
         interview_id = request.interview_id
-        answers_from_frontend = request.answers  
+        answers_from_frontend = request.answers
+
 
         # Step 4: 질문과 답변 매핑 
-        mapped_answers = []
-        evaluated_answers  = []
-        for answer_data in answers_from_frontend:
-            mapped_data = {
-                "interview_id": interview_id,
+        mapped_answers = [
+            {
+                "interview_id": answer_data.interview_id, 
                 "question": answer_data.question,
                 "answer": answer_data.answer,
-                "model_answer": answer_data.solution,  # solution을 model_answer로 사용
+                "model_answer": answer_data.solution,  
             }
-            mapped_answers.append(mapped_data)
+            for answer_data in answers_from_frontend
+        ]
 
-        for answer_data in mapped_answers:
-                evaluation_result = evaluate_answer(
-                    interview_id = interview_id,
-                    model = model,
-                    question=answer_data["question"],
-                    answer=answer_data["answer"],
-                    model_answer=answer_data["model_answer"],
-                )
-                evaluated_answers.append(evaluation_result)
-                print(f"Evaluation Results: {evaluated_answers}")
+        # Step 5: 답변 평가 
+        def evaluate_single_answer(answer_data):
+            return evaluate_answer(
+                interview_id=interview_id,
+                model=model,
+                question=answer_data["question"],
+                answer=answer_data["answer"],
+                model_answer=answer_data["model_answer"],
+            )
 
+        evaluated_answers = [evaluate_single_answer(answer_data) for answer_data in mapped_answers]
+
+
+        # 평가 결과 저장 
         save_evaluated_answers_to_db(interview_id, evaluated_answers, db)
 
-        print(f"Mapped Answers: {mapped_answers}")
-
-
-        # Step 6: 총평 생성
+        # Step 6: 총평 생성 
         try:
             report = generate_report(
-                evaluation_results=evaluated_answers,  # 모든 평가 결과 전달
+                evaluation_results=evaluated_answers,
                 db_session=db,
             )
             print("Final Report Generated:")
@@ -139,3 +138,49 @@ async def read_interviews(user_id: int, db: Session = Depends(get_db)):
     return [{"interview_id": interview.interview_id, "interview_created": interview.interview_created} for interview in interviews]
 
 
+
+@router.get("/interviews/{interview_id}/questions", response_model=dict)
+def get_interview_questions(interview_id: int, db: Session = Depends(get_db)):
+    # Interview와 관련된 모든 Question을 조회
+    interview = db.query(Interview).filter(Interview.interview_id == interview_id).first()
+    
+    if not interview:
+        raise HTTPException(status_code=404, detail="Interview not found")
+    
+    # 관련된 질문 가져오기
+    questions = db.query(QuestionTb).filter(QuestionTb.interview_id == interview_id).all()
+    
+    # 결과 반환
+    return {
+        "interview_id": interview.interview_id,
+        "user_job": interview.user_job,
+        "questions": [
+            {
+                "question_id": q.question_id,
+                "job_question": q.job_question,
+                "job_answer": q.job_answer,
+                "job_solution": q.job_solution,
+                "job_score": q.job_score
+            } for q in questions
+        ]
+    }
+
+@router.get("/interviews/{interview_id}/report", response_model=dict)
+def get_report(interview_id: int, db: Session = Depends(get_db)):
+    # Report 조회
+    report = db.query(ReportTb).filter(ReportTb.interview_id == interview_id).first()
+    
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found")
+    
+    # 결과 반환
+    return {
+        "interview_id": report.interview_id,
+        "strength": report.strength,
+        "weakness": report.weakness,
+        "ai_summary": report.ai_summary,
+        "detail_feedback": report.detail_feedback,
+        "attitude_feedback": report.attitude_feedback,
+        "report_score": report.report_score,
+        "report_created": report.report_created
+    }

@@ -5,7 +5,7 @@ import os
 from sqlalchemy.exc import SQLAlchemyError
 from datetime import  datetime
 from sqlalchemy.orm import Session
-
+from sqlalchemy import update
 
 from database import SessionLocal
 from models import QuestionTb, ReportTb, Interview
@@ -52,6 +52,7 @@ def update_question_in_db(
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 
 def save_questions_to_db(interview_id: int, questions: List[Dict], db_session):
+    print(questions)
     for question in questions:
         question_entry = QuestionTb(
             interview_id=interview_id,
@@ -66,31 +67,25 @@ def save_questions_to_db(interview_id: int, questions: List[Dict], db_session):
 
 
 
-def save_report_to_db(report_data: Dict, db_session):
+def save_report_to_db(db_session, **kwargs):
     """
     보고서 데이터를 DB에 저장합니다.
 
     Args:
-        report_data (Dict): 보고서 데이터.
         db_session: SQLAlchemy DB 세션.
+        kwargs: 저장할 데이터의 키-값 쌍.
     """
     try:
-        report = ReportTb(
-            interview_id=report_data["interview_id"],
-            strength=report_data["strength"],
-            weakness=report_data["weakness"],
-            ai_summary=report_data["ai_summary"],
-            report_score=report_data["report_score"],
-            detail_feedback=str(report_data["detail_feedback"]),  # JSON 문자열로 저장
-            report_created=report_data["report_created"],
-            attitude_feedback=report_data["attitude_feedback"]
-        )
+        # ReportTb의 컬럼과 매칭되는 데이터만 필터링
+        filtered_data = {key: value for key, value in kwargs.items() if hasattr(ReportTb, key)}
+        report = ReportTb(**filtered_data)
         db_session.add(report)
         db_session.commit()
         print("Report saved successfully in DB.")
     except Exception as e:
         db_session.rollback()
         print(f"Error saving report to DB: {e}")
+        raise
 
 
 
@@ -157,19 +152,53 @@ def save_evaluated_answers_to_db(
     """
     try:
         for answer in evaluated_answers:
-            db_record = QuestionTb(
-                interview_id=interview_id,
-                job_question=answer["question"],
+            stmt = update(QuestionTb).where(
+                (QuestionTb.interview_id == interview_id) &
+                (QuestionTb.job_question == answer["question"])
+            ).values(
                 job_answer=answer["answer"],
                 job_solution=answer["model_answer"],
-                # job_score=answer["score"],  # 평가 점수 저장
-                job_score=0,  # 평가 점수 저장
-                question_vector_path="default/path/vector.json",
+                job_score=answer["score"],
+                question_vector_path="default/path/vector.json"
             )
-            db_session.add(db_record)
+            db_session.execute(stmt)
+        
         db_session.commit()
-        print("Evaluated answers stored in DB successfully.")
+        print("Evaluated answers updated in DB successfully.")
     except Exception as e:
         db_session.rollback()
-        print(f"Error during DB storage: {e}")
+        print(f"Error during DB update: {e}")
         raise
+
+
+def save_report_to_db(
+    interview_id: int,
+    strength: str,
+    weakness: str,
+    ai_summary: str,
+    detail_feedback: str,
+    attitude_feedback: str,
+    report_score: int,
+    db_session: Session
+):
+    """
+    ReportTb 테이블에 데이터를 저장합니다.
+    """
+    try:
+        report = ReportTb(
+            interview_id=interview_id,
+            strength=strength,
+            weakness=weakness,
+            ai_summary=ai_summary,
+            detail_feedback=detail_feedback,
+            attitude_feedback=attitude_feedback,
+            report_score=report_score,
+            report_created=datetime.now(),  # 생성 시간 추가
+        )
+        db_session.add(report)
+        db_session.commit()
+        print("Report saved successfully!")
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error saving report to DB: {e}")
+        raise e
