@@ -27,3 +27,4 @@ node
 ragas
 sentence-transformers
 pydantic
+faiss-cpu
