@@ -14,6 +14,10 @@ def get_db():
     finally:
         db.close()
 
+@router.get("/")
+async def health_check():
+    return {"status": "healthy"}
+
 
 @router.post("/register")
 async def register(user: UserRegister, db: Session = Depends(get_db)):
