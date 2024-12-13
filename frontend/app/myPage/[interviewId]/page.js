@@ -2,7 +2,7 @@ import InterviewDetail from '../components/InterviewDetail';
 
 export async function generateStaticParams() {
   const interviewIds = await fetch(
-    'http://3.35.157.81:8000/api/all-interview-ids'
+    'http://43.203.252.60:8000/api/all-interview-ids'
   ).then((res) => res.json());
 
   return interviewIds.map((id) => ({
