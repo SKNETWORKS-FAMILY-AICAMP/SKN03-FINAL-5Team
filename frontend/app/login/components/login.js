@@ -1,28 +1,9 @@
 'use client';
-import { Box, VStack, Link, Text, Image, Flex, Spacer } from '@chakra-ui/react';
-import React from 'react';
+import { VStack, Text, Flex, Spacer, Link } from '@chakra-ui/react';
+import KakaoLoginButton from './kakaoLoginButton';
 
-const KakaoLoginButton = () => {
-  const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=${process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY}&redirect_uri=${process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI}&scope=profile_nickname`;
+const Login = ({ KAKAO_REST_API_KEY, KAKAO_REDIRECT_URI }) => {
 
-  return (
-    <Link href={KAKAO_AUTH_URL} _hover={{ opacity: 0.8 }}>
-      <Box
-        as="button"
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-        bg="transparent"
-        border="none"
-        w={'300px'}
-      >
-        <Image src="/kakao_login.png" alt="카카오 로그인" />
-      </Box>
-    </Link>
-  );
-};
-
-const Login = () => {
   return (
     <Flex direction="column" minHeight="70vh">
       <Spacer />
@@ -33,7 +14,10 @@ const Login = () => {
         <Text fontSize="xl" color="#0066FF">
           당신을 더욱 빛나게 성장시킬 Unail,IT
         </Text>
-        <KakaoLoginButton />
+        <KakaoLoginButton
+          KAKAO_REST_API_KEY={KAKAO_REST_API_KEY}
+          KAKAO_REDIRECT_URI={KAKAO_REDIRECT_URI}
+        />
         <Text fontSize="sm" color="gray.500">
           로그인하여 다양한 기능을 이용해보세요
         </Text>

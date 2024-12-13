@@ -11,18 +11,18 @@ import CheckStep from './step/checkStep';
 import InterviewStep from './step/interviewStep';
 import UserGuard from '../common/utils/userGuard';
 
-const StepRenderer = ({ steps, setCurrentStep }) => {
+const StepRenderer = React.memo(({ steps, setCurrentStep }) => {
   switch (steps) {
     case 1:
       return <CheckStep setCurrentStep={setCurrentStep} />;
     case 2:
       return <UploadStep setCurrentStep={setCurrentStep} />;
     case 3:
-      return <InterviewStep setCurrentStep={setCurrentStep} />;
+      return <InterviewStep />;
     default:
       return null;
   }
-};
+});
 
 function InterviewPage() {
   const [steps, setSteps] = useState([1, 2, 3]);

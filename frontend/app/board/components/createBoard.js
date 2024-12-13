@@ -11,9 +11,16 @@ import {
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import { usePostBardMutation } from '@/app/api/useBoardClient';
+import { useRouter } from 'next/navigation';
 
 const CreateBoard = () => {
-  const { mutate: postBoard, isError: postBoardError } = usePostBardMutation();
+  const router = useRouter();
+
+  const {
+    mutate: postBoard,
+    data: isPost,
+    isError: postBoardError,
+  } = usePostBardMutation();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [id, setId] = useState(null);
@@ -45,6 +52,12 @@ const CreateBoard = () => {
 
     postBoard(data);
   };
+
+  useEffect(() => {
+    if (isPost) {
+      router.push('/board');
+    }
+  }, [isPost]);
 
   return (
     <Box>

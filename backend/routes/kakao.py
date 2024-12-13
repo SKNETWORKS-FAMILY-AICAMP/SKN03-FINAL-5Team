@@ -9,12 +9,13 @@ from models import User
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import jwt
-
+from utils.get_parameter import get_parameter
 
 
 router = APIRouter()
 
 load_dotenv()
+
 
 def get_db():
     db = SessionLocal()
@@ -23,14 +24,22 @@ def get_db():
     finally:
         db.close()
 
-kakao_client_id = os.getenv('KAKAO_CLIENT_ID')
-kakao_redirect_uri = os.getenv('KAKAO_REDIRECT_URI')
+# kakao_client_id = os.getenv('KAKAO_CLIENT_ID')
+# kakao_redirect_uri = os.getenv('KAKAO_REDIRECT_URI')
 
-ACCESS_TOKEN_EXPIRE_MINUTES = 1
+kakao_client_id = get_parameter('/interviewdb-info/kakao/KAKAO_CLIENT_ID')
+kakao_redirect_uri = get_parameter('/interviewdb-info/kakao/KAKAO_REDIRECT_URI')
+
+ACCESS_TOKEN_EXPIRE_MINUTES = 5
 REFRESH_TOKEN_EXPIRE_DAYS = 1 
 
-SECRET_KEY = os.getenv('SECRET_KEY')
-ALGORITHM = os.getenv('ALGORITHM')
+
+# SECRET_KEY = os.getenv('SECRET_KEY')
+# ALGORITHM = os.getenv('ALGORITHM')
+
+SECRET_KEY = get_parameter('/interviewdb-info/SECRET_KEY')
+ALGORITHM = get_parameter('/interviewdb-info/ALGORITHM')
+
 
 @router.get("/login/oauth/code/kakao")
 async def kakao_callback(code: str, db: Session = Depends(get_db)):
