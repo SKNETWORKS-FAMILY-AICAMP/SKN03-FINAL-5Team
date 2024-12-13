@@ -4,4 +4,5 @@ export default {
   },
   reactStrictMode: false,
   output: 'export',
+  trailingSlash: true,
 };
