@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form
 from sqlalchemy.orm import Session
 from database import SessionLocal
 from .crud import get_interviews_by_user_id
-from utils import upload_to_s3, save_to_database
+from utils import upload_to_s3
 from datetime import datetime
 from models import Interview
 
