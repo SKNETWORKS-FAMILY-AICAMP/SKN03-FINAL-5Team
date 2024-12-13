@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 const developmentApiUrl =
   process.env['API_URL_DEVELOPMENT'] || 'http://127.0.0.1:8000';
 const productionApiUrl =
-  process.env['API_URL_PRODUCTION'] || 'http://3.35.157.81:8000';
+  process.env['API_URL_PRODUCTION'] || 'http://43.203.252.60:8000';
 
 const refreshTokenCookieName = 'unailit_refresh-token';
 
