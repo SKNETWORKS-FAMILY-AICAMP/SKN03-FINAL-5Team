@@ -2,7 +2,7 @@ import BoardDetail from './BoardDetail';
 
 export async function generateStaticParams() {
   const boardIds = await fetch(
-    'https://www.aiunailit.com/board/api/all-board-ids'
+    'https://api.aiunailit.com/board/api/all-board-ids'
   ).then((res) => res.json());
 
   return boardIds.map((id) => ({
