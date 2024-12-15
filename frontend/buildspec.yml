@@ -15,11 +15,10 @@ phases:
     commands:
       - aws s3 sync ./out s3://code-build-frontend --delete
 
-artifacts:
-  files:
-    - '**/*'
-  base-directory: ./out
-
+artifacts: 
+    files:     - '**/*'
+    base-directory: 'dist'   
+  
 cache:
   paths:
     - 'node_modules/**/*'
