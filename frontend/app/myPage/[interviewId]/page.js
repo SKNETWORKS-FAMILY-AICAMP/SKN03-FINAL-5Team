@@ -2,7 +2,7 @@ import InterviewDetail from '../components/InterviewDetail';
 
 export async function generateStaticParams() {
   const interviewIds = await fetch(
-    'https://www.aiunailit.com/api/all-interview-ids'
+    'https://api.aiunailit.com/api/all-interview-ids'
   ).then((res) => res.json());
 
   return interviewIds.map((id) => ({
