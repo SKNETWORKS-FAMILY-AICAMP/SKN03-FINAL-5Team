@@ -13,14 +13,13 @@ phases:
       - npm run build
   post_build:
     commands:
-      - aws s3 sync ./out s3://code-build-frontend --delete
+      - aws s3 sync ./out s3://code-build-front --delete #
 
 artifacts:
   files:
     - '**/*'
-  base-directory: 'dist'
+  base-directory: 'out'
 
 cache:
   paths:
     - 'node_modules/**/*'
-    - '.next/cache/**/*'
