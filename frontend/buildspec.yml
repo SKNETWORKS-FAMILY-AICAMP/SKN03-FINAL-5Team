@@ -13,8 +13,14 @@ phases:
       - npm run build
   post_build:
     commands:
-      - aws s3 sync ./out s3://code-build-front --delete #
+      - aws s3 sync ./out s3://code-build-frontend --delete
 
 cache:
   paths:
     - 'node_modules/**/*'
+
+artifacts:
+  files:
+    - '**/*' # ./out 디렉토리 내 모든 파일을 업로드
+  base-directory: './out' # ./out 디렉토리만 포함하여 업로드
+  discard-paths: yes # 디렉토리 구조를 유지하지 않고 파일만 업로드
