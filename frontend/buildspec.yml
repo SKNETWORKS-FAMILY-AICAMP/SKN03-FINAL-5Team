@@ -1,25 +1,38 @@
 version: 0.2
+env:
+  git-credential-helper: 'yes'
+  variables:
+    ECS_CONTAINER_NAME: ecs-nodejs-container
+    IMAGE_REPO_NAME: ecs-nodejs-ecr
+    IMAGE_TAG: latest
+    AWS_DEFAULT_REGION: ap-northeast-2
 
 phases:
-  install:
-    runtime-versions:
-      nodejs: 20
   pre_build:
     commands:
-      - cd frontend
-      - npm install
+      - echo Logging in to Amazon ECR...
+      - aws --version
+      - ECR_PASSWORD=$(aws ecr get-login-password --region $AWS_DEFAULT_REGION)
+      - AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query 'Account' --output text)
+      - echo -n ${ECR_PASSWORD} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com
+      - REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
+
   build:
     commands:
-      - npm run build
-      - ls -l
-      - ls -l ./out
-      - aws s3 sync ./out s3://code-build-frontend --delete
+      - echo Build started on `date`
+      - cd frontend
+      - echo Building the Docker image...
+      - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .
+      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $REPOSITORY_URI
 
-cache:
-  paths:
-    - 'node_modules/**/*'
+  post_build:
+    commands:
+      - echo package Source...
+      - echo push the Docker image...
+      - docker push $REPOSITORY_URI
+      - printf '[{"name":"%s","imageUri":"%s"}]' $ECS_CONTAINER_NAME $REPOSITORY_URI > imagedefinitions.json
 
 artifacts:
   files:
-    - '**/*'
-  base-directory: frontend/out
+    - imagedefinitions.json
+  base-directory: frontend
