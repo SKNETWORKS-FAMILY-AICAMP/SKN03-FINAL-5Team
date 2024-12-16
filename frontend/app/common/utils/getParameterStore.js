@@ -1,7 +1,9 @@
 import { SSMClient, GetParameterCommand } from '@aws-sdk/client-ssm';
+import { fromNodeProviderChain } from '@aws-sdk/credential-providers';
 
 const ssmClient = new SSMClient({
-  region: process.env.AWS_REGION || 'ap-northeast-2',
+  region: process.env.AWS_DEFAULT_REGION || 'ap-northeast-2',
+  credentials: fromNodeProviderChain(),
 });
 
 export async function getParameterStore(parameterName) {
