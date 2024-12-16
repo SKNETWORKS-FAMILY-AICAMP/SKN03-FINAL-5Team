@@ -8,7 +8,7 @@ import { SSMClient, GetParameterCommand } from '@aws-sdk/client-ssm';
  */
 export async function getParameterValue(parameterName) {
   const client = new SSMClient({
-    region: process.env.AWS_REGION, // Ensure the region is correctly set in your environment
+    region: process.env.AWS_REGION | 'ap-northeast-2', // Ensure the region is correctly set in your environment
   });
 
   try {
