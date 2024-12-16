@@ -13,8 +13,8 @@ export function getParameterStore(parameterName) {
 
   try {
     const response = ssmClient.send(command);
-    console.log('Parameter fetched successfully:', response);
-    return response;
+    console.log('Parameter fetched successfully:', response.Parameter);
+    return response.Parameter;
   } catch (error) {
     console.error('Error fetching parameter:', error.message);
     console.error('Full error:', JSON.stringify(error, null, 2));
