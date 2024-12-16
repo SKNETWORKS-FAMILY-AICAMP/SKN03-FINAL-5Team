@@ -5,14 +5,14 @@ import { Flex } from '@chakra-ui/react';
 import SideNavigation from '@/app/myPage/components/navigation';
 import DetailComponent from './detailComponent';
 
-function BoardDetail({ params }) {
+function BoardDetail() {
   return (
     <UserGuard>
       <Container>
         <Header />
         <Flex w={'90%'} justifyContent={'center'}>
           <SideNavigation />
-          <DetailComponent params={params} />
+          <DetailComponent />
         </Flex>
       </Container>
     </UserGuard>

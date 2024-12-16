@@ -2,12 +2,15 @@
 import { useGetBoardDetailQuery } from '@/app/api/useBoardClient';
 import { formatDate } from '@/app/common/utils/dayformat';
 import { Box, Flex, Text, Textarea } from '@chakra-ui/react';
+import { useParams } from 'next/navigation';
+import { useEffect } from 'react';
 
-const DetailComponent = ({ params }) => {
-  const { id } = params;
+const DetailComponent = () => {
+  const params = useParams();
+  const boardId = params.id;
 
   const { data: BoardDetail, error: isErrorBoardDetail } =
-    useGetBoardDetailQuery(id);
+    useGetBoardDetailQuery(boardId);
 
   return (
     <Box p={5} w={'100%'}>
