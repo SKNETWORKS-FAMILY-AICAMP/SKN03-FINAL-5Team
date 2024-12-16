@@ -3,6 +3,6 @@ export default {
     optimizePackageImports: ['@chakra-ui/react'],
   },
   reactStrictMode: false,
-  output: 'export',
-  trailingSlash: true,
+  // output: 'export',
+  // trailingSlash: true,
 };
