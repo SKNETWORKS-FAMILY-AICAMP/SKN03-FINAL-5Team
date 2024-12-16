@@ -89,7 +89,7 @@ const UploadStep = ({ setCurrentStep }) => {
                 w={'100%'}
                 h={'80px'}
                 value={fileName}
-                placeholder="이곳에 이력서 파일을 업로드해주세요 (pdf 파일만 가능)"
+                placeholder="프로젝트 경험이 포함된 자기소개서를 업로드해주세요 (pdf 파일만 가능)"
                 border={'0'}
                 borderRadius={'0'}
                 background={'white'}

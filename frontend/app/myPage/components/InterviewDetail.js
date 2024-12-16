@@ -2,12 +2,12 @@
 import Container from '@/app/common/components/container';
 import Header from '@/app/common/components/header';
 import { Box, Flex } from '@chakra-ui/react';
-import SideNavigation from './navigation';
-import DetailLog from './detailLog';
+import SideNavigation from './components/navigation';
+import DetailLog from './components/detailLog';
 import React from 'react';
 import UserGuard from '@/app/common/utils/userGuard';
-import { GetInterviewLog } from '../hook/useGetInterviewLog';
-import { GetInterviewReport } from '../hook/useGetInterviewReport';
+import { GetInterviewLog } from './hook/useGetInterviewLog';
+import { GetInterviewReport } from './hook/useGetInterviewReport';
 
 const InterviewDetail = ({ params }) => {
   const { interviewId } = params;
