@@ -2,7 +2,7 @@
 import { VStack, Text, Flex, Spacer, Link } from '@chakra-ui/react';
 import KakaoLoginButton from './kakaoLoginButton';
 
-const Login = ({ KAKAO_REST_API_KEY, KAKAO_REDIRECT_URI }) => {
+const Login = () => {
   return (
     <Flex direction="column" minHeight="70vh">
       <Spacer />
@@ -13,10 +13,7 @@ const Login = ({ KAKAO_REST_API_KEY, KAKAO_REDIRECT_URI }) => {
         <Text fontSize="xl" color="#0066FF">
           당신을 더욱 빛나게 성장시킬 Unail,IT
         </Text>
-        <KakaoLoginButton
-          KAKAO_REST_API_KEY={KAKAO_REST_API_KEY}
-          KAKAO_REDIRECT_URI={KAKAO_REDIRECT_URI}
-        />
+        <KakaoLoginButton />
         <Text fontSize="sm" color="gray.500">
           로그인하여 다양한 기능을 이용해보세요
         </Text>
