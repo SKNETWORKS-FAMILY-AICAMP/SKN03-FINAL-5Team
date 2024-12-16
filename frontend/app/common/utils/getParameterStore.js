@@ -4,7 +4,7 @@ const ssmClient = new SSMClient({
   region: process.env.AWS_REGION || 'ap-northeast-2',
 });
 
-export function getParameterStore(parameterName) {
+export async function getParameterStore(parameterName) {
   console.log(`Fetching parameter: ${parameterName}`);
   const command = new GetParameterCommand({
     Name: parameterName,
@@ -12,7 +12,8 @@ export function getParameterStore(parameterName) {
   });
 
   try {
-    const response = ssmClient.send(command);
+    const response = await ssmClient.send(command);
+    console.log('Full response:', JSON.stringify(response, null, 2)); // 응답 로그 추가
     console.log('Parameter fetched successfully:', response.Parameter.Value);
     return response.Parameter.Value;
   } catch (error) {
