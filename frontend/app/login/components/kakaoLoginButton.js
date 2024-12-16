@@ -2,12 +2,9 @@
 import { Box, Link, Image } from '@chakra-ui/react';
 import React from 'react';
 
-const KakaoLoginButton = () => {
-  const kakaoRestApiKey = process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY;
-  const kakaoRedirectUri = process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI;
-
-  // const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=d1561b312e7d598361f42f47d8baf198&redirect_uri=http://localhost:3000/oauth/callback/kakao&scope=profile_nickname`;
-  const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=${kakaoRestApiKey}&redirect_uri=${kakaoRedirectUri}&scope=profile_nickname`;
+const KakaoLoginButton = ({ KAKAO_REST_API_KEY, KAKAO_REDIRECT_URI }) => {
+  const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=d1561b312e7d598361f42f47d8baf198&redirect_uri=http://localhost:3000/oauth/callback/kakao&scope=profile_nickname`;
+  // const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=${KAKAO_REST_API_KEY}&redirect_uri=${KAKAO_REDIRECT_URI}&scope=profile_nickname`;
 
   return (
     <Link href={KAKAO_AUTH_URL} _hover={{ opacity: 0.8 }}>
