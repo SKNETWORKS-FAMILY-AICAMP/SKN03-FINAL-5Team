@@ -6,13 +6,13 @@ WORKDIR /app
 
 # 의존성 파일 복사 및 설치
 COPY package*.json ./
-RUN npm install --only=production
+RUN npm install
 
 # 환경 변수 설정
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
-# 나머지 소스 코드 복사
+# 나머지 소스 코드 복사ㅌ
 COPY . .
 
 # 빌드
