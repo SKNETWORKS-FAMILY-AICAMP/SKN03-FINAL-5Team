@@ -6,13 +6,6 @@ import React from 'react';
 import { getParameterStore } from '../common/utils/getParameterStore';
 
 async function LoginPage() {
-  const KAKAO_REST_API_KEY = getParameterStore(
-    '/interviewdb-info/kakao/RESTAPI'
-  );
-  const KAKAO_REDIRECT_URI = getParameterStore(
-    '/interviewdb-info/kakao/KAKAO_REDIRECT_URI'
-  );
-
   return (
     <Container>
       <Header />
@@ -22,10 +15,7 @@ async function LoginPage() {
         alignItems="center"
         justifyContent="center"
       >
-        <Login
-          KAKAO_REST_API_KEY={KAKAO_REST_API_KEY}
-          KAKAO_REDIRECT_URI={KAKAO_REDIRECT_URI}
-        />
+        <Login />
       </Box>
     </Container>
   );
