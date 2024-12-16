@@ -11,10 +11,9 @@ phases:
   build:
     commands:
       - npm run build
-  commands:
-    - ls -l
-    - ls -l ./out
-    - aws s3 sync ./out s3://code-build-frontend --delete
+      - ls -l
+      - ls -l ./out
+      - aws s3 sync ./out s3://code-build-frontend --delete
 
 cache:
   paths:
