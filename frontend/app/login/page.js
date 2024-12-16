@@ -16,6 +16,7 @@ async function LoginPage() {
   if (!KAKAO_REST_API_KEY || !KAKAO_REDIRECT_URI) {
     console.error('Failed to fetch one or more parameters.');
   }
+  
 
   return (
     <Container>
