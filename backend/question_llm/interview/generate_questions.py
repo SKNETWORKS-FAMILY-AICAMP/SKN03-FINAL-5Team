@@ -17,6 +17,7 @@ from langchain.schema import SystemMessage
 from dotenv import load_dotenv
 import uuid 
 from util.get_parameter import get_parameter
+import boto3
 
 load_dotenv()
 
