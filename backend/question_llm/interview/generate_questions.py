@@ -15,14 +15,24 @@ from langchain.retrievers.multi_query import MultiQueryRetriever
 from langchain.retrievers import ContextualCompressionRetriever
 from langchain.schema import SystemMessage
 from dotenv import load_dotenv
-import uuid  # 고유 ID 생성에 사용
+import uuid 
 from util.get_parameter import get_parameter
 
 load_dotenv()
 
 
-openai_api_key = get_parameter('/TEST/CICD/STREAMLIT/OPENAI_API_KEY')
-# openai_api_key = os.getenv("OPENAI_API_KEY")
+# openai_api_key = get_parameter('/TEST/CICD/STREAMLIT/OPENAI_API_KEY')
+
+api_key = os.environ.get("OPENAI_API_KEY")
+if not api_key:
+        print("Fetching API key from AWS SSM Parameter Store...")
+        ssm = boto3.client("ssm")
+        parameter = ssm.get_parameter(
+            Name="/TEST/CICD/STREAMLIT/OPENAI_API_KEY", WithDecryption=True
+        )
+        os.environ["OPENAI_API_KEY"] = parameter["Parameter"]["Value"]
+
+openai_api_key = os.environ["OPENAI_API_KEY"]
 
 def get_client():
     return ChatOpenAI(
