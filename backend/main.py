@@ -22,7 +22,6 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    timeout_keep_alive=120,
 )
 init_db()
 
