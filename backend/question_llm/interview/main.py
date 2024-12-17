@@ -1,10 +1,10 @@
-from generate_questions import generate_questions
-from process_answers import process_answers
-from evaluate_answers import evaluate_answer
-from generate_report import generate_report
-from database_utils import create_new_interview, save_report_to_db, save_evaluated_answers_to_db
-from backend.database import SessionLocal
-from collect_answer import collect_answers
+from .generate_questions import generate_questions
+from .process_answers import process_answers
+from .evaluate_answers import evaluate_answer
+from .generate_report import generate_report
+from .database_utils import create_new_interview, save_report_to_db, save_evaluated_answers_to_db
+from database import SessionLocal
+from .collect_answer import collect_answers
 from sentence_transformers import SentenceTransformer
 from langchain_openai import ChatOpenAI
 from langchain.schema import SystemMessage
@@ -33,8 +33,11 @@ def main():
     모의 면접 프로세스 관리.
     """
     USER_ID = 1
-    USER_JOB = "백엔드 개발자"
-    JOB_TALENT = "Python"
+    USER_JOB = "풀스텍 개발자"
+    JOB_TALENT = "python, Vue.js, Vue, Firebase, GitHub, Stripe API, React, Stripe, AuthenticationFirestore, React, React Context API, Google, SPA, Firebase"
+    # str, True, for, function, def, try, int, return, if, with, get, set, import
+    # " django, flask, node.js, react, fast_api, python"
+    #파이썬의 Flask 프레임워크를 활용하여 사용자 친화적인 웹 애플리케이션을 개발하고 배포하는 프로젝트를 진행했습니다
     RESUME_PATH = "path/to/resume.pdf"
 
     try:
@@ -54,7 +57,10 @@ def main():
 
             # Step 2: 질문 생성
             keywords = JOB_TALENT.split(", ")
-            questions = generate_questions(keywords, interview_id, db_session)
+            keyjob = USER_JOB
+            print(keyjob)
+            print(type(keyjob))
+            questions = generate_questions(keywords, interview_id, keyjob, db_session)
             print(f"Generated Questions: {questions}")
 
             # Step 3: 프론트에서 답변 받기 (샘플 답변 생성)

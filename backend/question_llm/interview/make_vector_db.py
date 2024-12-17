@@ -2,7 +2,7 @@ from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import FAISS
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import numpy as np
-from make_loader import csvloader_data, html_loader_data
+from .make_loader import csvloader_data, html_loader_data
 from dotenv import load_dotenv
 import os
 
@@ -21,6 +21,7 @@ docs = csvloader_data()  # 이미 Document 객체로 로드된 상태
 # 2. Document 객체 리스트 분할
 split_doc1 = text_splitter.split_documents(docs)  # Document 리스트를 분할
 
+print(split_doc1)
 # 3. DB 생성
 db = FAISS.from_documents(documents=split_doc1, embedding=embedding_model)
 
@@ -28,11 +29,7 @@ index_name = "python_new_low_chunk700"
 
 # 4. 새로운 Document 객체 추가 함수
 def add_documents(db, new_docs):
-    """
-    새로운 Document 객체를 FAISS DB에 추가하는 함수.
-    db: 기존 FAISS 벡터 DB 객체
-    new_docs: 추가할 Document 객체 리스트
-    """
+
     # 새로운 문서의 임베딩을 생성하고 DB에 추가
     db.add_documents(new_docs)
     db.save_local(folder_path="low_db", index_name=index_name)

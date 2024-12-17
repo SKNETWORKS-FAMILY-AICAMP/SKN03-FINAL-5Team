@@ -24,7 +24,7 @@ def html_loader_data():
 def csvloader_data():
     # 파일 경로와 인코딩 방식 설정
     loader = CSVLoader(
-        file_path='c:/dev/SKN03-Final-5Team-git/question_llm/interview/csv_folder/Python_file.csv',
+        file_path='c:/dev/SKN03-Final-5Team-git/backend/question_llm/interview/csv_folder/Python_file.csv',
         encoding='UTF-8',
         source_column='source',
         csv_args={'delimiter': ','}

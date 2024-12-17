@@ -227,8 +227,4 @@ class Answer(BaseModel):
 
 class EvaluateAnswersRequest(BaseModel):
     interview_id: int
-<<<<<<< HEAD
     answers: List[Answer]
-=======
-    answers: List[Answer]
->>>>>>> ec2c13047fae7ba749e6def90d153b1ae258f3c8

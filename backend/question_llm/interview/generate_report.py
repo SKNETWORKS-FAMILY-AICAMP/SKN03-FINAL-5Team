@@ -46,9 +46,7 @@ except Exception as e:
     raise
 
 def generate_report(evaluation_results: List[Dict], db_session) -> Dict:
-    """
-    총평을 생성하고 보고서 데이터를 반환합니다.
-    """
+    
     try:
         if not evaluation_results:
             raise ValueError("evaluation_results is empty")

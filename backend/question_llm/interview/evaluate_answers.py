@@ -46,6 +46,9 @@ def evaluate_answer(interview_id, question, answer, model_answer, model):
     feedback_response = chat.invoke([SystemMessage(content=feedback_prompt)])
     feedback_full = feedback_response.content.strip()
 
+    if score <= 30:
+        feedback == None
+
     # "피드백"으로 시작하는 부분만 추출
     feedback = ""
     for line in feedback_full.splitlines():
