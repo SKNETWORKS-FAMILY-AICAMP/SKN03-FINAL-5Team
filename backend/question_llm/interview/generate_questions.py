@@ -22,10 +22,11 @@ load_dotenv()
 
 
 openai_api_key = get_parameter('/TEST/CICD/STREAMLIT/OPENAI_API_KEY')
+# openai_api_key = os.getenv("OPENAI_API_KEY")
 
 def get_client():
     return ChatOpenAI(
-        model="gpt-4o",
+        model="gpt-4o-mini",
         streaming=True,
         openai_api_key=openai_api_key
         )

@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 import re
 
 openai_api_key = get_parameter('/TEST/CICD/STREAMLIT/OPENAI_API_KEY')
+# openai_api_key = os.getenv("OPENAI_API_KEY")
 
 
 def clean_text(text):
@@ -33,7 +34,7 @@ def get_client():
         if not openai_api_key:
             raise ValueError("OPENAI_API_KEY is not set in environment variables")
         return ChatOpenAI(
-            model="gpt-4o", 
+            model="gpt-4o-mini", 
             streaming=True,
             openai_api_key=openai_api_key
         )

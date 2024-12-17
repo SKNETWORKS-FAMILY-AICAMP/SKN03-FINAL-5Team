@@ -40,6 +40,7 @@ config = RunnableConfig(recursion_limit=70, configurable={"thread_id": "THREAD_I
 
 
 openai_api_key = get_parameter('/TEST/CICD/STREAMLIT/OPENAI_API_KEY')
+# openai_api_key = os.getenv("OPENAI_API_KEY")
 
 # "gpt-4" "gpt-4o-mini"
 # ChatOpenAI 클라이언트 생성 함수
