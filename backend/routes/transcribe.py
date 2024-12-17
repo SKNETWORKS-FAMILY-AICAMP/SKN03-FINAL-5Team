@@ -1,6 +1,6 @@
 from fastapi import APIRouter, File, UploadFile, HTTPException
 from google.cloud import speech
-from google.oauth2 import service_account  # Import the service_account module
+from google.oauth2 import service_account  
 import subprocess
 from util.get_parameter import get_parameter
 import json
