@@ -24,16 +24,18 @@ load_dotenv()
 
 # openai_api_key = get_parameter('/TEST/CICD/STREAMLIT/OPENAI_API_KEY')
 
-api_key = os.environ.get("OPENAI_API_KEY")
-if not api_key:
-        print("Fetching API key from AWS SSM Parameter Store...")
-        ssm = boto3.client("ssm")
-        parameter = ssm.get_parameter(
-            Name="/TEST/CICD/STREAMLIT/OPENAI_API_KEY", WithDecryption=True
-        )
-        os.environ["OPENAI_API_KEY"] = parameter["Parameter"]["Value"]
+def fetch_openai_api_key(parameter_name="/TEST/CICD/STREAMLIT/OPENAI_API_KEY"):
+    try:
+        ssm_client = boto3.client("ssm", region_name="ap-northeast-2")
+        response = ssm_client.get_parameter(Name=parameter_name, WithDecryption=True)
+        api_key = response["Parameter"]["Value"]
+        os.environ["OPENAI_API_KEY"] = api_key
+        return api_key
+    except Exception as e:
+        raise RuntimeError(f"Error fetching parameter: {str(e)}")
 
-openai_api_key = os.environ["OPENAI_API_KEY"]
+# Fetch and set the API key
+openai_api_key = os.environ.get("OPENAI_API_KEY") or fetch_openai_api_key()
 print(openai_api_key)
 
 def get_client():
