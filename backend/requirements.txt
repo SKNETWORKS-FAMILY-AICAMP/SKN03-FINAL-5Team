@@ -28,3 +28,4 @@ ragas
 sentence-transformers
 pydantic
 faiss-cpu
+fitz
