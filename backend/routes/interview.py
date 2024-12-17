@@ -46,7 +46,7 @@ def makequestion(keywords: List[str],db_session: Session):  # db_session을 인�
             job_talent=JOB_TALENT,
             resume_path=RESUME_PATH,
             interview_time=datetime.now(),
-            db_session=db_session  # 전달된 db_session 사용
+            db_session=db_session  
         )
         if not interview_id:
             raise ValueError("Failed to create new interview.")
