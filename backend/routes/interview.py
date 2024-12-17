@@ -67,7 +67,7 @@ def makequestion(keywords: List[str],db_session: Session):  # db_session을 인�
 @router.post("/generate_question")
 async def generate_interview_questions(keywords: List[str], db: Session = Depends(get_db)):
     try:
-        questions, interview_id = makequestion(keywords, db)  
+        questions, interview_id = await makequestion(keywords, db)  
         
         
         return {"message": "Questions generated successfully", "interview_id": interview_id, "questions": questions}
