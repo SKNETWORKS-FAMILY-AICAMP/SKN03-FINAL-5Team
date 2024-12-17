@@ -1,5 +1,5 @@
-# Node.js LTS 버전 사용
-FROM node:18
+# Build Stage
+FROM node:18 AS builder
 
 # 작업 디렉토리 설정
 WORKDIR /app
@@ -8,15 +8,30 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
-# 환경 변수 설정
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_ENV=production
-
-# 나머지 소스 코드 복사ㅌ
+# 나머지 소스 코드 복사
 COPY . .
 
 # 빌드
 RUN npm run build
+
+# Production Stage
+FROM node:18 AS production
+
+# 작업 디렉토리 설정
+WORKDIR /app
+
+# 빌드된 파일만 복사
+COPY --from=builder /app/next.config.mjs ./
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/package*.json ./
+
+# 프로덕션 의존성만 설치
+RUN npm install --only=production
+
+# 환경 변수 설정
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
 
 # 포트 노출
 EXPOSE 3000
