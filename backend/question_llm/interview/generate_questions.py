@@ -34,6 +34,7 @@ if not api_key:
         os.environ["OPENAI_API_KEY"] = parameter["Parameter"]["Value"]
 
 openai_api_key = os.environ["OPENAI_API_KEY"]
+print(openai_api_key)
 
 def get_client():
     return ChatOpenAI(
