@@ -19,7 +19,7 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     # allow_origins=["http://localhost:3000"],
-    allow_origins=["https://api.unailit.com"],
+    allow_origins=["https://api.aiunailit.com"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
