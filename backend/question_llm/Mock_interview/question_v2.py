@@ -32,11 +32,15 @@ from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 from db_utils import create_new_interview, save_question_to_db , save_report_to_db, update_question_in_db, initialize_questions
 from datetime import datetime
+from util.get_parameter import get_parameter
+
+
 
 config = RunnableConfig(recursion_limit=70, configurable={"thread_id": "THREAD_ID"}) 
 
 
-
+openai_api_key = get_parameter('/TEST/CICD/STREAMLIT/OPENAI_API_KEY')
+# openai_api_key = os.getenv("OPENAI_API_KEY")
 
 # "gpt-4" "gpt-4o-mini"
 # ChatOpenAI 클라이언트 생성 함수
@@ -44,7 +48,7 @@ def get_client():
     return ChatOpenAI(
         model="gpt-4o",
         streaming=True,
-        openai_api_key=os.getenv("OPENAI_API_KEY")
+        openai_api_key=openai_api_key
     ) 
 
 
@@ -77,7 +81,7 @@ class State(TypedDict):
 vector_db_high = FAISS.load_local(
     folder_path="C:/dev/SKN03-FINAL-5Team-git/question_llm/high_db/",
     index_name="python_high_chunk700",
-    embeddings=OpenAIEmbeddings(),
+    embeddings=OpenAIEmbeddings(openai_api_key=openai_api_key),
     allow_dangerous_deserialization=True,
 )
 
@@ -85,7 +89,7 @@ vector_db_high = FAISS.load_local(
 vector_db_low = FAISS.load_local(
     folder_path="C:/dev/SKN03-FINAL-5Team-git/question_llm/low_db",
     index_name="python_low_chunk700",
-    embeddings=OpenAIEmbeddings(),
+    embeddings=OpenAIEmbeddings(openai_api_key=openai_api_key),
     allow_dangerous_deserialization=True,
 )
 

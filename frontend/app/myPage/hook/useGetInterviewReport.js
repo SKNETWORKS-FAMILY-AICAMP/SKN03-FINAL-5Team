@@ -10,7 +10,6 @@ export const GetInterviewReport = (interviewId) => {
     if (report) {
       setReportData(report);
     }
-    console.log(report);
   }, [report]);
 
   useEffect(() => {

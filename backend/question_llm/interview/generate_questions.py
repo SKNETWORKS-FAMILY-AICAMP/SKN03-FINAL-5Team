@@ -16,22 +16,40 @@ from langchain.retrievers.multi_query import MultiQueryRetriever
 from langchain.retrievers import ContextualCompressionRetriever
 from langchain.schema import SystemMessage
 from dotenv import load_dotenv
-import uuid  # 고유 ID 생성에 사용
+import uuid 
+from util.get_parameter import get_parameter
+import boto3
 
 load_dotenv()
 
 
+# openai_api_key = get_parameter('/TEST/CICD/STREAMLIT/OPENAI_API_KEY')
+
+def fetch_openai_api_key(parameter_name="/TEST/CICD/STREAMLIT/OPENAI_API_KEY"):
+    try:
+        ssm_client = boto3.client("ssm", region_name="ap-northeast-2")
+        response = ssm_client.get_parameter(Name=parameter_name, WithDecryption=True)
+        api_key = response["Parameter"]["Value"]
+        os.environ["OPENAI_API_KEY"] = api_key
+        return api_key
+    except Exception as e:
+        raise RuntimeError(f"Error fetching parameter: {str(e)}")
+
+# Fetch and set the API key
+openai_api_key = os.environ.get("OPENAI_API_KEY") or fetch_openai_api_key()
+print(openai_api_key)
+
 def get_client():
     return ChatOpenAI(
-        model="gpt-4o",
+        model="gpt-4o-mini",
         streaming=True,
-        openai_api_key=os.getenv("OPENAI_API_KEY")
+        openai_api_key=openai_api_key
         )
 
 # ChatOpenAI 인스턴스 생성
 chat = get_client()
 
-embeddings = OpenAIEmbeddings(model="text-embedding-3-small", openai_api_key=os.getenv("OPENAI_API_KEY"))
+embeddings = OpenAIEmbeddings(model="text-embedding-3-small", openai_api_key=openai_api_key)
 
 
 # 현재 파일의 디렉토리 경로를 가져옴
@@ -55,8 +73,12 @@ vector_db_low = FAISS.load_local(
 )
 
 # 검색기 함수
-def cross_encoder_reranker(query, db_level="low", top_k=5):
+async def cross_encoder_reranker(query, db_level="low", top_k=5):
     
+    embeddings=OpenAIEmbeddings(openai_api_key=openai_api_key),
+    allow_dangerous_deserialization=True,
+)
+
     # DB 선택
     vector_db = vector_db_high if db_level == "high" else vector_db_low
 
@@ -85,9 +107,19 @@ def cross_encoder_reranker(query, db_level="low", top_k=5):
 
 
 # 질문생성함수
-def generate_questions(keywords: List[str], interview_id: int, db_session, keyjob: str):
+async def generate_questions(keywords: List[str], interview_id: int, db_session) -> pd.DataFrame:
     questions = []
-    db_allocation = ["low"] * 5 + ["high"] * 0
+    """
+    주어진 키워드를 바탕으로 질문을 생성하고, DB에 저장 후 DataFrame으로 반환.
+    Args:
+        keywords (List[str]): 기술 키워드 목록
+        interview_id (int): 인터뷰 ID
+        db_session: 데이터베이스 세션
+    Returns:
+        pd.DataFrame: 생성된 질문과 관련 데이터
+    """
+    questions = []
+    db_allocation = ["low"] * 3 + ["high"] * 2
     random.shuffle(db_allocation)
 
     # 키워드 리스트를 하나의 문자열로 결합

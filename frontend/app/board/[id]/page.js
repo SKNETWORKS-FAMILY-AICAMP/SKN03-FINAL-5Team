@@ -1,22 +1,15 @@
-import UserGuard from '@/app/common/utils/userGuard';
-import Container from '@/app/common/components/container';
-import Header from '@/app/common/components/header';
-import { Flex } from '@chakra-ui/react';
-import SideNavigation from '@/app/myPage/components/navigation';
-import DetailComponent from './detailComponent';
+import BoardDetail from './BoardDetail';
 
-function BoardDetail() {
-  return (
-    <UserGuard>
-      <Container>
-        <Header />
-        <Flex w={'90%'} justifyContent={'center'}>
-          <SideNavigation />
-          <DetailComponent />
-        </Flex>
-      </Container>
-    </UserGuard>
-  );
+// export async function generateStaticParams() {
+//   const boardIds = await fetch(
+//     'https://api.aiunailit.com/board/api/all-board-ids'
+//   ).then((res) => res.json());
+
+//   return boardIds.map((id) => ({
+//     id: id.toString(),
+//   }));
+// }
+
+export default function Page() {
+  return <BoardDetail />;
 }
-
-export default BoardDetail;

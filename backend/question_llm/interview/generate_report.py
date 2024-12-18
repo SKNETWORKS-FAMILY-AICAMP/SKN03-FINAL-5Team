@@ -5,12 +5,17 @@ from langchain.schema import SystemMessage
 from datetime import datetime
 import os
 from .database_utils import save_report_to_db
+from util.get_parameter import get_parameter
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 import re
+
+openai_api_key = get_parameter('/TEST/CICD/STREAMLIT/OPENAI_API_KEY')
+# openai_api_key = os.getenv("OPENAI_API_KEY")
+
 
 def clean_text(text):
     # 콜론과 그 뒤의 공백 제거
@@ -26,13 +31,12 @@ def clean_text(text):
 
 def get_client():
     try:
-        api_key = os.getenv("OPENAI_API_KEY")
-        if not api_key:
+        if not openai_api_key:
             raise ValueError("OPENAI_API_KEY is not set in environment variables")
         return ChatOpenAI(
-            model="gpt-4o", 
+            model="gpt-4o-mini", 
             streaming=True,
-            openai_api_key=api_key
+            openai_api_key=openai_api_key
         )
     except Exception as e:
         logger.error(f"Error creating ChatOpenAI client: {e}")

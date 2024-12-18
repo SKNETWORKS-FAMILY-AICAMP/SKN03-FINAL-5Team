@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 const developmentApiUrl =
   process.env['API_URL_DEVELOPMENT'] || 'http://127.0.0.1:8000';
 const productionApiUrl =
-  process.env['API_URL_PRODUCTION'] || 'https://www.aiunaitit.com';
+  process.env['API_URL_PRODUCTION'] || 'https://api.aiunailit.com';
 
 const refreshTokenCookieName = 'unailit_refresh-token';
 
@@ -15,6 +15,7 @@ export const instance = axios.create({
     process.env.NODE_ENV === 'production'
       ? productionApiUrl
       : developmentApiUrl,
+  timeout: 120000,
 });
 
 let refreshTokenFailedCallback = () => {
