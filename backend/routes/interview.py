@@ -29,7 +29,7 @@ def get_db():
 
 model = SentenceTransformer("snunlp/KR-SBERT-V40K-klueNLI-augSTS")
 
-def makequestion(keywords: List[str],db_session: Session):  # db_session을 인자로 받도록 수정
+async def makequestion(keywords: List[str], db_session: Session):  
     """
     모의 면접 프로세스 관리.
     """
@@ -52,7 +52,7 @@ def makequestion(keywords: List[str],db_session: Session):  # db_session을 인�
             raise ValueError("Failed to create new interview.")
         print(f"Interview created with ID: {interview_id}")
 
-        questions = generate_questions(keywords, interview_id, db_session)
+        questions = await generate_questions(keywords, interview_id, db_session)
         
         save_questions_to_db(interview_id, questions, db_session)
         

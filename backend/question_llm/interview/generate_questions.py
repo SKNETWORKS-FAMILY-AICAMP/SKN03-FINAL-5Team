@@ -72,7 +72,7 @@ vector_db_low = FAISS.load_local(
 )
 
 
-def cross_encoder_reranker(query, db_level="low", top_k=3):
+async def cross_encoder_reranker(query, db_level="low", top_k=3):
     """
     Cross Encoder Reranker를 ContextualCompressionRetriever와 통합하여 문서를 검색하고 압축.
     Args:
@@ -109,8 +109,9 @@ def cross_encoder_reranker(query, db_level="low", top_k=3):
 
     return compressed_docs
 
+async def generate_questions(keywords: List[str], interview_id: int, db_session) -> pd.DataFrame:
 
-def generate_questions(keywords: List[str], interview_id: int, db_session) -> pd.DataFrame:
+    questions = []
     """
     주어진 키워드를 바탕으로 질문을 생성하고, DB에 저장 후 DataFrame으로 반환.
     Args:
@@ -130,7 +131,7 @@ def generate_questions(keywords: List[str], interview_id: int, db_session) -> pd
         print('db_allow')
 
         # 검색
-        search_results = cross_encoder_reranker(query=keyword, db_level=db_level, top_k=1)
+        search_results = await cross_encoder_reranker(query=keyword, db_level=db_level, top_k=1)
         if not search_results:
             # 검색 결과가 없으면 반대 레벨에서도 검색
             alternate_level = "high" if db_level == "low" else "low"
