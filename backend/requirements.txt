@@ -1,4 +1,4 @@
-﻿fastapi
+fastapi
 uvicorn
 python-multipart
 google-cloud-speech
@@ -24,4 +24,5 @@ node
 ragas
 sentence-transformers
 pydantic
+fitz
 faiss-cpu
