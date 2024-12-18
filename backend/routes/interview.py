@@ -221,7 +221,6 @@ def get_report(interview_id: int, db: Session = Depends(get_db)):
         "weakness": report.weakness,
         "ai_summary": report.ai_summary,
         "detail_feedback": report.detail_feedback,
-        "attitude_feedback": report.attitude_feedback,
         "report_score": report.report_score,
         "report_created": report.report_created
     }

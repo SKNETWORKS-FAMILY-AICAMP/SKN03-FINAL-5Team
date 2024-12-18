@@ -171,8 +171,7 @@ class ReportTb(Base):
     strength = Column(String(255), nullable=False)
     weakness = Column(String(255), nullable=False)
     ai_summary = Column(DateTime, nullable=False)
-    detail_feedback = Column(String, nullable=False)
-    attitude_feedback = Column(VARCHAR(255), nullable=False)
+    detail_feedback = Column(Text, nullable=False)
     report_score = Column(Integer, nullable=False)
     report_created = Column(DateTime, nullable=False)
 
@@ -210,14 +209,15 @@ class QuestionTb(Base):
 
     question_id = Column(Integer, primary_key=True)
     interview_id = Column(ForeignKey('interview_tb.interview_id', ondelete='CASCADE', onupdate='CASCADE'), index=True)
-    job_question = Column(String(255), nullable=False)
-    job_answer = Column(String(255), nullable=False)
-    job_solution = Column(String(255), nullable=False)
-    job_score = Column(Integer, nullable=False)
-    question_vector_path = Column(VARCHAR(255), nullable=False)
-
-    interview = relationship('Interview')
-
+    job_question_kor = Column(String(255), nullable=True)
+    job_question_eng = Column(String(255), nullable=True)
+    job_answer_kor = Column(String(255), nullable=True)
+    job_answer_eng = Column(String(255), nullable=True)
+    job_solution_kor = Column(String(255), nullable=True)
+    job_solution_eng = Column(String(255), nullable=True)
+    job_context = Column(String(255), nullable=True)
+    job_score = Column(DECIMAL, nullable=True)
+    interview = relationship('InterviewTb')
 
 class Answer(BaseModel):
     interview_id: int

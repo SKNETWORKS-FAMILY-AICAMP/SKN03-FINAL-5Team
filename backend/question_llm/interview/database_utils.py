@@ -177,7 +177,6 @@ def save_report_to_db(
     weakness: str,
     ai_summary: str,
     detail_feedback: str,
-    attitude_feedback: str,
     report_score: int,
     db_session: Session
 ):
@@ -191,7 +190,6 @@ def save_report_to_db(
             weakness=weakness,
             ai_summary=ai_summary,
             detail_feedback=detail_feedback,
-            attitude_feedback=attitude_feedback,
             report_score=report_score,
             report_created=datetime.now(),  # 생성 시간 추가
         )

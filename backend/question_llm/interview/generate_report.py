@@ -95,7 +95,6 @@ def generate_report(evaluation_results: List[Dict], db_session) -> Dict:
             "ai_summary": clean_text("한줄평 없음" if "한줄평" not in feedback else feedback.split("한줄평")[1].strip()),
             "report_score": average_score,
             "detail_feedback": str(detail_feedback),
-            "attitude_feedback": "개발중",
         }
 
     # 보고서 데이터를 저장
