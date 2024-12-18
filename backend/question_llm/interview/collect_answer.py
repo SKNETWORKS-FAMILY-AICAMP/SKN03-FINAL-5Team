@@ -4,20 +4,12 @@ import os
 
 from typing import Dict, List
 
+# 질의응답 매핑함수
 def collect_answers(
     answers_from_frontend: List[Dict],
     questions: List[Dict]
 ) -> List[Dict]:
-    """
-    질문과 프론트엔드에서 전달된 답변을 매핑 (DB 저장 없이).
-    
-    Args:
-        answers_from_frontend (List[Dict]): 프론트에서 받은 답변 리스트
-        questions (List[Dict]): 생성된 질문 리스트
-        
-    Returns:
-        List[Dict]: 질문과 답변이 매핑된 데이터 리스트
-    """
+
     print(f"answers_from_frontend: {answers_from_frontend}")
     print(f"questions: {questions}")
 

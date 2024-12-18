@@ -68,13 +68,7 @@ def save_questions_to_db(interview_id: int, questions: List[Dict], db_session):
 
 
 def save_report_to_db(db_session, **kwargs):
-    """
-    보고서 데이터를 DB에 저장합니다.
 
-    Args:
-        db_session: SQLAlchemy DB 세션.
-        kwargs: 저장할 데이터의 키-값 쌍.
-    """
     try:
         # ReportTb의 컬럼과 매칭되는 데이터만 필터링
         filtered_data = {key: value for key, value in kwargs.items() if hasattr(ReportTb, key)}
@@ -90,9 +84,7 @@ def save_report_to_db(db_session, **kwargs):
 
 
 def create_new_interview(user_id: int, user_job: str, job_talent: str, resume_path: str, interview_time: datetime, db_session: Session) -> int:
-    """
-    새로운 인터뷰를 생성하고 인터뷰 ID를 반환합니다.
-    """
+
     try:
         # 인터뷰 데이터 생성
         new_interview = Interview(
@@ -117,12 +109,7 @@ def create_new_interview(user_id: int, user_job: str, job_talent: str, resume_pa
         return None
     
 def save_answers_to_db(answers: List[Dict]):
-    """
-    매핑된 질문-답변 데이터를 DB에 저장합니다.
 
-    Args:
-        answers (List[Dict]): 질문-답변 매핑 데이터 리스트
-    """
     with SessionLocal() as session:
         for answer in answers:
             db_record = QuestionTb(
@@ -142,14 +129,7 @@ def save_evaluated_answers_to_db(
     evaluated_answers: List[Dict],
     db_session: Session
 ):
-    """
-    평가된 답변을 DB에 저장합니다.
 
-    Args:
-        interview_id (int): 인터뷰 ID
-        evaluated_answers (List[Dict]): 평가된 답변 리스트
-        db_session (Session): SQLAlchemy DB 세션
-    """
     try:
         for answer in evaluated_answers:
             stmt = update(QuestionTb).where(
@@ -180,9 +160,7 @@ def save_report_to_db(
     report_score: int,
     db_session: Session
 ):
-    """
-    ReportTb 테이블에 데이터를 저장합니다.
-    """
+
     try:
         report = ReportTb(
             interview_id=interview_id,
