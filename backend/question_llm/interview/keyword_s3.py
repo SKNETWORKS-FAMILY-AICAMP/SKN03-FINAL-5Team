@@ -21,12 +21,47 @@ def get_parameter(name, with_decryption=True):
     ssm = boto3.client('ssm', region_name='ap-northeast-2')
     return ssm.get_parameter(Name=name, WithDecryption=with_decryption)['Parameter']['Value']
 
+
+def extract_s3_key(s3_path: str) -> str:
+
+    # 정규표현식으로 "s3://버킷 이름/" 제거
+    match = re.match(r"s3://[^/]+/(.+)", s3_path)
+    if match:
+        return match.group(1)  # Key 부분 반환
+    raise ValueError(f"Invalid S3 path: {s3_path}")
+
+class ResumePathManager:
+    resume_path = None
+
+    @classmethod
+    def set_path(cls, path):
+        cls.resume_path = path
+
+    @classmethod
+    def get_path(cls):
+        if not cls.resume_path:
+            raise ValueError("RESUME_PATH is not set.")
+        return cls.resume_path
+
 # S3에서 파일 로드 함수
 def load_pdf_from_s3(bucket_name, key):
     s3 = boto3.client('s3')
     response = s3.get_object(Bucket=bucket_name, Key=key)
     file_stream = response['Body']
+
+    # 경로저장
+    s3_path = f"s3://{bucket_name}/{key}"
+    formatted_key = extract_s3_key(s3_path)
+    ResumePathManager.set_path(formatted_key)
+
     return io.BytesIO(file_stream.read())
+
+if __name__ == "__main__":
+    bucket_name = "your-bucket-name"
+    key = "path/to/resume.pdf"
+
+    # S3 파일 로드 및 경로 저장
+    load_pdf_from_s3(bucket_name, key)
 
 # PDF 내용을 메모리에서 읽는 함수 (PyMuPDF 사용)
 # PyPDFLoader는 파일 경로 또는 URL만을 지원하므로 io.BytesIO 객체를 바로 입력할 수 없음

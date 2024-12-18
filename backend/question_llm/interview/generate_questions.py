@@ -34,10 +34,10 @@ chat = get_client()
 embeddings = OpenAIEmbeddings(model="text-embedding-3-small", openai_api_key=os.getenv("OPENAI_API_KEY"))
 
 
-# 현재 파일의 디렉토리 경로를 가져옵니다.
+# 현재 파일의 디렉토리 경로를 가져옴
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
-# 상위 디렉토리로 이동합니다 (필요한 만큼 반복).
+# 상위 디렉토리로 이동 (필요한 만큼 반복).
 parent_dir = os.path.dirname(current_dir)
 
 vector_db_high = FAISS.load_local(
@@ -84,92 +84,7 @@ def cross_encoder_reranker(query, db_level="low", top_k=5):
     return compressed_docs
 
 
-# # 질문생성 함수
-# def generate_questions(keywords: List[str], interview_id: int, db_session, keyjob: str):
-#     questions = []
-#     db_allocation = ["low"] * 5 + ["high"] * 0  
-#     random.shuffle(db_allocation) 
-
-#     # 키워드 리스트를 하나의 문자열로 결합
-#     combined_keywords = ", ".join(keywords)
-#     print(f"Combined Keywords: {combined_keywords}")
-
-#     # combined_keywords = f"{keyjob}, " + ", ".join(keywords)
-#     # print(f"Combined Keywords: {combined_keywords}")
-
-#     for db_level in db_allocation:
-#         # 키워드 선택
-#         # keyword = random.choice(keywords)
-#         keyword = combined_keywords
-
-#         print('db_allow')
-
-#         # 검색
-#         search_results = cross_encoder_reranker(query=keyword, db_level=db_level, top_k=5)
-#         if not search_results:
-#             # 검색 결과가 없으면 반대 레벨에서도 검색
-#             alternate_level = "high" if db_level == "low" else "low"
-#             search_results = cross_encoder_reranker(query=keyword, db_level=alternate_level, top_k=5)
-
-#         if not search_results:
-#             # 검색 결과가 없으면 건너뜀
-#             print("검색 결과가 없습니다.")
-#             continue
-
-#         # 검색된 각 문서를 순회하며 질문과 답변 생성
-#         for i, doc in enumerate(search_results):
-#             retrieved_content = doc.page_content
-#             reference_docs = doc.metadata.get("source", "출처를 알 수 없음")
-
-#             # 질문 생성
-#             prompt = question_prompt() + (
-#                 f"다음 공식 문서를 참조하여 기술 면접 질문을 생성해 주세요:\n{retrieved_content}\n"
-#                 f"다음 면접자의 희망직무를 반영하여 질문을 생성해주세요:\n{keyjob}\n"
-#                 f"기술 스택: {keyword}\n"
-#                 f"하나의 질문만 반환해주시기 바랍니다."
-#             )
-#             question_response = chat.invoke([SystemMessage(content=prompt)])
-#             job_question = question_response.content.strip()
-
-#             # 모범답안 생성
-#             model_prompt = model_answer(job_question, retrieved_content)
-#             model_response = chat.invoke([SystemMessage(content=model_prompt)])
-#             job_solution = model_response.content.strip()
-
-#             # 결과 추가
-#             questions.append({
-#                 "interview_id": interview_id,             # 인터뷰 ID
-#                 "job_question": job_question,             # 생성된 질문
-#                 "job_answer": "N/A",                      # 답변 (초기값)
-#                 "job_solution": job_solution,             # 생성된 모범답안
-#                 "job_score": 0,                           # 초기 점수
-#                 "question_vector_path": "default/path/vector.json",  # 기본 벡터 경로
-#                 "selected_keyword": keyword,              # 선택된 키워드
-#                 "retrieved_content": retrieved_content,
-#                 "reference_doc": reference_docs,          # 참조 문서 정보
-#                 "doc_index": i + 1                        # 문서 순번
-#             })
-#                         # 질문이 5개가 되면 종료
-#             if len(questions) >= 5:
-#                 break
-
-#         # 질문이 5개가 되면 외부 루프도 종료
-#         if len(questions) >= 5:
-#             break
-
-#     # 데이터를 DataFrame으로 변환
-#     df = pd.DataFrame(questions, columns=["job_question", "job_solution", "selected_keyword", "retrieved_content"])
-#     output_folder = "c:/dev/SKN03-Final-5Team-git/backend/question_llm/interview/csv_folder"
-
-#     timestamp = time.strftime("%Y%m%d_%H%M%S")
-#     output_csv_path = os.path.join(output_folder, f"Python_file_question_data{timestamp}.csv")
-
-#     df.to_csv(output_csv_path, index=False, encoding='utf-8-sig')
-#     print(f"결과가 {output_csv_path}에 저장되었습니다.")
-
-#     return questions
-
-
+# 질문생성함수
 def generate_questions(keywords: List[str], interview_id: int, db_session, keyjob: str):
     questions = []
     db_allocation = ["low"] * 5 + ["high"] * 0
