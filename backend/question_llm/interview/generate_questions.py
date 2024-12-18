@@ -77,7 +77,6 @@ async def cross_encoder_reranker(query, db_level="low", top_k=5):
     
     embeddings=OpenAIEmbeddings(openai_api_key=openai_api_key),
     allow_dangerous_deserialization=True,
-)
 
     # DB 선택
     vector_db = vector_db_high if db_level == "high" else vector_db_low
@@ -193,17 +192,5 @@ async def generate_questions(keywords: List[str], interview_id: int, db_session)
         if len(questions) >= 5:
             break
 
-    # 데이터를 DataFrame으로 변환
-    df = pd.DataFrame(questions, columns=[
-        "job_question", "selected_keyword","job_question_english", "job_solution", 
-        "job_solution_english", "retrieved_content"
-    ])
-    output_folder = "c:/dev/SKN03-Final-5Team-git/backend/question_llm/interview/csv_folder"
-
-    timestamp = time.strftime("%Y%m%d_%H%M%S")
-    output_csv_path = os.path.join(output_folder, f"Python_file_question_data{timestamp}.csv")
-
-    df.to_csv(output_csv_path, index=False, encoding='utf-8-sig')
-    print(f"결과가 {output_csv_path}에 저장되었습니다.")
 
     return questions
