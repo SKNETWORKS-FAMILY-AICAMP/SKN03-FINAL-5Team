@@ -80,7 +80,6 @@ def save_report_to_db(interview_id, strength, weakness, ai_summary, detail_feedb
             weakness=weakness,
             ai_summary=ai_summary,
             detail_feedback=detail_feedback,
-            attitude_feedback=attitude,
             report_score=report_score,
         )
         db_session.add(report)
@@ -113,7 +112,6 @@ def save_report_to_db(
             weakness=weakness,
             ai_summary=ai_summary,
             detail_feedback=detail_feedback,
-            attitude_feedback=attitude,
             report_score=report_score,
             report_created=datetime.now(),  # 생성 시간 추가
         )

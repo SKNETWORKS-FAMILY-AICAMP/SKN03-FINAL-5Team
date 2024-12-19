@@ -14,12 +14,12 @@ from util.get_parameter import get_parameter
 model = SentenceTransformer("snunlp/KR-SBERT-V40K-klueNLI-augSTS")
 
 openai_api_key = get_parameter('/TEST/CICD/STREAMLIT/OPENAI_API_KEY')
+# openai_api_key = os.getenv("OPENAI_API_KEY")
 
 def get_client():
     return ChatOpenAI(
-        model="gpt-4o",
+        model="gpt-4o-mini",
         streaming=True,
-        # openai_api_key=os.getenv("OPENAI_API_KEY")
         openai_api_key=openai_api_key
         )
 
@@ -50,6 +50,9 @@ def evaluate_answer(interview_id, question, answer, model_answer, model):
     feedback_prompt = evaluation_prompt(answer, model_answer)
     feedback_response = chat.invoke([SystemMessage(content=feedback_prompt)])
     feedback_full = feedback_response.content.strip()
+
+    if score <= 30:
+        feedback == None
 
     # "피드백"으로 시작하는 부분만 추출
     feedback = ""

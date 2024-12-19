@@ -29,15 +29,15 @@ function InterviewPage() {
   const [currentStep, setCurrentStep] = useState(1);
 
   return (
-    <UserGuard>
-      <Box>
-        <Container>
-          <Header />
-          <StepProgress steps={steps} currentStep={currentStep} />
-          <StepRenderer steps={currentStep} setCurrentStep={setCurrentStep} />
-        </Container>
-      </Box>
-    </UserGuard>
+    // <UserGuard>
+    <Box>
+      <Container>
+        <Header />
+        <StepProgress steps={steps} currentStep={currentStep} />
+        <StepRenderer steps={currentStep} setCurrentStep={setCurrentStep} />
+      </Container>
+    </Box>
+    // </UserGuard>
   );
 }
 

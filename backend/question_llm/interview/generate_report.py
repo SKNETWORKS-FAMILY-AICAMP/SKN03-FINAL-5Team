@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 import re
 
 openai_api_key = get_parameter('/TEST/CICD/STREAMLIT/OPENAI_API_KEY')
+# openai_api_key = os.getenv("OPENAI_API_KEY")
 
 
 def clean_text(text):
@@ -33,7 +34,7 @@ def get_client():
         if not openai_api_key:
             raise ValueError("OPENAI_API_KEY is not set in environment variables")
         return ChatOpenAI(
-            model="gpt-4o", 
+            model="gpt-4o-mini", 
             streaming=True,
             openai_api_key=openai_api_key
         )
@@ -49,9 +50,7 @@ except Exception as e:
     raise
 
 def generate_report(evaluation_results: List[Dict], db_session) -> Dict:
-    """
-    총평을 생성하고 보고서 데이터를 반환합니다.
-    """
+    
     try:
         if not evaluation_results:
             raise ValueError("evaluation_results is empty")
@@ -94,7 +93,6 @@ def generate_report(evaluation_results: List[Dict], db_session) -> Dict:
             "ai_summary": clean_text("한줄평 없음" if "한줄평" not in feedback else feedback.split("한줄평")[1].strip()),
             "report_score": average_score,
             "detail_feedback": str(detail_feedback),
-            "attitude_feedback": "개발중",
         }
 
     # 보고서 데이터를 저장

@@ -7,19 +7,61 @@ import {
   VStack,
   InputGroup,
   InputRightElement,
+  Spinner,
 } from '@chakra-ui/react';
 import { FaUpload } from 'react-icons/fa';
 import React, { useEffect, useState } from 'react';
 import { useAtom } from 'jotai';
-import { fileNameAtom, jobInterestAtom, desiredTraitsAtom } from '../atom/atom';
+import {
+  fileNameAtom,
+  jobInterestAtom,
+  desiredTraitsAtom,
+  fileAtom,
+} from '../atom/atom';
+import { useFetchQuestion } from './hook/getQuestion';
 
 const UploadStep = ({ setCurrentStep }) => {
+  const [file, setFile] = useAtom(fileAtom);
   const [fileName, setFileName] = useAtom(fileNameAtom);
   const [jobInterest, setJobInterest] = useAtom(jobInterestAtom);
   const [desiredTraits, setDesiredTraits] = useAtom(desiredTraitsAtom);
 
-  const nextStep = () => {
-    setCurrentStep((prevSteps) => prevSteps + 1);
+  const [kakaoId, setKakaoId] = useState();
+  const [requestData, setRequestData] = useState();
+
+  useEffect(() => {
+    const storedKakaoId = localStorage.getItem('id');
+    if (storedKakaoId) {
+      setKakaoId(storedKakaoId);
+    }
+  }, []);
+
+  const {
+    questionList,
+    questionAnswerList,
+    interviewId,
+    isPending,
+    getQuestionList,
+  } = useFetchQuestion();
+
+  useEffect(() => {
+    if (requestData) {
+      getQuestionList(requestData);
+    }
+  }, [requestData]);
+
+  const nextStep = async () => {
+    console.log(file, jobInterest, kakaoId);
+    if (file && jobInterest !== '' && kakaoId) {
+      setRequestData({
+        resume: file,
+        user_job: jobInterest,
+        user_id: kakaoId,
+      });
+    }
+    if (isPending === false && questionList.length !== 0) {
+      setCurrentStep((prevSteps) => prevSteps + 1);
+    }
   };
 
   const prevStep = () => {
@@ -30,12 +72,30 @@ const UploadStep = ({ setCurrentStep }) => {
     const file = event.target.files[0];
     if (file) {
       setFileName(file.name);
-      console.log('Uploaded file:', file.name);
+      setFile(file);
     }
   };
 
   return (
     <Box w={'100%'}>
+      {isPending === true ? (
+        <Flex
+          width="100vw"
+          height="100vh"
+          justifyContent="center"
+          alignItems="center"
+        >
+          <Spinner
+            thickness="4px"
+            speed="0.65s"
+            emptyColor="gray.200"
+            color="blue.500"
+            size="xl"
+          />
+        </Flex>
+      ) : (
+        <></>
+      )}
       <Box m={'0 auto'} maxW={'1000px'}>
         <VStack alignItems={'flex-start'} gap={'30px'}>
           <Box w={'100%'}>

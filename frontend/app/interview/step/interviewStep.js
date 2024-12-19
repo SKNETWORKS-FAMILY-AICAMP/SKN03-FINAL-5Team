@@ -143,7 +143,10 @@ const InterviewStep = React.memo(() => {
             )}
           </Box>
           {isLoading ? (
-            <Spinner size="xl" />
+            <Flex justify="center" align="center" h="100%">
+              <Spinner size="xl" />
+              <Text ml={3}>로딩 중...</Text>
+            </Flex>
           ) : (
             <Button
               w={'100%'}
