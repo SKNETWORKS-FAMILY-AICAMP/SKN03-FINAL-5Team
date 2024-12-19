@@ -23,7 +23,6 @@ import boto3
 load_dotenv()
 
 
-# openai_api_key = get_parameter('/TEST/CICD/STREAMLIT/OPENAI_API_KEY')
 
 def fetch_openai_api_key(parameter_name="/TEST/CICD/STREAMLIT/OPENAI_API_KEY"):
     try:

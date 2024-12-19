@@ -18,19 +18,17 @@ export const useFetchQuestion = () => {
     mutate: getQuestion,
     data: questionData,
     isError: QuestionError,
+    isPending: isPending,
   } = useGetQuestionMutation();
-  const [hasCalledGetQuestion, setHasCalledGetQuestion] = useState(false);
 
-  useEffect(() => {
-    if (!hasCalledGetQuestion) {
-      getQuestion();
-      setHasCalledGetQuestion(true);
+  const getQuestionList = (requestData) => {
+    if (requestData) {
+      getQuestion(requestData);
     }
-  }, [hasCalledGetQuestion, getQuestion]);
+  };
 
   useEffect(() => {
     if (questionData && questionData.questions) {
-      console.log(questionData);
       const jobQuestions = questionData.questions.map((q) => q.job_question);
       const jobSolutions = questionData.questions.map((q) => q.job_solution);
       const interviewId = questionData.interview_id;
@@ -40,5 +38,11 @@ export const useFetchQuestion = () => {
     }
   }, [questionData]);
 
-  return { questionList, questionAnswerList, interviewId };
+  return {
+    questionList,
+    questionAnswerList,
+    interviewId,
+    isPending,
+    getQuestionList,
+  };
 };

@@ -26,3 +26,5 @@ sentence-transformers
 pydantic
 fitz
 faiss-cpu
+transformers
+tokenizers

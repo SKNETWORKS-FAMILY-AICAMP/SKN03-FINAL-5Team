@@ -10,16 +10,16 @@ from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+from util.get_parameter import get_parameter
+
+import psutil
+
+
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 
-
-# AWS Parameter Store에서 API 키 가져오기
-def get_parameter(name, with_decryption=True):
-    ssm = boto3.client('ssm', region_name='ap-northeast-2')
-    return ssm.get_parameter(Name=name, WithDecryption=with_decryption)['Parameter']['Value']
 
 
 def extract_s3_key(s3_path: str) -> str:
@@ -56,12 +56,6 @@ def load_pdf_from_s3(bucket_name, key):
 
     return io.BytesIO(file_stream.read())
 
-if __name__ == "__main__":
-    bucket_name = "your-bucket-name"
-    key = "path/to/resume.pdf"
-
-    # S3 파일 로드 및 경로 저장
-    load_pdf_from_s3(bucket_name, key)
 
 # PDF 내용을 메모리에서 읽는 함수 (PyMuPDF 사용)
 # PyPDFLoader는 파일 경로 또는 URL만을 지원하므로 io.BytesIO 객체를 바로 입력할 수 없음
@@ -107,6 +101,7 @@ def extract_project_experience(text, api_key):
         "resume": text,
         "question": "이력서 내용 중 프로젝트 경험을 추출해주세요."
     })
+
     return response.project
 
 # 번역 함수
@@ -124,6 +119,8 @@ def translate_text(text, api_key):
 def extract_keywords(text_chunks):
     tokenizer = AutoTokenizer.from_pretrained("ilsilfverskiold/tech-keywords-extractor")
     model = AutoModelForSeq2SeqLM.from_pretrained("ilsilfverskiold/tech-keywords-extractor")
+
+    
     keywords = ""
     for value in text_chunks:
         inputs = tokenizer.encode("extract tech keywords: " + value, return_tensors="pt", max_length=500, truncation=True)
@@ -141,19 +138,20 @@ def format_keywords(keywords: str) -> str:
     return ", ".join([kw.strip() for kw in cleaned_keywords.split(",") if kw.strip()])
 
 
+
 # 메인 함수
-def keyword_main():
+def keyword_main(user_id):
+    
     try:
         logging.info("프로그램 시작")
 
         # API 키 및 S3 설정
-        OPENAI_API_KEY = get_parameter('/interviewdb-info/OPENAI_API_KEY')
+        OPENAI_API_KEY = get_parameter('/TEST/CICD/STREAMLIT/OPENAI_API_KEY')
         S3_BUCKET = "sk-unailit"
-        id = 3808083867
-        file_name = f"resume_{id}.pdf"  # 파일명 동적 생성
+        file_name = f"resume_{user_id}.pdf"  # 파일명 동적 생성
 
         # 입력 경로
-        INPUT_KEY = f"resume/{id}/{file_name}"
+        INPUT_KEY = f"resume/{user_id}/{file_name}"
         print("INPUT_KEY : ", INPUT_KEY)
 
         # S3에서 PDF 불러오기
@@ -167,6 +165,7 @@ def keyword_main():
         # 번역
         translated_text = translate_text(project_experience, OPENAI_API_KEY)
         logging.info("[Translated Project Experience]:\n" + translated_text)
+
 
         # 텍스트 청크화 및 키워드 추출
         chunk_size = 500
