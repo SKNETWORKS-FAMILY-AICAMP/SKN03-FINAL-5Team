@@ -57,8 +57,6 @@ def makequestion(user_id, user_job, make_keywords, db_session: Session):
 
     RESUME_PATH = pdf_path
 
-
-
     try:
         # Step 1: 인터뷰 생성 및 ID 확보
         interview_id = create_new_interview(
@@ -72,7 +70,7 @@ def makequestion(user_id, user_job, make_keywords, db_session: Session):
             raise ValueError("Failed to create new interview.")
         print(f"Interview created with ID: {interview_id}")
 
-        questions = generate_questions(keywords, interview_id, db_session)
+        questions = generate_questions(keywords, USER_JOB, interview_id, db_session)
         
         save_questions_to_db(interview_id, questions, db_session)
         
@@ -102,7 +100,7 @@ S3_BUCKET = "sk-unailit"
 file_name = f"resume_{id}.pdf"  # 파일명 동적 생성
 
 @router.post("/generate_question")
-async def generate_interview_questions(
+def generate_interview_questions(
     user_id: Annotated[int, Form()],
     user_job: Annotated[str, Form()],
     resume: UploadFile = File(...),

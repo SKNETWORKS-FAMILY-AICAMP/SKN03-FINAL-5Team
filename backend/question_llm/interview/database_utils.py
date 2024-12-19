@@ -83,16 +83,14 @@ def save_report_to_db(db_session, **kwargs):
 
 
 
-def create_new_interview(user_id: int, user_job: str, job_talent: str, resume_path: str, interview_time: datetime, db_session: Session) -> int:
+def create_new_interview(user_id: int, user_job: str, resume_path: str, interview_created: datetime, db_session: Session) -> int:
 
     try:
         # 인터뷰 데이터 생성
         new_interview = Interview(
             user_id=user_id,
             user_job=user_job,
-            job_talent=job_talent,
             resume_path=resume_path,
-            interview_time=interview_time,
             interview_created=datetime.now(),
         )
 

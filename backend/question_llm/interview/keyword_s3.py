@@ -12,7 +12,6 @@ from langchain_core.output_parsers import PydanticOutputParser
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from util.get_parameter import get_parameter
 
-import psutil
 
 
 

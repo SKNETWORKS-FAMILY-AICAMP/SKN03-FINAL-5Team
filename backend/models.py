@@ -44,7 +44,6 @@ class Interview(Base):
     interview_id = Column(Integer, primary_key=True, index=True) 
     user_id = Column(String(45), nullable=False)                 
     user_job = Column(String(255), nullable=True)                
-    job_talent = Column(String(255), nullable=True)              
     interview_created = Column(DateTime, nullable=False)         
     resume_path = Column(String(255), nullable=True) 
 
@@ -74,35 +73,6 @@ class ReportTb(Base):
     detail_feedback = Column(Text, nullable=False)
     report_score = Column(Integer, nullable=False)
     report_created = Column(DateTime, nullable=False)
-
-
-class AuthGroupPermission(Base):
-    __tablename__ = 'auth_group_permissions'
-    __table_args__ = (
-        Index('auth_group_permissions_group_id_permission_id_0cd325b0_uniq', 'group_id', 'permission_id', unique=True),
-    )
-
-    id = Column(BigInteger, primary_key=True)
-    group_id = Column(ForeignKey('auth_group.id'), nullable=False)
-    permission_id = Column(ForeignKey('auth_permission.id'), nullable=False, index=True)
-
-    group = relationship('AuthGroup')
-    permission = relationship('AuthPermission')
-
-
-class AuthUserUserPermission(Base):
-    __tablename__ = 'auth_user_user_permissions'
-    __table_args__ = (
-        Index('auth_user_user_permissions_user_id_permission_id_14a6b632_uniq', 'user_id', 'permission_id', unique=True),
-    )
-
-    id = Column(BigInteger, primary_key=True)
-    user_id = Column(ForeignKey('auth_user.id'), nullable=False)
-    permission_id = Column(ForeignKey('auth_permission.id'), nullable=False, index=True)
-
-    permission = relationship('AuthPermission')
-    user = relationship('AuthUser')
-
 
 class QuestionTb(Base):
     __tablename__ = 'question_tb'

@@ -36,7 +36,6 @@ def fetch_openai_api_key(parameter_name="/TEST/CICD/STREAMLIT/OPENAI_API_KEY"):
 
 # Fetch and set the API key
 openai_api_key = os.environ.get("OPENAI_API_KEY") or fetch_openai_api_key()
-print(openai_api_key)
 
 def get_client():
     return ChatOpenAI(
@@ -72,17 +71,13 @@ vector_db_low = FAISS.load_local(
 )
 
 # 검색기 함수
-async def cross_encoder_reranker(query, db_level="low", top_k=5):
-    
-    embeddings=OpenAIEmbeddings(openai_api_key=openai_api_key),
-    allow_dangerous_deserialization=True,
+def cross_encoder_reranker(query, db_level="low", top_k=5):
 
     # DB 선택
     vector_db = vector_db_high if db_level == "high" else vector_db_low
 
     # Retriever 설정
-    retriever = vector_db.as_retriever(
-    )
+    retriever = vector_db.as_retriever()
 
     # MultiQueryRetriever 생성
     llm = ChatOpenAI(temperature=0, model="gpt-4o")
@@ -91,21 +86,21 @@ async def cross_encoder_reranker(query, db_level="low", top_k=5):
     # Cross Encoder Reranker 초기화
     model = HuggingFaceCrossEncoder(model_name="BAAI/bge-reranker-v2-m3")
     reranker = CrossEncoderReranker(model=model, top_n=top_k)
-
     # ContextualCompressionRetriever 생성
     compression_retriever = ContextualCompressionRetriever(
         base_compressor=reranker,
         base_retriever=multi_query_retriever
     )
-
     # 쿼리에 대한 문서 검색 및 압축
-    compressed_docs = compression_retriever.invoke(query)
+    result_string = " ".join(query)
+    compressed_docs = compression_retriever.invoke(result_string)
+    
 
     return compressed_docs
 
 
 # 질문생성함수
-async def generate_questions(keywords: List[str], interview_id: int, db_session) -> pd.DataFrame:
+def generate_questions(keywords: List[str], USER_JOB: str, interview_id: int, db_session) -> pd.DataFrame:
     questions = []
     """
     주어진 키워드를 바탕으로 질문을 생성하고, DB에 저장 후 DataFrame으로 반환.
@@ -116,46 +111,41 @@ async def generate_questions(keywords: List[str], interview_id: int, db_session)
     Returns:
         pd.DataFrame: 생성된 질문과 관련 데이터
     """
-    questions = []
     db_allocation = ["low"] * 3 + ["high"] * 2
     random.shuffle(db_allocation)
 
     # 키워드 리스트를 하나의 문자열로 결합
-    combined_keywords = ", ".join(keywords)
-    print(f"Combined Keywords: {combined_keywords}")
-
     for db_level in db_allocation:
         # 검색
-        search_results = cross_encoder_reranker(query=combined_keywords, db_level=db_level, top_k=5)
+        search_results = cross_encoder_reranker(query=keywords, db_level=db_level, top_k=5)
         if not search_results:
             # 검색 결과가 없으면 반대 레벨에서도 검색
             alternate_level = "high" if db_level == "low" else "low"
-            search_results = cross_encoder_reranker(query=combined_keywords, db_level=alternate_level, top_k=5)
-
-        if not search_results:
-            print("검색 결과가 없습니다.")
-            continue
-
+            search_results = cross_encoder_reranker(query=keywords, db_level=alternate_level, top_k=5)
+            if not search_results:
+                print("검색 결과가 없습니다.")
+                continue
         # 검색된 각 문서를 순회하며 질문 생성
         for i, doc in enumerate(search_results):
             retrieved_content = doc.page_content
             reference_docs = doc.metadata.get("source", "출처를 알 수 없음")
 
             # 한글 질문 생성
+
             prompt = question_prompt() + (
                 f"다음 공식 문서를 참조하여 기술 면접 질문을 생성해 주세요:\n{retrieved_content}\n"
-                f"다음 면접자의 희망직무를 반영하여 질문을 생성해주세요:\n{keyjob}\n"
-                f"기술 스택: {combined_keywords}\n"
+                f"다음 면접자의 희망직무를 반영하여 질문을 생성해주세요:\n{USER_JOB}\n"
+                f"기술 스택: {keywords}\n"
                 f"하나의 질문만 반환해주시기 바랍니다."
             )
             question_response = chat.invoke([SystemMessage(content=prompt)])
-            korean_job_question = question_response.content.strip()
 
+            korean_job_question = question_response.content.strip()
             # 한글 모범답안 생성
             model_prompt = model_answer(korean_job_question, retrieved_content)
             model_response = chat.invoke([SystemMessage(content=model_prompt)])
-            korean_job_solution = model_response.content.strip()
 
+            korean_job_solution = model_response.content.strip()
             # 영어 번역 생성 (질문과 모범답안 동일성 유지)
             translation_prompt = (
                 f"Translate the following question and its answer into English:\n\n"
@@ -168,17 +158,18 @@ async def generate_questions(keywords: List[str], interview_id: int, db_session)
             # 번역된 질문 및 답변 파싱
             english_job_question, english_job_solution = translated_text.split("\nAnswer:")
 
+
             # 결과 추가
             questions.append({
                 "interview_id": interview_id,
-                "job_question": korean_job_question.strip(),
-                "job_question_english": english_job_question.strip(),
-                "job_answer": "N/A",
-                "job_solution": korean_job_solution.strip(),
-                "job_solution_english": english_job_solution.strip(),
+                "job_question_kor": korean_job_question.strip(),
+                "job_question_eng": english_job_question.strip(),
+                "job_answer_kor": "N/A",
+                "job_solution_kor": korean_job_solution.strip(),
+                "job_solution_eng": english_job_solution.strip(),
                 "job_score": 0,
                 "question_vector_path": "default/path/vector.json",
-                "selected_keyword": combined_keywords,
+                "selected_keyword": keywords,
                 "retrieved_content": retrieved_content,
                 "reference_doc": reference_docs,
             })
