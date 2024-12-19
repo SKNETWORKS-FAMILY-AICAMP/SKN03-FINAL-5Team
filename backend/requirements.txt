@@ -24,7 +24,8 @@ node
 ragas
 sentence-transformers
 pydantic
-fitz
+PyMuPDF
 faiss-cpu
 transformers
 tokenizers
+langchain-openai
