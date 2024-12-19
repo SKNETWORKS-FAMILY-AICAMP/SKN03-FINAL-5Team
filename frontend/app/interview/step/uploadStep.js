@@ -31,9 +31,10 @@ const UploadStep = ({ setCurrentStep }) => {
 
   useEffect(() => {
     const storedKakaoId = localStorage.getItem('id');
-    if (storedKakaoId) {
-      setKakaoId(storedKakaoId);
-    }
+    setKakaoId(3808083867)
+    // if (storedKakaoId) {
+    //   setKakaoId(storedKakaoId);
+    // }
   }, []);
 
   const {
@@ -52,11 +53,11 @@ const UploadStep = ({ setCurrentStep }) => {
 
   const nextStep = async () => {
     console.log(file, jobInterest, kakaoId);
-    if (file && jobInterest !== '' && kakaoId) {
+    if (file) {
       setRequestData({
         resume: file,
         user_job: jobInterest,
-        user_id: kakaoId,
+        user_id: 3808083867,
       });
     }
     if (isPending === false && questionList.length !== 0) {
