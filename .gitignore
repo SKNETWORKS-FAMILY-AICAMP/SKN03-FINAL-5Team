@@ -5,3 +5,20 @@ __pycache__
 
 finalproject-442107-b3e99388ce58.json
 .DS_Store
+
+
+question_llm/interview/csv_folder/       
+question_llm/interview/make_csv_merge.py 
+question_llm/interview/make_loader.py
+question_llm/interview/make_report_pdf.py
+question_llm/interview/make_vector_db.py
+question_llm/interview/process_answer.py
+question_llm/interview/video.py
+question_llm/interview/make_merge_vector_db_ipynb
+question_llm/interview/main_ipynb.ipynb       
+
+question_llm/Final_design.py
+question_llm/Model_design.py
+question_llm/Question_design.py
+question_llm/Question_design02.py
+question_llm/report_design.py
