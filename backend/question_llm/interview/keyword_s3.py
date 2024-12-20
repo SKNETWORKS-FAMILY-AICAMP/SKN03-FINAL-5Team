@@ -166,6 +166,7 @@ def keyword_main():
 
         # 번역
         translated_text = translate_text(project_experience, OPENAI_API_KEY)
+        translated_text = translated_text.lower()
         logging.info("[Translated Project Experience]:\n" + translated_text)
 
         # 텍스트 청크화 및 키워드 추출

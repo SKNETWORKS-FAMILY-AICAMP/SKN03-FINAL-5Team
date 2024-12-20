@@ -43,9 +43,7 @@ class Interview(Base):
 
     interview_id = Column(Integer, primary_key=True, index=True) 
     user_id = Column(String(45), nullable=False)                 
-    user_job = Column(String(255), nullable=True)                
-    job_talent = Column(String(255), nullable=True)              
-    interview_time = Column(DateTime, nullable=True)             
+    user_job = Column(String(255), nullable=True)                                         
     interview_created = Column(DateTime, nullable=False)         
     resume_path = Column(String(255), nullable=True) 
 
@@ -172,7 +170,6 @@ class ReportTb(Base):
     weakness = Column(String(255), nullable=False)
     ai_summary = Column(DateTime, nullable=False)
     detail_feedback = Column(String, nullable=False)
-    attitude_feedback = Column(VARCHAR(255), nullable=False)
     report_score = Column(Integer, nullable=False)
     report_created = Column(DateTime, nullable=False)
 
@@ -210,11 +207,14 @@ class QuestionTb(Base):
 
     question_id = Column(Integer, primary_key=True)
     interview_id = Column(ForeignKey('interview_tb.interview_id', ondelete='CASCADE', onupdate='CASCADE'), index=True)
-    job_question = Column(String(255), nullable=False)
-    job_answer = Column(String(255), nullable=False)
-    job_solution = Column(String(255), nullable=False)
+    job_question_kor = Column(String(255), nullable=False)
+    job_answer_kor = Column(String(255), nullable=False)
+    job_solution_kor = Column(String(255), nullable=False)
     job_score = Column(Integer, nullable=False)
-    question_vector_path = Column(VARCHAR(255), nullable=False)
+    job_question_eng = Column(String(255), nullable=False)
+    job_answer_eng = Column(String(255), nullable=False)
+    job_solution_eng = Column(String(255), nullable=False)
+    job_context = Column(String(255), nullable=False)
 
     interview = relationship('Interview')
 

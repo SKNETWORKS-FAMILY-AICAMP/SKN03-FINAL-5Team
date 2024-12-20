@@ -2,11 +2,11 @@ import random
 import pandas as pd
 from typing import List, Dict
 import time
-from .database_utils import save_questions_to_db
 from .prompt import question_prompt, model_answer
 from datetime import datetime
 from langchain_openai import ChatOpenAI
-from .database_utils import create_new_interview
+from .database_utils import create_new_question_in_db
+from .question_similarity import question_similarity_main
 import os
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
@@ -84,62 +84,38 @@ def cross_encoder_reranker(query, db_level="low", top_k=5):
     return compressed_docs
 
 
+
+
 # 질문생성함수
 def generate_questions(keywords: List[str], interview_id: int, db_session, keyjob: str):
     questions = []
-    db_allocation = ["low"] * 5 + ["high"] * 0
-    random.shuffle(db_allocation)
-
-    # 키워드 리스트를 하나의 문자열로 결합
-    combined_keywords = ", ".join(keywords)
-    print(f"Combined Keywords: {combined_keywords}")
-
-    for db_level in db_allocation:
-        # 검색
-        search_results = cross_encoder_reranker(query=combined_keywords, db_level=db_level, top_k=5)
-        if not search_results:
-            # 검색 결과가 없으면 반대 레벨에서도 검색
-            alternate_level = "high" if db_level == "low" else "low"
-            search_results = cross_encoder_reranker(query=combined_keywords, db_level=alternate_level, top_k=5)
-
-        if not search_results:
-            print("검색 결과가 없습니다.")
-            continue
-
-        # 검색된 각 문서를 순회하며 질문 생성
-        for i, doc in enumerate(search_results):
-            retrieved_content = doc.page_content
-            reference_docs = doc.metadata.get("source", "출처를 알 수 없음")
-
-            # 한글 질문 생성
-            prompt = question_prompt() + (
-                f"다음 공식 문서를 참조하여 기술 면접 질문을 생성해 주세요:\n{retrieved_content}\n"
-                f"다음 면접자의 희망직무를 반영하여 질문을 생성해주세요:\n{keyjob}\n"
-                f"기술 스택: {combined_keywords}\n"
-                f"하나의 질문만 반환해주시기 바랍니다."
-            )
-            question_response = chat.invoke([SystemMessage(content=prompt)])
-            korean_job_question = question_response.content.strip()
-
-            # 한글 모범답안 생성
-            model_prompt = model_answer(korean_job_question, retrieved_content)
-            model_response = chat.invoke([SystemMessage(content=model_prompt)])
-            korean_job_solution = model_response.content.strip()
-
-            # 영어 번역 생성 (질문과 모범답안 동일성 유지)
+    if not keywords:  # 키워드가 없는 경우
+        for i in range(5):
+            korean_job_question, korean_job_solution = question_similarity_main(i + 1)
             translation_prompt = (
                 f"Translate the following question and its answer into English:\n\n"
                 f"Question:\n{korean_job_question}\n\n"
                 f"Answer:\n{korean_job_solution}\n"
             )
-            translation_response = chat.invoke([SystemMessage(content=translation_prompt)])
-            translated_text = translation_response.content.strip()
+            try:
+                translation_response = chat.invoke([SystemMessage(content=translation_prompt)])
+                translated_text = translation_response.content.strip()
+                english_job_question, english_job_solution = translated_text.split("\nAnswer:")
+            except Exception as e:
+                print(f"Error during translation: {e}")
+                english_job_question = "Translation Error"
+                english_job_solution = "Translation Error"
+            
+            question_id = create_new_question_in_db(
+                    interview_id=interview_id,
+                    job_question_kor=korean_job_question.strip(),
+                    job_solution_kor=korean_job_solution.strip(),
+                    job_question_eng=english_job_question.strip(),
+                    job_solution_eng=english_job_solution.strip(),
+                )
 
-            # 번역된 질문 및 답변 파싱
-            english_job_question, english_job_solution = translated_text.split("\nAnswer:")
-
-            # 결과 추가
             questions.append({
+                "question_id":question_id,
                 "interview_id": interview_id,
                 "job_question": korean_job_question.strip(),
                 "job_question_english": english_job_question.strip(),
@@ -148,30 +124,103 @@ def generate_questions(keywords: List[str], interview_id: int, db_session, keyjo
                 "job_solution_english": english_job_solution.strip(),
                 "job_score": 0,
                 "question_vector_path": "default/path/vector.json",
-                "selected_keyword": combined_keywords,
-                "retrieved_content": retrieved_content,
-                "reference_doc": reference_docs,
+                "selected_keyword": "None_keyword",
+                "job_context": "None_context"
             })
+    else: 
+        questions = []
+        db_allocation = ["low"] * 5 + ["high"] * 0
+        random.shuffle(db_allocation)
 
-            # 질문이 5개가 되면 종료
+        # 키워드 리스트를 하나의 문자열로 결합
+        combined_keywords = ", ".join(keywords)
+        print(f"Combined Keywords: {combined_keywords}")
+
+        for db_level in db_allocation:
+            # 검색
+            search_results = cross_encoder_reranker(query=combined_keywords, db_level=db_level, top_k=5)
+            if not search_results:
+                # 검색 결과가 없으면 반대 레벨에서도 검색
+                alternate_level = "high" if db_level == "low" else "low"
+                search_results = cross_encoder_reranker(query=combined_keywords, db_level=alternate_level, top_k=5)
+
+            if not search_results:
+                print("검색 결과가 없습니다.")
+                continue
+
+            # 검색된 각 문서를 순회하며 질문 생성
+            for i, doc in enumerate(search_results):
+                retrieved_content = doc.page_content
+
+                # 한글 질문 생성
+                prompt = question_prompt() + (
+                    f"다음 공식 문서를 참조하여 기술 면접 질문을 생성해 주세요:\n{retrieved_content}\n"
+                    f"다음 면접자의 희망직무를 반영하여 질문을 생성해주세요:\n{keyjob}\n"
+                    f"기술 스택: {combined_keywords}\n"
+                    f"하나의 질문만 반환해주시기 바랍니다."
+                )
+                question_response = chat.invoke([SystemMessage(content=prompt)])
+                korean_job_question = question_response.content.strip()
+
+                # 한글 모범답안 생성
+                model_prompt = model_answer(korean_job_question, retrieved_content)
+                model_response = chat.invoke([SystemMessage(content=model_prompt)])
+                korean_job_solution = model_response.content.strip()
+
+                # 영어 번역 생성 (질문과 모범답안 동일성 유지)
+                translation_prompt = (
+                    f"Translate the following question and its answer into English:\n\n"
+                    f"Question:\n{korean_job_question}\n\n"
+                    f"Answer:\n{korean_job_solution}\n"
+                )
+                translation_response = chat.invoke([SystemMessage(content=translation_prompt)])
+                translated_text = translation_response.content.strip()
+
+                # 번역된 질문 및 답변 파싱
+                english_job_question, english_job_solution = translated_text.split("\nAnswer:")
+
+                question_id = create_new_question_in_db(
+                    interview_id=interview_id,
+                    job_question_kor=korean_job_question.strip(),
+                    job_solution_kor=korean_job_solution.strip(),
+                    job_question_eng=english_job_question.strip(),
+                    job_solution_eng=english_job_solution.strip(),
+                )
+
+                # 결과 추가
+                questions.append({
+                    "interview_id": interview_id,
+                    "question_id":question_id,
+                    "job_question_kor": korean_job_question.strip(),
+                    "job_question_eng": english_job_question.strip(),
+                    "job_answer_kor": "N/A",
+                    "job_answer_eng": "N/A",
+                    "job_solution_kor": korean_job_solution.strip(),
+                    "job_solution_eng": english_job_solution.strip(),
+                    "job_score": 0,
+                    "selected_keyword": combined_keywords,
+                    "job_context": retrieved_content,
+                })
+
+                # 질문이 5개가 되면 종료
+                if len(questions) >= 5:
+                    break
+
+            # 질문이 5개가 되면 외부 루프도 종료
             if len(questions) >= 5:
                 break
 
-        # 질문이 5개가 되면 외부 루프도 종료
-        if len(questions) >= 5:
-            break
+    # # 데이터를 DataFrame으로 변환
+    # df = pd.DataFrame(questions, columns=[
+    #     "job_question", "selected_keyword","job_question_english", "job_solution", 
+    #     "job_solution_english", "retrieved_content"
+    # ])
+    # output_folder = "c:/dev/SKN03-Final-5Team-git/backend/question_llm/interview/csv_folder"
 
-    # 데이터를 DataFrame으로 변환
-    df = pd.DataFrame(questions, columns=[
-        "job_question", "selected_keyword","job_question_english", "job_solution", 
-        "job_solution_english", "retrieved_content"
-    ])
-    output_folder = "c:/dev/SKN03-Final-5Team-git/backend/question_llm/interview/csv_folder"
+    # timestamp = time.strftime("%Y%m%d_%H%M%S")
+    # output_csv_path = os.path.join(output_folder, f"Python_file_question_data{timestamp}.csv")
 
-    timestamp = time.strftime("%Y%m%d_%H%M%S")
-    output_csv_path = os.path.join(output_folder, f"Python_file_question_data{timestamp}.csv")
-
-    df.to_csv(output_csv_path, index=False, encoding='utf-8-sig')
-    print(f"결과가 {output_csv_path}에 저장되었습니다.")
+    # df.to_csv(output_csv_path, index=False, encoding='utf-8-sig')
+    # print(f"결과가 {output_csv_path}에 저장되었습니다.")
 
     return questions

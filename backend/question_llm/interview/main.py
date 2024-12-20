@@ -2,7 +2,7 @@ from .generate_questions import generate_questions
 from .process_answers import process_answers
 from .evaluate_answers import evaluate_answer
 from .generate_report import generate_report
-from .database_utils import create_new_interview, save_report_to_db, save_evaluated_answers_to_db
+from .database_utils import create_new_interview, save_evaluated_answers_to_db, save_mapped_answers_to_db
 from .keyword_s3 import keyword_main, ResumePathManager
 from database import SessionLocal
 from .collect_answer import collect_answers
@@ -47,7 +47,6 @@ def main():
 
     USER_ID = 1
     USER_JOB = "풀스텍 개발자"
-    JOB_TALENT = make_keywords
     RESUME_PATH = pdf_path
 
     try:
@@ -56,9 +55,7 @@ def main():
             interview_id = create_new_interview(
                 user_id=USER_ID,
                 user_job=USER_JOB,
-                job_talent=JOB_TALENT,
-                resume_path=RESUME_PATH,
-                interview_time=datetime.now(),
+                resume_path=RESUME_PATH,   
                 db_session=db_session
             )
             if not interview_id:
@@ -66,7 +63,7 @@ def main():
             print(f"Interview created with ID: {interview_id}")
 
             # Step 2: 질문 생성 .split(", ")
-            keywords = JOB_TALENT.split(", ")
+            keywords = make_keywords.split(", ")
             keyjob = USER_JOB
             print(keyjob)
             print(type(keyjob))
@@ -75,7 +72,7 @@ def main():
 
             # Step 3: 프론트에서 답변 받기 (샘플 답변 생성)
             answers_from_frontend = [
-                {"question": q["job_question"], "answer": f"Sample answer for {q['job_question'][:10]}..."}
+                {"question": q["job_question_kor"], "answer": f"Sample answer for {q['job_question_kor'][:10]}..."}
                 for q in questions
             ]
 
@@ -84,34 +81,39 @@ def main():
             mapped_answers = collect_answers(answers_from_frontend, questions)
             print(f"Mapped Answers: {mapped_answers}")
 
+            save_mapped_answers_to_db(mapped_answers ,db_session)
+
             # Step 5: 답변 평가 (평가 결과는 리스트로 저장)
             evaluated_answers  = []
             for answer_data in mapped_answers:
                 evaluation_result = evaluate_answer(
                     interview_id = answer_data["interview_id"],
+                    question_id = answer_data["question_id"],
                     model = model,
-                    question=answer_data["question"],
-                    answer=answer_data["answer"],
-                    model_answer=answer_data["model_answer"],
+                    question=answer_data["job_question_kor"],
+                    answer=answer_data["job_answer_kor"],
+                    model_answer=answer_data["job_solution_kor"],
+                    job_context=answer_data["job_context"],
                 )
                 evaluated_answers .append(evaluation_result)
             print(f"Evaluation Results: {evaluated_answers }")
 
-            save_evaluated_answers_to_db(interview_id, evaluated_answers, db_session)
+            save_evaluated_answers_to_db(evaluated_answers, db_session)
 
             # Step 6: 총평 생성
-            try:
-                report = generate_report(
-                    evaluation_results=evaluated_answers,  # 모든 평가 결과 전달
-                    db_session = db_session
-                )
-                print("Final Report Generated:")
-                print(report)
-            except Exception as e:
-                print(f"Error during report generation: {e}")
-                return
+            # try:
+            #     report = generate_report(
+            #         evaluation_results=evaluated_answers,  # 모든 평가 결과 전달
+            #         db_session = db_session,
+            #         interview_id = interview_id
+            #     )
+            #     print("Final Report Generated:")
+            #     print(report)
+            # except Exception as e:
+            #     print(f"Error during report generation: {e}")
+            #     return
             
-            print("Mock interview process completed successfully.")
+            # print("Mock interview process completed successfully.")
 
     except SQLAlchemyError as e:
         print(f"Database error occurred: {e}")
