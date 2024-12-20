@@ -141,11 +141,15 @@ def generate_questions(keywords: List[str], USER_JOB: str, interview_id: int, db
             question_response = chat.invoke([SystemMessage(content=prompt)])
 
             korean_job_question = question_response.content.strip()
+
+            print(korean_job_question)
             # 한글 모범답안 생성
             model_prompt = model_answer(korean_job_question, retrieved_content)
             model_response = chat.invoke([SystemMessage(content=model_prompt)])
 
             korean_job_solution = model_response.content.strip()
+
+
             # 영어 번역 생성 (질문과 모범답안 동일성 유지)
             translation_prompt = (
                 f"Translate the following question and its answer into English:\n\n"
@@ -157,6 +161,7 @@ def generate_questions(keywords: List[str], USER_JOB: str, interview_id: int, db
 
             # 번역된 질문 및 답변 파싱
             english_job_question, english_job_solution = translated_text.split("\nAnswer:")
+            print(english_job_question)
 
 
             # 결과 추가
@@ -164,14 +169,12 @@ def generate_questions(keywords: List[str], USER_JOB: str, interview_id: int, db
                 "interview_id": interview_id,
                 "job_question_kor": korean_job_question.strip(),
                 "job_question_eng": english_job_question.strip(),
-                "job_answer_kor": "N/A",
+                "job_answer_kor": "",
+                "job_answer_eng": "",
                 "job_solution_kor": korean_job_solution.strip(),
                 "job_solution_eng": english_job_solution.strip(),
+                "job_context": retrieved_content,
                 "job_score": 0,
-                "question_vector_path": "default/path/vector.json",
-                "selected_keyword": keywords,
-                "retrieved_content": retrieved_content,
-                "reference_doc": reference_docs,
             })
 
             # 질문이 5개가 되면 종료

@@ -29,8 +29,8 @@ export const useFetchQuestion = () => {
 
   useEffect(() => {
     if (questionData && questionData.questions) {
-      const jobQuestions = questionData.questions.map((q) => q.job_question);
-      const jobSolutions = questionData.questions.map((q) => q.job_solution);
+      const jobQuestions = questionData.questions.map((q) => q.job_question_kor);
+      const jobSolutions = questionData.questions.map((q) => q.job_solution_kor);
       const interviewId = questionData.interview_id;
       setQuestionList(jobQuestions);
       setQuestionAnswerList(jobSolutions);

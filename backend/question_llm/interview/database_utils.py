@@ -56,15 +56,18 @@ def save_questions_to_db(interview_id: int, questions: List[Dict], db_session):
     for question in questions:
         question_entry = QuestionTb(
             interview_id=interview_id,
-            job_question=question["job_question"],
-            job_answer=question["job_answer"],
-            job_solution=question["job_solution"],
+            job_question_kor=question["job_question_kor"],
+            job_question_eng=question['job_question_eng'],
+            job_answer_kor=question["job_answer_kor"],
+            job_answer_eng=question['job_answer_eng'],
+            job_solution_kor=question["job_solution_kor"],
+            job_solution_eng=question['job_solution_eng'],
+            job_context=question['job_context'],
             job_score=question["job_score"],
-            question_vector_path=question["question_vector_path"]
+            
         )
-        db_session.add(question_entry)
+    db_session.add(question_entry)
     db_session.commit()
-
 
 
 def save_report_to_db(db_session, **kwargs):
@@ -91,7 +94,7 @@ def create_new_interview(user_id: int, user_job: str, resume_path: str, intervie
             user_id=user_id,
             user_job=user_job,
             resume_path=resume_path,
-            interview_created=datetime.now(),
+            interview_created=interview_created,
         )
 
         # DB 세션을 사용하여 데이터 추가 및 커밋

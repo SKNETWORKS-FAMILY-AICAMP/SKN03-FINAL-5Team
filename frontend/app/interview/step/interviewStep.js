@@ -26,6 +26,7 @@ const InterviewStep = React.memo(() => {
       setQuestions(questionList);
       setLoading(false);
       startTimers();
+      console.log(questionList)
     }
   }, [questionList]);
 

@@ -31,10 +31,9 @@ const UploadStep = ({ setCurrentStep }) => {
 
   useEffect(() => {
     const storedKakaoId = localStorage.getItem('id');
-    setKakaoId(3808083867)
-    // if (storedKakaoId) {
-    //   setKakaoId(storedKakaoId);
-    // }
+    if (storedKakaoId) {
+      setKakaoId(storedKakaoId);
+    }
   }, []);
 
   const {
@@ -57,13 +56,19 @@ const UploadStep = ({ setCurrentStep }) => {
       setRequestData({
         resume: file,
         user_job: jobInterest,
-        user_id: 3808083867,
+        user_id: kakaoId,
       });
     }
+
+  };
+
+
+  useEffect(() => {
     if (isPending === false && questionList.length !== 0) {
       setCurrentStep((prevSteps) => prevSteps + 1);
     }
-  };
+  },[isPending, questionList])
+
 
   const prevStep = () => {
     setCurrentStep((prevStep) => prevStep - 1);

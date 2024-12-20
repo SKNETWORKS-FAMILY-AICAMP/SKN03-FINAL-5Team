@@ -29,7 +29,7 @@ function InterviewPage() {
   const [currentStep, setCurrentStep] = useState(1);
 
   return (
-    // <UserGuard>
+    <UserGuard>
     <Box>
       <Container>
         <Header />
@@ -37,7 +37,7 @@ function InterviewPage() {
         <StepRenderer steps={currentStep} setCurrentStep={setCurrentStep} />
       </Container>
     </Box>
-    // </UserGuard>
+    </UserGuard>
   );
 }
 

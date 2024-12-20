@@ -25,10 +25,10 @@ def get_db():
         db.close()
 
 # kakao_client_id = os.getenv('KAKAO_CLIENT_ID')
-# kakao_redirect_uri = os.getenv('KAKAO_REDIRECT_URI')
+kakao_redirect_uri = 'http://localhost:3000/oauth/callback/kakao'
 
 kakao_client_id = get_parameter('/interviewdb-info/kakao/KAKAO_CLIENT_ID')
-kakao_redirect_uri = get_parameter('/interviewdb-info/kakao/KAKAO_REDIRECT_URI')
+# kakao_redirect_uri = get_parameter('/interviewdb-info/kakao/KAKAO_REDIRECT_URI')
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 5
 REFRESH_TOKEN_EXPIRE_DAYS = 1 

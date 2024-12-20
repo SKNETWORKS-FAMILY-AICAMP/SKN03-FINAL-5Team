@@ -82,17 +82,6 @@ def makequestion(user_id, user_job, make_keywords, db_session: Session):
         print(f"An error occurred during the mock interview process: {e}")
         raise
 
-# @router.post("/generate_question")
-# async def generate_interview_questions(keywords: List[str], db: Session = Depends(get_db)):
-#     try:
-#         questions, interview_id = await makequestion(keywords, db)  
-        
-        
-#         return {"message": "Questions generated successfully", "interview_id": interview_id, "questions": questions}
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
-
-
 
 
 # S3 관련 설정
