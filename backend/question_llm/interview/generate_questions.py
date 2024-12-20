@@ -16,22 +16,40 @@ from langchain.retrievers.multi_query import MultiQueryRetriever
 from langchain.retrievers import ContextualCompressionRetriever
 from langchain.schema import SystemMessage
 from dotenv import load_dotenv
-import uuid  # 고유 ID 생성에 사용
+import uuid 
+from util.get_parameter import get_parameter
+import boto3
 
 load_dotenv()
 
 
+# openai_api_key = get_parameter('/TEST/CICD/STREAMLIT/OPENAI_API_KEY')
+
+def fetch_openai_api_key(parameter_name="/TEST/CICD/STREAMLIT/OPENAI_API_KEY"):
+    try:
+        ssm_client = boto3.client("ssm", region_name="ap-northeast-2")
+        response = ssm_client.get_parameter(Name=parameter_name, WithDecryption=True)
+        api_key = response["Parameter"]["Value"]
+        os.environ["OPENAI_API_KEY"] = api_key
+        return api_key
+    except Exception as e:
+        raise RuntimeError(f"Error fetching parameter: {str(e)}")
+
+# Fetch and set the API key
+openai_api_key = os.environ.get("OPENAI_API_KEY") or fetch_openai_api_key()
+print(openai_api_key)
+
 def get_client():
     return ChatOpenAI(
-        model="gpt-4o",
+        model="gpt-4o-mini",
         streaming=True,
-        openai_api_key=os.getenv("OPENAI_API_KEY")
+        openai_api_key=openai_api_key
         )
 
 # ChatOpenAI 인스턴스 생성
 chat = get_client()
 
-embeddings = OpenAIEmbeddings(model="text-embedding-3-small", openai_api_key=os.getenv("OPENAI_API_KEY"))
+embeddings = OpenAIEmbeddings(model="text-embedding-3-small", openai_api_key=openai_api_key)
 
 
 # 현재 파일의 디렉토리 경로를 가져옴
@@ -55,8 +73,12 @@ vector_db_low = FAISS.load_local(
 )
 
 # 검색기 함수
-def cross_encoder_reranker(query, db_level="low", top_k=5):
+async def cross_encoder_reranker(query, db_level="low", top_k=5):
     
+    embeddings=OpenAIEmbeddings(openai_api_key=openai_api_key),
+    allow_dangerous_deserialization=True,
+
+
     # DB 선택
     vector_db = vector_db_high if db_level == "high" else vector_db_low
 
@@ -87,7 +109,7 @@ def cross_encoder_reranker(query, db_level="low", top_k=5):
 
 
 # 질문생성함수
-def generate_questions(keywords: List[str], interview_id: int, db_session, keyjob: str):
+async def generate_questions(keywords: List[str], interview_id: int, db_session):
     questions = []
     if not keywords:  # 키워드가 없는 경우
         for i in range(5):
@@ -155,7 +177,6 @@ def generate_questions(keywords: List[str], interview_id: int, db_session, keyjo
                 # 한글 질문 생성
                 prompt = question_prompt() + (
                     f"다음 공식 문서를 참조하여 기술 면접 질문을 생성해 주세요:\n{retrieved_content}\n"
-                    f"다음 면접자의 희망직무를 반영하여 질문을 생성해주세요:\n{keyjob}\n"
                     f"기술 스택: {combined_keywords}\n"
                     f"하나의 질문만 반환해주시기 바랍니다."
                 )

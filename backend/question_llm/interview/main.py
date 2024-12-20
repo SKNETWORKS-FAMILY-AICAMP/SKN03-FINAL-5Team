@@ -12,15 +12,20 @@ from langchain.schema import SystemMessage
 import os
 import pandas as pd
 from datetime import datetime
+from util.get_parameter import get_parameter
 
+
+
+openai_api_key = get_parameter('/TEST/CICD/STREAMLIT/OPENAI_API_KEY')
+# openai_api_key = os.getenv("OPENAI_API_KEY")
 
 model = SentenceTransformer("snunlp/KR-SBERT-V40K-klueNLI-augSTS")
 
 def get_client():
     return ChatOpenAI(
-        model="gpt-4o",
+        model="gpt-4o-mini",
         streaming=True,
-        openai_api_key=os.getenv("OPENAI_API_KEY")
+        openai_api_key=openai_api_key
         )
 
 # ChatOpenAI 인스턴스 생성

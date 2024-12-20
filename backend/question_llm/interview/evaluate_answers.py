@@ -12,7 +12,7 @@ model = SentenceTransformer("snunlp/KR-SBERT-V40K-klueNLI-augSTS")
 # GPT-4 기반 ChatOpenAI 클라이언트 생성 함수
 def get_client():
     return ChatOpenAI(
-        model="gpt-4o",
+        model="gpt-4o-mini",
         streaming=True,
         openai_api_key=os.getenv("OPENAI_API_KEY"),
     )

@@ -18,18 +18,17 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
-    # allow_origins=["*"],
+    allow_origins=["https://www.aiunailit.com","http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 init_db()
 
-app.include_router(board_router.router)  
-app.include_router(auth_router)
-app.include_router(transcribe_router)
-app.include_router(kakao_router)
+app.include_router(board_router.router, tags=["board"])  
+app.include_router(auth_router, tags=["auth"])
+app.include_router(transcribe_router, tags=["interview"])
+app.include_router(kakao_router, tags=["auth"])
 app.include_router(interview_router,tags=["interview"] )
 app.include_router(userinfo_router, tags=["user"])
 

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, File
 from sqlalchemy.orm import Session
 from typing import List
 from question_llm.interview.generate_questions import generate_questions, create_new_interview
@@ -14,7 +14,7 @@ from question_llm.interview.evaluate_answers import evaluate_answer
 from models import EvaluateAnswersRequest, Interview, QuestionTb, ReportTb
 from sentence_transformers import SentenceTransformer
 import asyncio
-
+import os
 
 router = APIRouter()
 
@@ -29,7 +29,7 @@ def get_db():
 
 model = SentenceTransformer("snunlp/KR-SBERT-V40K-klueNLI-augSTS")
 
-def makequestion(keywords: List[str],db_session: Session):  # db_session을 인자로 받도록 수정
+async def makequestion(keywords: List[str], db_session: Session):  
     """
     모의 면접 프로세스 관리.
     """
@@ -46,13 +46,13 @@ def makequestion(keywords: List[str],db_session: Session):  # db_session을 인�
             job_talent=JOB_TALENT,
             resume_path=RESUME_PATH,
             interview_time=datetime.now(),
-            db_session=db_session  # 전달된 db_session 사용
+            db_session=db_session  
         )
         if not interview_id:
             raise ValueError("Failed to create new interview.")
         print(f"Interview created with ID: {interview_id}")
 
-        questions = generate_questions(keywords, interview_id, db_session)
+        questions = await generate_questions(keywords, interview_id, db_session)
         
         save_questions_to_db(interview_id, questions, db_session)
         
@@ -67,7 +67,7 @@ def makequestion(keywords: List[str],db_session: Session):  # db_session을 인�
 @router.post("/generate_question")
 async def generate_interview_questions(keywords: List[str], db: Session = Depends(get_db)):
     try:
-        questions, interview_id = makequestion(keywords, db)  # db를 인자로 전달
+        questions, interview_id = await makequestion(keywords, db)  
         
         
         return {"message": "Questions generated successfully", "interview_id": interview_id, "questions": questions}
@@ -75,6 +75,47 @@ async def generate_interview_questions(keywords: List[str], db: Session = Depend
         raise HTTPException(status_code=500, detail=str(e))
 
 
+
+
+# # S3 관련 설정
+# BUCKET_NAME = os.getenv('S3_BUCKET_NAME')
+
+# @router.post("/generate_question")
+# async def generate_interview_questions(
+#     keywords: List[str],
+#     resume: UploadFile = File(...),
+#     db: Session = Depends(get_db)
+# ):
+#     try:
+#         # 파일 확장자 확인
+#         file_extension = os.path.splitext(resume.filename)[1]
+#         if file_extension not in ['.pdf', '.doc', '.docx']:
+#             raise HTTPException(status_code=400, detail="Invalid file type. Only PDF, DOC, and DOCX are allowed.")
+
+#         # 고유한 파일명 생성
+#         unique_filename = f"{uuid.uuid4()}{file_extension}"
+
+#         # S3에 파일 업로드
+#         try:
+#             s3_path = upload_to_s3(resume.file, BUCKET_NAME, unique_filename)
+#         except NoCredentialsError:
+#             raise HTTPException(status_code=500, detail="Failed to upload file: S3 credentials not available")
+#         except Exception as e:
+#             raise HTTPException(status_code=500, detail=f"Failed to upload file: {str(e)}")
+
+#         # 질문 생성 및 인터뷰 ID 얻기
+#         questions, interview_id = makequestion(keywords, db, s3_path)  # s3_path 추가
+
+#         return {
+#             "message": "Questions generated successfully",
+#             "interview_id": interview_id,
+#             "questions": questions,
+#             "resume_path": s3_path
+#         }
+#     except HTTPException as he:
+#         raise he
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/evaluate_answers")
@@ -184,3 +225,9 @@ def get_report(interview_id: int, db: Session = Depends(get_db)):
         "report_score": report.report_score,
         "report_created": report.report_created
     }
+
+
+@router.get("/api/all-interview-ids")
+def get_all_interview_ids(db: Session = Depends(get_db)):
+    interviews = db.query(Interview.interview_id).all()
+    return [interview.interview_id for interview in interviews]
