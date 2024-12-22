@@ -11,6 +11,7 @@ from question_llm.interview.database_utils import save_questions_to_db, save_eva
 from question_llm.interview.collect_answer import collect_answers
 from question_llm.interview.generate_report import generate_report
 from question_llm.interview.evaluate_answers import evaluate_answer
+from question_llm.interview.evaluate_answer_2nd import evaluate_responses
 from models import EvaluateAnswersRequest, Interview, QuestionTb, ReportTb
 from sentence_transformers import SentenceTransformer
 import asyncio
@@ -130,56 +131,62 @@ def generate_interview_questions(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+
 @router.post("/evaluate_answers")
 async def evaluate_answers(request: EvaluateAnswersRequest, db: Session = Depends(get_db)):
-    try:
-        interview_id = request.interview_id
-        answers_from_frontend = request.answers
+
+    ragas_df, total_score, level, summary_resp = evaluate_responses(file_path)
+    parsed_report = parse_report(summary_resp)
+# @router.post("/evaluate_answers")
+# async def evaluate_answers(request: EvaluateAnswersRequest, db: Session = Depends(get_db)):
+#     try:
+#         interview_id = request.interview_id
+#         answers_from_frontend = request.answers
 
 
-        # Step 4: 질문과 답변 매핑 
-        mapped_answers = [
-            {
-                "interview_id": answer_data.interview_id, 
-                "question": answer_data.question,
-                "answer": answer_data.answer,
-                "model_answer": answer_data.solution,  
-            }
-            for answer_data in answers_from_frontend
-        ]
+#         # Step 4: 질문과 답변 매핑 
+#         mapped_answers = [
+#             {
+#                 "interview_id": answer_data.interview_id, 
+#                 "question": answer_data.question,
+#                 "answer": answer_data.answer,
+#                 "model_answer": answer_data.solution,  
+#             }
+#             for answer_data in answers_from_frontend
+#         ]
 
-        # Step 5: 답변 평가 
-        def evaluate_single_answer(answer_data):
-            return evaluate_answer(
-                interview_id=interview_id,
-                model=model,
-                question=answer_data["question"],
-                answer=answer_data["answer"],
-                model_answer=answer_data["model_answer"],
-            )
+#         # Step 5: 답변 평가 
+#         def evaluate_single_answer(answer_data):
+#             return evaluate_answer(
+#                 interview_id=interview_id,
+#                 model=model,
+#                 question=answer_data["question"],
+#                 answer=answer_data["answer"],
+#                 model_answer=answer_data["model_answer"],
+#             )
 
-        evaluated_answers = [evaluate_single_answer(answer_data) for answer_data in mapped_answers]
+#         evaluated_answers = [evaluate_single_answer(answer_data) for answer_data in mapped_answers]
 
 
-        # 평가 결과 저장 
-        save_evaluated_answers_to_db(interview_id, evaluated_answers, db)
+#         # 평가 결과 저장 
+#         save_evaluated_answers_to_db(interview_id, evaluated_answers, db)
 
-        # Step 6: 총평 생성 
-        try:
-            report = generate_report(
-                evaluation_results=evaluated_answers,
-                db_session=db,
-            )
-            print("Final Report Generated:")
-            print(report)
-            return {"message": "Evaluation completed successfully", "report": report}
-        except Exception as e:
-            print(f"Error during report generation: {e}")
-            raise HTTPException(status_code=500, detail="Error during report generation")
+#         # Step 6: 총평 생성 
+#         try:
+#             report = generate_report(
+#                 evaluation_results=evaluated_answers,
+#                 db_session=db,
+#             )
+#             print("Final Report Generated:")
+#             print(report)
+#             return {"message": "Evaluation completed successfully", "report": report}
+#         except Exception as e:
+#             print(f"Error during report generation: {e}")
+#             raise HTTPException(status_code=500, detail="Error during report generation")
         
-    except Exception as e:
-        print(f"An error occurred during the evaluation process: {e}")
-        raise HTTPException(status_code=500, detail="An error occurred during the evaluation process")
+#     except Exception as e:
+#         print(f"An error occurred during the evaluation process: {e}")
+#         raise HTTPException(status_code=500, detail="An error occurred during the evaluation process")
 
 
 @router.get("/interview/{user_id}")
@@ -210,9 +217,9 @@ def get_interview_questions(interview_id: int, db: Session = Depends(get_db)):
         "questions": [
             {
                 "question_id": q.question_id,
-                "job_question": q.job_question,
-                "job_answer": q.job_answer,
-                "job_solution": q.job_solution,
+                "job_question_kor": q.job_question_kor,
+                "job_answer": q.job_answer_kor,
+                "job_solution": q.job_solution_kor,
                 "job_score": q.job_score
             } for q in questions
         ]

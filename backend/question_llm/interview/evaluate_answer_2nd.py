@@ -1,10 +1,4 @@
-!pip install langchain openai
-!pip install "pydantic<1.10.10"
-!pip install haystack-ai
-!pip install ragas-haystack
-
 import os
-os.environ["OPENAI_API_KEY"] = ''
 import pandas as pd
 import re
 from haystack import Pipeline

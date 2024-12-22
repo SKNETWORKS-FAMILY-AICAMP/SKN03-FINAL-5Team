@@ -19,9 +19,9 @@ def save_question_to_db(interview_id, job_question, job_answer, job_solution, jo
     try:
         question = QuestionTb(
             interview_id=interview_id,
-            job_question=job_question,
-            job_answer=job_answer,
-            job_solution=job_solution,
+            job_question_kor=job_question,
+            job_answer_kor=job_answer,
+            job_solution_kor=job_solution,
             job_score=job_score,
             question_vector_path=question_vector,
         )

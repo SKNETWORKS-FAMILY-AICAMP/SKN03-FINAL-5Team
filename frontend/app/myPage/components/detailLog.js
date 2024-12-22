@@ -12,14 +12,14 @@ import { FaQuestion, FaComment } from 'react-icons/fa';
 
 const DetailLog = ({ interviewLogList }) => {
   return (
-    <Box maxWidth="800px" margin="auto" p={5} overflowX={'scroll'}>
+    <Box maxWidth="800px" margin="auto" p={5} >
       <Box borderBottom={'4px solid black'} pb={'10px'} w={'100%'}>
         <Text fontSize={['24px', '26px', '30px']}>면접 세부 내용</Text>
       </Box>
       <VStack spacing={4} align="stretch">
         <Flex justifyContent={'space-between'} alignItems={'center'}>
           <Heading as="h2" size="md" mb={2} mt={10}>
-            면접1
+            Log
           </Heading>
           <Box cursor={'pointer'} textDecor={'underline'}>
             면접 결과 보고서.pdf 다운받기
@@ -44,7 +44,7 @@ const DetailLog = ({ interviewLogList }) => {
               />
               <Box p={'5px 30px'} background={'white'} borderRadius={'16px'}>
                 <Text>
-                  답변: {item.job_answer === 'N/A' ? '' : item.job_answer}
+                  답변: {item.job_answer_kor === '' ? '' : item.job_answer_kor}
                 </Text>
               </Box>
             </Flex>

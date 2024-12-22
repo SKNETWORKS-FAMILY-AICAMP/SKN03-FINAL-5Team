@@ -16,7 +16,7 @@ const InterviewStep = React.memo(() => {
   const [interviewData, setInterviewData] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const router = useRouter();
+
   const { questionList, questionAnswerList, interviewId } = useFetchQuestion();
 
   const { getAnswerFunction, isLoading } = useFetchAnswer();
@@ -26,7 +26,6 @@ const InterviewStep = React.memo(() => {
       setQuestions(questionList);
       setLoading(false);
       startTimers();
-      console.log(questionList)
     }
   }, [questionList]);
 
@@ -87,9 +86,9 @@ const InterviewStep = React.memo(() => {
   const onSubmitAnswer = () => {
     const answersFromFrontend = interviewData.map((data) => ({
       interview_id: interviewId,
-      question: data.question,
-      answer: data.answer,
-      solution: data.solution,
+      job_question_kor: data.question,
+      job_answer_kor: data.answer,
+      job_solution_kor: data.solution,
     }));
 
     getAnswerFunction({

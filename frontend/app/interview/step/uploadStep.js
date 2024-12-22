@@ -3,6 +3,7 @@ import {
   Button,
   Flex,
   HStack,
+  Text,
   Input,
   VStack,
   InputGroup,
@@ -19,6 +20,7 @@ import {
   fileAtom,
 } from '../atom/atom';
 import { useFetchQuestion } from './hook/getQuestion';
+import LoadingComponent from '../components/loadingComponent';
 
 const UploadStep = ({ setCurrentStep }) => {
   const [file, setFile] = useAtom(fileAtom);
@@ -85,24 +87,9 @@ const UploadStep = ({ setCurrentStep }) => {
   return (
     <Box w={'100%'}>
       {isPending === true ? (
-        <Flex
-          width="100vw"
-          height="100vh"
-          justifyContent="center"
-          alignItems="center"
-        >
-          <Spinner
-            thickness="4px"
-            speed="0.65s"
-            emptyColor="gray.200"
-            color="blue.500"
-            size="xl"
-          />
-        </Flex>
+        <LoadingComponent />
       ) : (
-        <></>
-      )}
-      <Box m={'0 auto'} maxW={'1000px'}>
+        <Box m={'0 auto'} maxW={'1000px'}>
         <VStack alignItems={'flex-start'} gap={'30px'}>
           <Box w={'100%'}>
             <Box fontSize={'30px'}>관심 직무</Box>
@@ -214,6 +201,7 @@ const UploadStep = ({ setCurrentStep }) => {
           </Button>
         </Flex>
       </Box>
+      )}
     </Box>
   );
 };

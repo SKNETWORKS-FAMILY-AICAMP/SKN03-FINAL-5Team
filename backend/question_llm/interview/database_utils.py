@@ -30,9 +30,9 @@ def update_question_in_db(
 
         # 질문 업데이트
         question.interview_id = interview_id
-        question.job_question = job_question
-        question.job_answer = job_answer
-        question.job_solution = job_solution
+        question.job_question_kor = job_question
+        question.job_answer_kor = job_answer
+        question.job_solution_kor = job_solution
         question.job_score = job_score
 
         # 변경 사항 커밋
@@ -115,9 +115,9 @@ def save_answers_to_db(answers: List[Dict]):
         for answer in answers:
             db_record = QuestionTb(
                 question_id=answer["question_id"],
-                job_question=answer["question"],
-                job_answer=answer["answer"],
-                job_solution=answer["ideal_answer"],
+                job_question_kor=answer["question"],
+                job_answer_kor=answer["answer"],
+                job_solution_kor=answer["ideal_answer"],
                 job_score=0,  # 초기 점수 설정
                 question_vector_path="default/path/vector.json",
             )
@@ -137,10 +137,9 @@ def save_evaluated_answers_to_db(
                 (QuestionTb.interview_id == interview_id) &
                 (QuestionTb.job_question == answer["question"])
             ).values(
-                job_answer=answer["answer"],
-                job_solution=answer["model_answer"],
+                job_answer_kor=answer["answer"],
+                job_solution_kor=answer["model_answer"],
                 job_score=answer["score"],
-                question_vector_path="default/path/vector.json"
             )
             db_session.execute(stmt)
         
@@ -179,3 +178,13 @@ def save_report_to_db(
         db_session.rollback()
         print(f"Error saving report to DB: {e}")
         raise e
+    
+
+
+def get_job_questions_by_interview_id(db: Session, interview_id: int):
+    return (
+        db.query(QuestionTb.job_question_eng)
+        .join(Interview, QuestionTb.interview_id == Interview.interview_id)
+        .filter(Interview.interview_id == interview_id)
+        .all()
+    )
