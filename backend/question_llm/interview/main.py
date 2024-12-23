@@ -47,12 +47,21 @@ def main():
     """
     모의 면접 프로세스 관리.
     """
-    make_keywords = keyword_main()
-    pdf_path = use_resume_path()
+    # make_keywords = keyword_main()
+    make_keywords = """
+    python, Vue.js, GitHub, Stripe API, Authentication, Firestore, React, React Context API, Google, SPA, 
+    Firebase, Machine Learning, Deep Learning, TensorFlow, PyTorch, Keras, OpenCV, NLP, 
+    Transformers, ChatGPT, OpenAI API, DALL-E, YOLO, FastAPI, Flask, Django, Node.js, 
+    Express.js, REST API, GraphQL, MongoDB, PostgreSQL, MySQL, Redis, Docker, Kubernetes, 
+    CI/CD, Jenkins, CircleCI, AWS Lambda, Azure Cognitive Services, Google Cloud Platform, 
+    Hugging Face, LangChain, Stable Diffusion, GAN, RNN, LSTM, BERT, AutoML, Reinforcement Learning,Java,Frontend,
+    Linux, Kurbernetes,Hadoop, Dbms, C++, AWS, DeebLearning, Docker, JS, MonggoDB
+    """
+    # pdf_path = use_resume_path()
 
     USER_ID = 1
     USER_JOB = "풀스텍 개발자"
-    RESUME_PATH = pdf_path
+    RESUME_PATH = "pdf_path"
 
     try:
         # Step 1: 인터뷰 생성 및 ID 확보
@@ -72,7 +81,7 @@ def main():
             keyjob = USER_JOB
             print(keyjob)
             print(type(keyjob))
-            questions = generate_questions(keywords, interview_id, keyjob, db_session)
+            questions = generate_questions(keywords, interview_id, db_session)
             print(f"Generated Questions: {questions}")
 
             # Step 3: 프론트에서 답변 받기 (샘플 답변 생성)
@@ -126,5 +135,10 @@ def main():
         print(f"An error occurred during the mock interview process: {e}")
 
     
+# if __name__ == "__main__":
+#     main()
+
 if __name__ == "__main__":
-    main()
+    for iteration in range(20):  # 10번 반복
+        print(f"\n=== Starting iteration {iteration + 1} ===\n")
+        main()
