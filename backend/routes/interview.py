@@ -135,7 +135,7 @@ def generate_interview_questions(
 @router.post("/evaluate_answers")
 async def evaluate_answers(request: EvaluateAnswersRequest, db: Session = Depends(get_db)):
 
-    ragas_df, total_score, level, summary_resp = evaluate_responses(request.interviewId)
+    ragas_df, total_score, level, summary_resp = evaluate_responses(request.interview_id, request.answers)
     parsed_report = parse_report(summary_resp)
 
 
