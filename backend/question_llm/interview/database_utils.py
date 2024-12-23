@@ -183,8 +183,24 @@ def save_report_to_db(
 
 def get_job_questions_by_interview_id(db: Session, interview_id: int):
     return (
-        db.query(QuestionTb.job_question_eng)
+        db.query(QuestionTb)
         .join(Interview, QuestionTb.interview_id == Interview.interview_id)
         .filter(Interview.interview_id == interview_id)
         .all()
     )
+
+def load_data_by_interview_id(db: Session, interview_id: int) -> Tuple[List[str], List[List[str]], List[str], List[str]]:
+    questions = get_job_questions_by_interview_id(db, interview_id)
+    
+    job_questions = []
+    job_contexts = []
+    responses = []
+    job_solutions = []
+
+    for question in questions:
+        job_questions.append(question.job_question_eng)
+        job_contexts.append([str(question.job_context)])
+        responses.append(question.response_eng)
+        job_solutions.append(question.job_question_eng)
+
+    return job_questions, job_contexts, responses, job_solutions

@@ -10,6 +10,8 @@ from langchain.prompts import (
     SystemMessagePromptTemplate,
     HumanMessagePromptTemplate
 )
+from question_llm.interview.evaluate_answer_2nd import load_data_by_interview_id
+from models import Answer
 
 ############################################
 # 시스템 프롬프트 
@@ -55,13 +57,14 @@ SYSTEM_PROMPT = """
 ############################################
 # 데이터 로드 및 RAGAS 평가 함수
 ############################################
-def load_data(file_path: str):
-    data = pd.read_csv(file_path)
-    questions = data['job_question_english'].tolist()
-    contexts = [[str(context)] for context in data['retrieved_content_eng']]
-    responses = data['response_eng'].tolist()
-    ground_truths = data['job_solution_english'].tolist()
-    return questions, contexts, responses, ground_truths
+# def load_data(file_path: str):
+#     get_job_questions_by_interview_id
+#     data = pd.read_csv(file_path)
+#     questions = data['job_question_english'].tolist()
+#     contexts = [[str(context)] for context in data['job_context']]
+#     responses = data['response_eng'].tolist()
+#     ground_truths = data['job_solution_english'].tolist()
+#     return questions, contexts, responses, ground_truths
 
 def run_ragas_evaluation(questions, contexts, responses, ground_truths):
     answer_relevancy_pipeline = Pipeline()
@@ -263,17 +266,42 @@ def parse_report(summary_text: str) -> dict:
 
     return report
 
+def translate_korean_answer_to_english(answer):
+    # 번역 요청 프롬프트 생성
+    translation_prompt =(
+    f"Translate the following text into English:\n\n"
+    f"Answer:\n{answer}\n"
+    )
+
+    try:
+        # OpenAI ChatCompletion 호출
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are a professional translator."},
+                {"role": "user", "content": translation_prompt}
+            ]
+        )
+        # 번역된 텍스트 반환
+        translated_answer = response['choices'][0]['message']['content'].strip()
+        return translated_answer
+    except Exception as e:
+        print("An error occurred during translation:", str(e))
+        return None
+
 
 ############################################
 # 실행
 ############################################
 
-def evaluate_responses(file_path):
+def evaluate_responses(interviewId,  answers: List[Answer]):
     # 데이터 로드
-    questions, contexts, responses, ground_truths = load_data(file_path)
+    questions, context, responses, ground_truths = load_data_by_interview_id(interviewId)
+
+    responses_eng = translate_korean_answer_to_english(responses)
 
     # RAGAS 평가
-    ragas_df = run_ragas_evaluation(questions, contexts, responses, ground_truths)
+    ragas_df = run_ragas_evaluation(questions, contexts, responses_eng, ground_truths)
     ragas_df['step1_rating'] = ragas_df['average_score'].apply(step1_rating)
 
     # 새로운 컬럼 초기화

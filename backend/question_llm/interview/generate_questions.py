@@ -126,12 +126,12 @@ def generate_questions(keywords: List[str], USER_JOB: str, interview_id: int, db
                 print("검색 결과가 없습니다.")
                 continue
         # 검색된 각 문서를 순회하며 질문 생성
+
         for i, doc in enumerate(search_results):
             retrieved_content = doc.page_content
             reference_docs = doc.metadata.get("source", "출처를 알 수 없음")
 
             # 한글 질문 생성
-
             prompt = question_prompt() + (
                 f"다음 공식 문서를 참조하여 기술 면접 질문을 생성해 주세요:\n{retrieved_content}\n"
                 f"다음 면접자의 희망직무를 반영하여 질문을 생성해주세요:\n{USER_JOB}\n"
@@ -139,7 +139,6 @@ def generate_questions(keywords: List[str], USER_JOB: str, interview_id: int, db
                 f"하나의 질문만 반환해주시기 바랍니다."
             )
             question_response = chat.invoke([SystemMessage(content=prompt)])
-
             korean_job_question = question_response.content.strip()
 
             print(korean_job_question)
