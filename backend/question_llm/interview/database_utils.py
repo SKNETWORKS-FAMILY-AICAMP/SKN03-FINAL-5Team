@@ -232,8 +232,7 @@ def load_data_by_interview_id(interview_id: int, answers) -> Tuple[List[str], Li
 
     # 질문 가져오기
     questions = get_job_questions_by_interview_id(session, interview_id)
-    print('-------------------')
-    print(questions)
+
 
     # 결과를 저장할 리스트 초기화
     job_questions = []
@@ -250,15 +249,12 @@ def load_data_by_interview_id(interview_id: int, answers) -> Tuple[List[str], Li
 
         # answers와 인덱스 매핑
         if index < len(answers):
-            print('---------------------')
-            print(answers[index].job_answer_kor)
             responses.append(answers[index].job_answer_kor)  # 사용자의 답변
             job_solutions.append(answers[index].job_solution_kor)  # 정답
         else:
             # answers가 부족할 경우 처리
             responses.append("")  # 빈 값으로 추가
             job_solutions.append("")  # 빈 값으로 추가
-    print(f"First answer object: {answers[1].job_answer_kor}")
 
     return job_questions, job_contexts, responses, job_solutions
 

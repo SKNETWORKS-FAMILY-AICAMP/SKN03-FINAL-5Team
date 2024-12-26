@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   Box,
   VStack,
@@ -24,6 +24,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import { formatDate } from '@/app/common/utils/dayformat';
 
 ChartJS.register(
   CategoryScale,
@@ -34,39 +35,43 @@ ChartJS.register(
   Legend
 );
 
-// Graph setup (Bar chart example)
-const chartData = {
-  labels: ['문항1', '문항2', '문항3', '문항4', '문항5'],
-  datasets: [
-    {
-      label: '강점 점수',
-      data: [2, 3, 2, 3, 2], // 실제 데이터를 넣어주세요
-      backgroundColor: 'rgba(75, 192, 192, 0.6)',
-      borderColor: 'rgba(75, 192, 192, 1)',
-      borderWidth: 1,
-    },
-    {
-      label: '약점 점수',
-      data: [1, 2, 3, 1, 2], // 실제 데이터를 넣어주세요
-      backgroundColor: 'rgba(255, 99, 132, 0.6)',
-      borderColor: 'rgba(255, 99, 132, 1)',
-      borderWidth: 1,
-    },
-  ],
-};
-
 const DetailLog = ({ interviewLogList, reportData }) => {
-  // 평가 결과 파싱 함수
-  const parseEvaluation = (evaluationText) => {
-    try {
-      return JSON.parse(evaluationText.replace(/'/g, '"'));
-    } catch (error) {
-      console.error("평가 결과 파싱 오류:", error);
-      return {};
-    }
-  };
+  const evaluationResults = reportData ? JSON.parse(reportData.detail_feedback) : {};
 
-  const evaluationResults = reportData ? parseEvaluation(reportData.detail_feedback) : {};
+  // 차트 데이터 생성
+  const chartData = useMemo(() => {
+    const labels = Object.keys(evaluationResults);
+    const accuracyScores = labels.map(key => evaluationResults[key].정확성.score);
+    const jobFitScores = labels.map(key => evaluationResults[key].직무적합성_역량.score);
+    const logicScores = labels.map(key => evaluationResults[key].논리성.score);
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: '정확성',
+          data: accuracyScores,
+          backgroundColor: 'rgba(75, 192, 192, 0.6)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1,
+        },
+        {
+          label: '직무적합성 및 역량',
+          data: jobFitScores,
+          backgroundColor: 'rgba(255, 99, 132, 0.6)',
+          borderColor: 'rgba(255, 99, 132, 1)',
+          borderWidth: 1,
+        },
+        {
+          label: '논리성',
+          data: logicScores,
+          backgroundColor: 'rgba(54, 162, 235, 0.6)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1,
+        },
+      ],
+    };
+  }, [evaluationResults]);
 
   return (
     <Box maxWidth="900px" margin="auto" p={5}>
@@ -82,8 +87,7 @@ const DetailLog = ({ interviewLogList, reportData }) => {
           <Heading as="h2" size="md" mb={2}>
             면접 로그
           </Heading>
-          <Box cursor="pointer" textDecor="underline">
-            면접 결과 보고서.pdf 다운받기
+          <Box>
           </Box>
         </Flex>
 
@@ -152,16 +156,16 @@ const DetailLog = ({ interviewLogList, reportData }) => {
                 <AccordionPanel pb={4}>
                   <SimpleGrid columns={1} spacing={4}>
                     <Box>
-                      <Text fontWeight="bold">정확성</Text>
-                      <Text>{evaluation.정확성}</Text>
+                      <Text fontWeight="bold">정확성 (점수: {evaluation.정확성.score})</Text>
+                      <Text>{evaluation.정확성.description}</Text>
                     </Box>
                     <Box>
-                      <Text fontWeight="bold">직무적합성 및 역량</Text>
-                      <Text>{evaluation.직무적합성_역량}</Text>
+                      <Text fontWeight="bold">직무적합성 및 역량 (점수: {evaluation.직무적합성_역량.score})</Text>
+                      <Text>{evaluation.직무적합성_역량.description}</Text>
                     </Box>
                     <Box>
-                      <Text fontWeight="bold">논리성</Text>
-                      <Text>{evaluation.논리성}</Text>
+                      <Text fontWeight="bold">논리성 (점수: {evaluation.논리성.score})</Text>
+                      <Text>{evaluation.논리성.description}</Text>
                     </Box>
                   </SimpleGrid>
                 </AccordionPanel>
@@ -178,12 +182,34 @@ const DetailLog = ({ interviewLogList, reportData }) => {
 
         <Box mt={8} p="6" border="1px" borderRadius="8px" borderColor="gray.300">
           <Text fontWeight="bold" mb={2}>결과 점수</Text>
-          <Text fontSize="xl">총점: {reportData ? reportData.report_score : ""}</Text>
+          <Text fontSize="xl">
+            총점: {reportData ? reportData.report_score : ""}
+            {reportData ? (() => {
+              const totalScore = reportData.report_score;
+              let level = "";
+
+              if (15 <= totalScore && totalScore <= 20) {
+                level = "매우 미흡";
+              } else if (21 <= totalScore && totalScore <= 26) {
+                level = "미흡";
+              } else if (27 <= totalScore && totalScore <= 32) {
+                level = "보통";
+              } else if (33 <= totalScore && totalScore <= 38) {
+                level = "우수";
+              } else if (39 <= totalScore && totalScore <= 45) {
+                level = "매우 우수";
+              } else {
+                level = "알 수 없음";
+              }
+
+              return ` (${level})`;
+            })() : ""}
+          </Text>
         </Box>
 
         <Box mt={4} p="6" border="1px" borderRadius="8px" borderColor="gray.300">
           <Text fontWeight="bold" mb={2}>결과 생성일</Text>
-          <Text>{reportData ? reportData.report_created : ""}</Text>
+          <Text>{reportData ? formatDate(reportData.report_created) : ""}</Text>
         </Box>
       </Box>
     </Box>

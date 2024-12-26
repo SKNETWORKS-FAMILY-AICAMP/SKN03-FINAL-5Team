@@ -246,7 +246,6 @@ step4_prompt = ChatPromptTemplate.from_messages([
     )
 ])
 
-
 def parse_report(summary_text: str) -> dict:
     # 정규식 패턴 정의
     question_pattern = re.compile(r'문항 (\d+):([\s\S]*?)(?=\n문항 \d+:|종합 평가:)', re.DOTALL)
@@ -268,7 +267,10 @@ def parse_report(summary_text: str) -> dict:
             # category를 변환해 직무적합성_역량 등 사용
             if category == "직무적합성+역량":
                 category = "직무적합성_역량"
-            q_dict[category] = desc.strip()
+            q_dict[category] = {
+                "score": int(score),
+                "description": desc.strip()
+            }
         report[f"문항{q_num}"] = q_dict
 
     # 종합 평가 항목 추출
@@ -287,7 +289,6 @@ def parse_report(summary_text: str) -> dict:
         report["결과단계"] = result.group(1).strip()
 
     return report
-
 
 
 def get_client():

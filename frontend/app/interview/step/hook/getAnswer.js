@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 
 export const useFetchAnswer = () => {
   const [isLoading, setLoading] = useState(false);
+  const [answers, setAnswers] = useState();
   const {
     mutate: getAnswer,
     data: answer,
@@ -22,5 +23,11 @@ export const useFetchAnswer = () => {
     }
   }, [getAnswerLoading]);
 
-  return { getAnswerFunction, isLoading };
+  useEffect(() => {
+    if(answer){
+      setAnswers(answer)
+    }
+  },[answer])
+
+  return { getAnswerFunction, isLoading, answers };
 };
