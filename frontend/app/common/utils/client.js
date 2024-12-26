@@ -15,7 +15,7 @@ export const instance = axios.create({
     process.env.NODE_ENV === 'production'
       ? productionApiUrl
       : developmentApiUrl,
-  timeout: 300000,
+  timeout: 500000,
 });
 
 let refreshTokenFailedCallback = () => {

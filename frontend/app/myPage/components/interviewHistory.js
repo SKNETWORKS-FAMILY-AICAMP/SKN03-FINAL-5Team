@@ -71,7 +71,7 @@ const InterviewHistory = () => {
       <Box borderBottom={'4px solid black'} pb={'10px'} w={'100%'}>
         <Text fontSize={['24px', '26px', '30px']}>면접 이력</Text>
       </Box>
-      <Grid w={'100%'} pt={'30px'} templateColumns="repeat(3, 1fr)" gap={6}>
+      <Grid w={'100%'} pt={'30px'} templateColumns="repeat(3, 1fr)" gap={6} pb={'50px'}>
         {interviewData.map((interview) => (
           <GridItem key={interview.interview_id}>
             <InterviewLog

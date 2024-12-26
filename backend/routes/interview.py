@@ -20,7 +20,7 @@ import os
 from util.upload_to_s3 import upload_to_s3
 from botocore.exceptions import NoCredentialsError
 from question_llm.interview.keyword_s3 import keyword_main, ResumePathManager
-
+import json
 
 from fastapi import FastAPI, Form
 
@@ -73,7 +73,7 @@ def makequestion(user_id, user_job, make_keywords, db_session: Session):
 
         questions = generate_questions(keywords, interview_id, USER_ID,  db_session)
         
-        save_questions_to_db(interview_id, questions, db_session)
+        # save_questions_to_db(interview_id, questions, db_session)
         
         return questions, interview_id
     except SQLAlchemyError as e:
@@ -150,7 +150,7 @@ async def evaluate_answers(request: EvaluateAnswersRequest, db: Session = Depend
             strength=parsed_report.get("강점", ""),
             weakness=parsed_report.get("약점", ""),
             ai_summary=parsed_report.get("한줄평", ""),
-            detail_feedback=str(question_feedback),  # 문항별 평가 데이터를 JSON 형식으로 저장
+            detail_feedback=json.dumps(question_feedback, ensure_ascii=False),  # 문항별 평가 데이터를 JSON 형식으로 저장
             report_score=total_score,
             report_created=datetime.now()  # 현재 로컬 시간 사용
         )
