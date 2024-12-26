@@ -29,8 +29,9 @@ faiss-cpu
 transformers
 tokenizers
 langchain-openai
-ragas-haystack
-haystack-ai
 langchain 
 openai
+pydantic<1.10.10
+haystack-ai
+ragas-haystack
 langchain-community

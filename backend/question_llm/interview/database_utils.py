@@ -189,24 +189,36 @@ def get_job_questions_by_interview_id(db: Session, interview_id: int):
         .all()
     )
 
-def load_data_by_interview_id(interview_id: int) -> Tuple[List[str], List[List[str]], List[str], List[str]]:
+def load_data_by_interview_id(interview_id: int, answers) -> Tuple[List[str], List[List[str]], List[str], List[str]]:
     session: Session = SessionLocal()
 
-    print('interview_id:: ')
-    print(interview_id)
+    # 질문 가져오기
     questions = get_job_questions_by_interview_id(session, interview_id)
 
-    print(f"questions: {questions}")
-    
+    # 결과를 저장할 리스트 초기화
     job_questions = []
     job_contexts = []
     responses = []
     job_solutions = []
 
-    for question in questions:
-        job_questions.append(question.job_question_eng)
-        job_contexts.append([str(question.job_context)])
-        responses.append(question.response_eng)
-        job_solutions.append(question.job_question_eng)
+    # questions와 answers를 매핑하여 처리
+    for index, question in enumerate(questions):  # enumerate를 사용해 인덱스를 추가
+        job_questions.append(question.job_question_eng)  # 질문 영어
+        job_contexts.append([str(question.job_context)])  # 질문 컨텍스트
+        print(f"Number of questions: {len(questions)}")
+        print(f"Number of answers: {len(answers)}")
+
+        # answers와 인덱스 매핑
+        if index < len(answers):
+            print('---------------------')
+            print(answers[index].job_answer_kor)
+            responses.append(answers[index].job_answer_kor)  # 사용자의 답변
+            job_solutions.append(answers[index].job_solution_kor)  # 정답
+        else:
+            # answers가 부족할 경우 처리
+            responses.append("")  # 빈 값으로 추가
+            job_solutions.append("")  # 빈 값으로 추가
+    print('-----------------')
+    print(f"First answer object: {answers[1].job_answer_kor}")
 
     return job_questions, job_contexts, responses, job_solutions

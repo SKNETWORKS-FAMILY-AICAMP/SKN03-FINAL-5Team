@@ -13,6 +13,9 @@ from langchain.prompts import (
 from question_llm.interview.database_utils import load_data_by_interview_id
 from models import Answer
 from typing import List, Dict
+import openai
+import boto3
+from langchain.schema import SystemMessage, HumanMessage
 
 ############################################
 # 시스템 프롬프트 
@@ -54,6 +57,22 @@ SYSTEM_PROMPT = """
     ### **Step 4: 최종 보고서 산출**
     - 문항별 점수와 이유를 바탕으로 강점, 약점, 한줄평, 결과단계를 자세히 기술
 """
+
+
+
+
+def fetch_openai_api_key(parameter_name="/TEST/CICD/STREAMLIT/OPENAI_API_KEY"):
+    try:
+        ssm_client = boto3.client("ssm", region_name="ap-northeast-2")
+        response = ssm_client.get_parameter(Name=parameter_name, WithDecryption=True)
+        api_key = response["Parameter"]["Value"]
+        os.environ["OPENAI_API_KEY"] = api_key
+        return api_key
+    except Exception as e:
+        raise RuntimeError(f"Error fetching parameter: {str(e)}")
+
+# Fetch and set the API key
+openai_api_key = os.environ.get("OPENAI_API_KEY") or fetch_openai_api_key()
 
 ############################################
 # 데이터 로드 및 RAGAS 평가 함수
@@ -267,29 +286,44 @@ def parse_report(summary_text: str) -> dict:
 
     return report
 
-def translate_korean_answer_to_english(answer):
-    # 번역 요청 프롬프트 생성
-    translation_prompt =(
-    f"Translate the following text into English:\n\n"
-    f"Answer:\n{answer}\n"
-    )
 
-    try:
-        # OpenAI ChatCompletion 호출
-        response = openai.ChatCompletion.create(
-            model="gpt-4",
-            messages=[
-                {"role": "system", "content": "You are a professional translator."},
-                {"role": "user", "content": translation_prompt}
-            ]
+
+def get_client():
+    return ChatOpenAI(
+        model="gpt-4o-mini",
+        streaming=True,
+        openai_api_key=openai_api_key
         )
-        # 번역된 텍스트 반환
-        translated_answer = response['choices'][0]['message']['content'].strip()
-        return translated_answer
-    except Exception as e:
-        print("An error occurred during translation:", str(e))
-        return None
 
+# ChatOpenAI 인스턴스 생성
+chat = get_client()
+
+
+
+def translate_korean_answers_to_english(answers):
+    """
+    Translates an array of Korean answers into English.
+    """
+    translated_answers = []
+    
+    for answer in answers:
+        translation_prompt = (
+            f"Translate the following text into English:\n\n"
+            f"Answer:\n{answer}\n"
+        )
+
+        try:
+            response = chat.invoke([
+                SystemMessage(content="You are a professional translator."),
+                HumanMessage(content=translation_prompt)
+            ])
+            translated_answer = response.content.strip()
+            translated_answers.append(translated_answer)
+        except Exception as e:
+            print(f"An error occurred during translation for answer: {answer}. Error: {str(e)}")
+            translated_answers.append(None)
+
+    return translated_answers
 
 ############################################
 # 실행
@@ -297,17 +331,15 @@ def translate_korean_answer_to_english(answer):
 
 def evaluate_responses(interview_id,  answers: List[Answer]):
     # 데이터 로드
-    print("interviewId111")
-    print(interview_id)
-    questions, context, responses, ground_truths = load_data_by_interview_id(interview_id)
-    
-    print('---------------------------')
-    print(questions, context, responses, ground_truths)
+    print("interviewId_response:")
+    job_questions, job_contexts, responses, job_solutions = load_data_by_interview_id(interview_id, answers)
 
-    responses_eng = translate_korean_answer_to_english(responses)
+
+    responses_eng = translate_korean_answers_to_english(responses)
+    print(responses_eng)
 
     # RAGAS 평가
-    ragas_df = run_ragas_evaluation(questions, contexts, responses_eng, ground_truths)
+    ragas_df = run_ragas_evaluation(job_questions, job_contexts, responses_eng, job_solutions)
     ragas_df['step1_rating'] = ragas_df['average_score'].apply(step1_rating)
 
     # 새로운 컬럼 초기화
@@ -325,7 +357,7 @@ def evaluate_responses(interview_id,  answers: List[Answer]):
     step4_chain = LLMChain(llm=llm, prompt=step4_prompt)
 
     # 모든 문항 평가
-    for i, (q, ans) in enumerate(zip(questions, responses)):
+    for i, (q, ans) in enumerate(zip(job_questions, responses)):
         answer_relevancy = ragas_df['answer_relevancy'][i]
         answer_correctness = ragas_df['answer_correctness'][i]
 
@@ -354,6 +386,8 @@ def evaluate_responses(interview_id,  answers: List[Answer]):
         total_score=str(total_score),
         level=level
     )
+    print('summary')
+    print(summary_resp)
 
     return ragas_df, total_score, level, summary_resp
 

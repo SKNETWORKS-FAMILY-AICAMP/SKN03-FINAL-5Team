@@ -11,7 +11,7 @@ from question_llm.interview.database_utils import save_questions_to_db, save_eva
 from question_llm.interview.collect_answer import collect_answers
 from question_llm.interview.generate_report import generate_report
 from question_llm.interview.evaluate_answers import evaluate_answer
-from question_llm.interview.evaluate_answer_2nd import evaluate_responses
+from question_llm.interview.evaluate_answer_2nd import evaluate_responses, parse_report
 from models import EvaluateAnswersRequest, Interview, QuestionTb, ReportTb
 from sentence_transformers import SentenceTransformer
 import asyncio
@@ -134,63 +134,34 @@ def generate_interview_questions(
 
 @router.post("/evaluate_answers")
 async def evaluate_answers(request: EvaluateAnswersRequest, db: Session = Depends(get_db)):
-
+    # 평가 실행
     ragas_df, total_score, level, summary_resp = evaluate_responses(request.interview_id, request.answers)
     parsed_report = parse_report(summary_resp)
 
+    # DB에 데이터 저장
+    try:
+        new_report = ReportTb(
+            interview_id=request.interview_id,
+            strength=parsed_report.get("강점", ""),
+            weakness=parsed_report.get("약점", ""),
+            ai_summary=summary_resp,
+            detail_feedback=str(parsed_report),
+            report_score=total_score,
+            report_created=datetime.now()
+        )
+        db.add(new_report)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error saving report to database: {str(e)}")
+
+    # 결과 반환
+    return {
+        "summary_resp": summary_resp,
+        "parsed_report": parsed_report
+    }
 
 
-    
-# @router.post("/evaluate_answers")
-# async def evaluate_answers(request: EvaluateAnswersRequest, db: Session = Depends(get_db)):
-#     try:
-#         interview_id = request.interview_id
-#         answers_from_frontend = request.answers
-
-
-#         # Step 4: 질문과 답변 매핑 
-#         mapped_answers = [
-#             {
-#                 "interview_id": answer_data.interview_id, 
-#                 "question": answer_data.question,
-#                 "answer": answer_data.answer,
-#                 "model_answer": answer_data.solution,  
-#             }
-#             for answer_data in answers_from_frontend
-#         ]
-
-#         # Step 5: 답변 평가 
-#         def evaluate_single_answer(answer_data):
-#             return evaluate_answer(
-#                 interview_id=interview_id,
-#                 model=model,
-#                 question=answer_data["question"],
-#                 answer=answer_data["answer"],
-#                 model_answer=answer_data["model_answer"],
-#             )
-
-#         evaluated_answers = [evaluate_single_answer(answer_data) for answer_data in mapped_answers]
-
-
-#         # 평가 결과 저장 
-#         save_evaluated_answers_to_db(interview_id, evaluated_answers, db)
-
-#         # Step 6: 총평 생성 
-#         try:
-#             report = generate_report(
-#                 evaluation_results=evaluated_answers,
-#                 db_session=db,
-#             )
-#             print("Final Report Generated:")
-#             print(report)
-#             return {"message": "Evaluation completed successfully", "report": report}
-#         except Exception as e:
-#             print(f"Error during report generation: {e}")
-#             raise HTTPException(status_code=500, detail="Error during report generation")
-        
-#     except Exception as e:
-#         print(f"An error occurred during the evaluation process: {e}")
-#         raise HTTPException(status_code=500, detail="An error occurred during the evaluation process")
 
 
 @router.get("/interview/{user_id}")

@@ -1,6 +1,7 @@
 from sqlalchemy.exc import SQLAlchemyError
 import sys
 import os
+import datetime
 
 # 프로젝트 루트 경로를 sys.path에 추가
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
@@ -98,9 +99,7 @@ def save_report_to_db(
     weakness: str,
     ai_summary: str,
     detail_feedback: str,
-    attitude: str,
     report_score: int,
-    db_session: Session
 ):
     """
     ReportTb 테이블에 데이터를 저장합니다.
