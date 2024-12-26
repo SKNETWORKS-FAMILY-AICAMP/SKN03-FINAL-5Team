@@ -30,13 +30,13 @@ function InterviewPage() {
 
   return (
     <UserGuard>
-      <Box>
-        <Container>
-          <Header />
-          <StepProgress steps={steps} currentStep={currentStep} />
-          <StepRenderer steps={currentStep} setCurrentStep={setCurrentStep} />
-        </Container>
-      </Box>
+    <Box>
+      <Container>
+        <Header />
+        <StepProgress steps={steps} currentStep={currentStep} />
+        <StepRenderer steps={currentStep} setCurrentStep={setCurrentStep} />
+      </Container>
+    </Box>
     </UserGuard>
   );
 }

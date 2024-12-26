@@ -49,7 +49,7 @@ except Exception as e:
     logger.error(f"Failed to initialize ChatOpenAI client: {e}")
     raise
 
-def generate_report(evaluation_results: List[Dict], db_session) -> Dict:
+def generate_report(evaluation_results: List[Dict],interview_id, db_session) -> Dict:
     
     try:
         if not evaluation_results:
@@ -87,13 +87,12 @@ def generate_report(evaluation_results: List[Dict], db_session) -> Dict:
         # 보고서 데이터 구성
         try:
             report_data = {
-            "interview_id": evaluation_results[0].get("interview_id"),
+            "interview_id": interview_id,
             "strength": clean_text("강점 없음" if "강점" not in feedback else feedback.split("약점")[0].strip()),
             "weakness": clean_text("약점 없음" if "약점" not in feedback else feedback.split("한줄평")[0].split("약점")[1].strip()),
             "ai_summary": clean_text("한줄평 없음" if "한줄평" not in feedback else feedback.split("한줄평")[1].strip()),
             "report_score": average_score,
             "detail_feedback": str(detail_feedback),
-            "attitude_feedback": "개발중",
         }
 
     # 보고서 데이터를 저장

@@ -1,6 +1,7 @@
 from sqlalchemy.exc import SQLAlchemyError
 import sys
 import os
+import datetime
 
 # 프로젝트 루트 경로를 sys.path에 추가
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
@@ -19,9 +20,9 @@ def save_question_to_db(interview_id, job_question, job_answer, job_solution, jo
     try:
         question = QuestionTb(
             interview_id=interview_id,
-            job_question=job_question,
-            job_answer=job_answer,
-            job_solution=job_solution,
+            job_question_kor=job_question,
+            job_answer_kor=job_answer,
+            job_solution_kor=job_solution,
             job_score=job_score,
             question_vector_path=question_vector,
         )
@@ -80,7 +81,6 @@ def save_report_to_db(interview_id, strength, weakness, ai_summary, detail_feedb
             weakness=weakness,
             ai_summary=ai_summary,
             detail_feedback=detail_feedback,
-            attitude_feedback=attitude,
             report_score=report_score,
         )
         db_session.add(report)
@@ -99,9 +99,7 @@ def save_report_to_db(
     weakness: str,
     ai_summary: str,
     detail_feedback: str,
-    attitude: str,
     report_score: int,
-    db_session: Session
 ):
     """
     ReportTb 테이블에 데이터를 저장합니다.
@@ -113,7 +111,6 @@ def save_report_to_db(
             weakness=weakness,
             ai_summary=ai_summary,
             detail_feedback=detail_feedback,
-            attitude_feedback=attitude,
             report_score=report_score,
             report_created=datetime.now(),  # 생성 시간 추가
         )

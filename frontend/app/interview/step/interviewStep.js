@@ -16,7 +16,7 @@ const InterviewStep = React.memo(() => {
   const [interviewData, setInterviewData] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const router = useRouter();
+
   const { questionList, questionAnswerList, interviewId } = useFetchQuestion();
 
   const { getAnswerFunction, isLoading } = useFetchAnswer();
@@ -86,9 +86,9 @@ const InterviewStep = React.memo(() => {
   const onSubmitAnswer = () => {
     const answersFromFrontend = interviewData.map((data) => ({
       interview_id: interviewId,
-      question: data.question,
-      answer: data.answer,
-      solution: data.solution,
+      job_question_kor: data.question,
+      job_answer_kor: data.answer,
+      job_solution_kor: data.solution,
     }));
 
     getAnswerFunction({
@@ -143,7 +143,10 @@ const InterviewStep = React.memo(() => {
             )}
           </Box>
           {isLoading ? (
-            <Spinner size="xl" />
+            <Flex justify="center" align="center" h="100%">
+              <Spinner size="xl" />
+              <Text ml={3}>로딩 중...</Text>
+            </Flex>
           ) : (
             <Button
               w={'100%'}

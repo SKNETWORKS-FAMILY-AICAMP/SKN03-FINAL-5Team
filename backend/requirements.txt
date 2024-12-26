@@ -24,5 +24,15 @@ node
 ragas
 sentence-transformers
 pydantic
-fitz
+PyMuPDF
 faiss-cpu
+transformers
+tokenizers
+langchain-openai
+langchain 
+openai
+pydantic<1.10.10
+haystack-ai
+ragas-haystack
+langchain-community
+openpyxl

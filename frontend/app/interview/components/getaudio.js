@@ -44,7 +44,7 @@ const SpeechToText = ({ isRecording, onTranscriptUpdate }) => {
     formData.append('audio', audioBlob, 'recording.webm');
 
     try {
-      const response = await fetch('https://api.aiunailit.com/transcribe', {
+      const response = await fetch('http://127.0.0.1:8000/transcribe', {
         method: 'POST',
         body: formData,
       });
@@ -60,7 +60,7 @@ const SpeechToText = ({ isRecording, onTranscriptUpdate }) => {
 
   return (
     <div>
-      <h3>Transcript:</h3>
+      <h3>답변:</h3>
       <p>{transcript}</p>
     </div>
   );

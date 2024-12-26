@@ -22,13 +22,14 @@ const StepProgress = ({ steps, currentStep }) => {
               />
             )}
             <Circle
-              size="60px"
+              size="70px"
               bg={index < currentStep ? '#0066FF' : '#DFE2FB'}
               color={'white'}
               position="relative"
               zIndex={2}
+              p={2}
             >
-              <Text fontSize="sm" fontWeight="bold">
+              <Text fontSize="small" textAlign={'center'} fontWeight="bold" whiteSpace={'nowrap'}>
                 {(() => {
                   switch (index) {
                     case 0:

@@ -10,6 +10,7 @@ import { useAtom } from 'jotai';
 function StepComponent({ checkPermissions, permissionsGranted }) {
   const [audioDevices, setAudioDevices] = useState([]);
   const [videoDevices, setVideoDevices] = useState([]);
+  const [speakerDevices, setSpeakerDevices] = useState([]); 
   const [selectedAudio, setSelectedAudio] = useAtom(selectedAudioAtom);
   const [selectedVideo, setSelectedVideo] = useAtom(selectedVideoAtom);
   const [selectedSpeaker, setSelectedSpeaker] = useAtom(selectedSpeakerAtom);
@@ -17,8 +18,9 @@ function StepComponent({ checkPermissions, permissionsGranted }) {
   // 장치 목록을 가져오는 함수
   const getDevices = async () => {
     const devices = await navigator.mediaDevices.enumerateDevices();
-    setAudioDevices(devices.filter((device) => device.kind === 'audioinput'));
-    setVideoDevices(devices.filter((device) => device.kind === 'videoinput'));
+    setAudioDevices(devices.filter((device) => device.kind === 'audioinput')); // 마이크
+    setVideoDevices(devices.filter((device) => device.kind === 'videoinput')); // 카메라
+    setSpeakerDevices(devices.filter((device) => device.kind === 'audiooutput')); // 스피커
   };
 
   useEffect(() => {
@@ -36,7 +38,7 @@ function StepComponent({ checkPermissions, permissionsGranted }) {
 
   return (
     <Box
-      w={'400px'}
+      w={'450px'}
       h={'450px'}
       borderRadius={'40px'}
       background={'#DFE2FB'}
@@ -54,12 +56,12 @@ function StepComponent({ checkPermissions, permissionsGranted }) {
             value={selectedSpeaker}
             onChange={(e) => setSelectedSpeaker(e.target.value)}
           >
-            <option value="">선택</option>
-            {audioDevices.map((device) => (
-              <option key={device.deviceId} value={device.deviceId}>
-                {device.label || '스피커'}
-              </option>
-            ))}
+          <option value="">선택</option>
+          {speakerDevices.map((device) => (
+            <option key={device.deviceId} value={device.deviceId}>
+              {device.label || '스피커'}
+            </option>
+          ))}
           </Select>
         </Flex>
         <Flex alignItems={'center'} gap={'30px'}>

@@ -3,12 +3,21 @@ import { httpClient } from '../common/utils/client';
 
 export function useGetQuestionMutation() {
   return useMutation({
-    mutationFn: () =>
-      httpClient({
+    mutationFn: ({ resume, user_job, user_id }) => {
+      const formData = new FormData();
+      formData.append('resume', resume);
+      formData.append('user_job', user_job);
+      formData.append('user_id', user_id);
+
+      return httpClient({
         method: 'post',
         url: '/generate_question',
-        data: ['python', 'java', 'react'],
-      }),
+        data: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+    },
   });
 }
 

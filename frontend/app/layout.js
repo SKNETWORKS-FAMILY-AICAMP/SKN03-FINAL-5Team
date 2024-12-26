@@ -1,5 +1,4 @@
 'use client';
-import localFont from 'next/font/local';
 import { ChakraProvider } from '@chakra-ui/react';
 import 'regenerator-runtime/runtime';
 import './global.css';
@@ -40,7 +39,9 @@ export default function RootLayout(props) {
       <body suppressHydrationWarning={true}>
         <QueryClientProvider client={queryClient}>
           <ChakraProvider>
-            <UserProvider>{children}</UserProvider>
+            <UserProvider>
+              {children}
+            </UserProvider>
           </ChakraProvider>
         </QueryClientProvider>
       </body>
