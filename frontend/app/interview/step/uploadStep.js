@@ -26,7 +26,6 @@ const UploadStep = ({ setCurrentStep }) => {
   const [file, setFile] = useAtom(fileAtom);
   const [fileName, setFileName] = useAtom(fileNameAtom);
   const [jobInterest, setJobInterest] = useAtom(jobInterestAtom);
-  const [desiredTraits, setDesiredTraits] = useAtom(desiredTraitsAtom);
 
   const [kakaoId, setKakaoId] = useState();
   const [requestData, setRequestData] = useState();
@@ -101,25 +100,6 @@ const UploadStep = ({ setCurrentStep }) => {
               onChange={(e) => setJobInterest(e.target.value)}
               border={'0'}
               borderRadius={'0'}
-              background={'white'}
-              sx={{
-                '::placeholder': {
-                  color: 'gray.500',
-                  fontSize: '20px',
-                },
-              }}
-            />
-          </Box>
-          <Box w={'100%'}>
-            <Box fontSize={'30px'}>직무 인재상</Box>
-            <Input
-              w={'100%'}
-              h={'80px'}
-              placeholder="원하는 기업의 인재상을 모두 입력하세요 ex) 협업능력, 사고력·실행력, 패기"
-              border={'0'}
-              borderRadius={'0'}
-              value={desiredTraits}
-              onChange={(e) => setDesiredTraits(e.target.value)}
               background={'white'}
               sx={{
                 '::placeholder': {

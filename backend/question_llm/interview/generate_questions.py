@@ -2,11 +2,11 @@ import random
 import pandas as pd
 from typing import List, Dict
 import time
-from .database_utils import save_questions_to_db
 from .prompt import question_prompt, model_answer
 from datetime import datetime
 from langchain_openai import ChatOpenAI
-from .database_utils import create_new_interview
+from .database_utils import create_new_question_in_db
+from .question_similarity import question_similarity_main
 import os
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
@@ -19,6 +19,7 @@ from dotenv import load_dotenv
 import uuid 
 from util.get_parameter import get_parameter
 import boto3
+import random
 
 load_dotenv()
 
@@ -64,14 +65,18 @@ vector_db_high = FAISS.load_local(
 )
 
 vector_db_low = FAISS.load_local(
-    folder_path=os.path.join(parent_dir, "low_db"),
-    index_name="python_low_chunk700",
+    folder_path=os.path.join(parent_dir, "low_local_db"),
+    index_name="python_new_low_chunk700",
     embeddings=embeddings,
     allow_dangerous_deserialization=True,
 )
 
+
+
+
 # 검색기 함수
-def cross_encoder_reranker(query, db_level="low", top_k=5):
+def cross_encoder_reranker(query, db_level="low", top_k=10):
+
 
     # DB 선택
     vector_db = vector_db_high if db_level == "high" else vector_db_low
@@ -99,90 +104,100 @@ def cross_encoder_reranker(query, db_level="low", top_k=5):
     return compressed_docs
 
 
-# 질문생성함수
-def generate_questions(keywords: List[str], USER_JOB: str, interview_id: int, db_session) -> pd.DataFrame:
-    questions = []
-    """
-    주어진 키워드를 바탕으로 질문을 생성하고, DB에 저장 후 DataFrame으로 반환.
-    Args:
-        keywords (List[str]): 기술 키워드 목록
-        interview_id (int): 인터뷰 ID
-        db_session: 데이터베이스 세션
-    Returns:
-        pd.DataFrame: 생성된 질문과 관련 데이터
-    """
-    db_allocation = ["low"] * 3 + ["high"] * 2
-    random.shuffle(db_allocation)
 
-    # 키워드 리스트를 하나의 문자열로 결합
-    for db_level in db_allocation:
-        # 검색
-        search_results = cross_encoder_reranker(query=keywords, db_level=db_level, top_k=5)
-        if not search_results:
-            # 검색 결과가 없으면 반대 레벨에서도 검색
-            alternate_level = "high" if db_level == "low" else "low"
-            search_results = cross_encoder_reranker(query=keywords, db_level=alternate_level, top_k=5)
+from typing import List
+import random
+from langchain.schema import SystemMessage
+
+def generate_questions(keywords: List[str], interview_id: int, USER_ID: int, db_session):
+    questions = []
+    total_questions = 5  # 목표 질문 수
+
+    def add_question(korean_job_question, korean_job_solution, retrieved_content="", selected_keyword=""):
+        translation_prompt = (
+            f"Translate the following question and its answer into English:\n\n"
+            f"Question:\n{korean_job_question}\n\n"
+            f"Answer:\n{korean_job_solution}\n"
+        )
+        try:
+            translation_response = chat.invoke([SystemMessage(content=translation_prompt)])
+            translated_text = translation_response.content.strip()
+            english_job_question, english_job_solution = translated_text.split("\nAnswer:")
+        except Exception as e:
+            print(f"Error during translation: {e}")
+            english_job_question = "Translation Error"
+            english_job_solution = "Translation Error"
+        
+        question_id = create_new_question_in_db(
+            interview_id=interview_id,
+            job_question_kor=korean_job_question.strip(),
+            job_solution_kor=korean_job_solution.strip(),
+            job_question_eng=english_job_question.strip(),
+            job_solution_eng=english_job_solution.strip(),
+        )
+
+        questions.append({
+            "question_id": question_id,
+            "interview_id": interview_id,
+            "job_question_kor": korean_job_question.strip(),
+            "job_question_eng": english_job_question.strip(),
+            "job_answer_kor": "",
+            "job_answer_eng": "",
+            "job_solution_kor": korean_job_solution.strip(),
+            "job_solution_eng": english_job_solution.strip(),
+            "job_context": retrieved_content,
+            "job_score": 0,
+            "question_vector_path": "default/path/vector.json",
+            "selected_keyword": selected_keyword,
+        })
+
+    if not keywords:  # 키워드가 없는 경우
+        for i in range(total_questions):
+            korean_job_question, korean_job_solution = question_similarity_main(i + 1, USER_ID)
+            add_question(korean_job_question, korean_job_solution)
+            if len(questions) >= total_questions:
+                break
+    else:
+        db_allocation = ["low"] * 5 + ["high"] * 0
+        random.shuffle(db_allocation)
+
+        selected_keywords = random.sample(keywords, min(len(keywords), 15))
+        combined_keywords = ", ".join(selected_keywords)
+        print(f"Combined Keywords: {combined_keywords}")
+
+        for db_level in db_allocation:
+            if len(questions) >= total_questions:
+                break
+
+            search_results = cross_encoder_reranker(query=combined_keywords, db_level=db_level, top_k=10)
+            if not search_results:
+                alternate_level = "high" if db_level == "low" else "low"
+                search_results = cross_encoder_reranker(query=combined_keywords, db_level=alternate_level, top_k=10)
+
             if not search_results:
                 print("검색 결과가 없습니다.")
                 continue
-        # 검색된 각 문서를 순회하며 질문 생성
 
-        for i, doc in enumerate(search_results):
-            retrieved_content = doc.page_content
-            reference_docs = doc.metadata.get("source", "출처를 알 수 없음")
+            search_results = random.sample(search_results, min(len(search_results), 5))
+            
+            for doc in search_results:
+                if len(questions) >= total_questions:
+                    break
 
-            # 한글 질문 생성
-            prompt = question_prompt() + (
-                f"다음 공식 문서를 참조하여 기술 면접 질문을 생성해 주세요:\n{retrieved_content}\n"
-                f"다음 면접자의 희망직무를 반영하여 질문을 생성해주세요:\n{USER_JOB}\n"
-                f"기술 스택: {keywords}\n"
-                f"하나의 질문만 반환해주시기 바랍니다."
-            )
-            question_response = chat.invoke([SystemMessage(content=prompt)])
-            korean_job_question = question_response.content.strip()
+                retrieved_content = doc.page_content
 
-            print(korean_job_question)
-            # 한글 모범답안 생성
-            model_prompt = model_answer(korean_job_question, retrieved_content)
-            model_response = chat.invoke([SystemMessage(content=model_prompt)])
+                prompt = question_prompt() + (
+                    f"다음 공식 문서를 참조하여 기술 면접 질문을 생성해 주세요:\n{retrieved_content}\n"
+                    f"다음의 키워드가 공식문서의 데이터와 연관이 있다면 키워드와 공식문서를 함께 활용해서 다채로운 질문을 생성해주세요:\n{combined_keywords}\n"
+                    f"하나의 질문만 반환해주시기 바랍니다."
+                )
+                question_response = chat.invoke([SystemMessage(content=prompt)])
+                korean_job_question = question_response.content.strip()
 
-            korean_job_solution = model_response.content.strip()
+                model_prompt = model_answer(korean_job_question, retrieved_content)
+                model_response = chat.invoke([SystemMessage(content=model_prompt)])
+                korean_job_solution = model_response.content.strip()
 
-
-            # 영어 번역 생성 (질문과 모범답안 동일성 유지)
-            translation_prompt = (
-                f"Translate the following question and its answer into English:\n\n"
-                f"Question:\n{korean_job_question}\n\n"
-                f"Answer:\n{korean_job_solution}\n"
-            )
-            translation_response = chat.invoke([SystemMessage(content=translation_prompt)])
-            translated_text = translation_response.content.strip()
-
-            # 번역된 질문 및 답변 파싱
-            english_job_question, english_job_solution = translated_text.split("\nAnswer:")
-            print(english_job_question)
-
-
-            # 결과 추가
-            questions.append({
-                "interview_id": interview_id,
-                "job_question_kor": korean_job_question.strip(),
-                "job_question_eng": english_job_question.strip(),
-                "job_answer_kor": "",
-                "job_answer_eng": "",
-                "job_solution_kor": korean_job_solution.strip(),
-                "job_solution_eng": english_job_solution.strip(),
-                "job_context": retrieved_content,
-                "job_score": 0,
-            })
-
-            # 질문이 5개가 되면 종료
-            if len(questions) >= 2:
-                break
-
-        # 질문이 5개가 되면 외부 루프도 종료
-        if len(questions) >= 2:
-            break
-
+                add_question(korean_job_question, korean_job_solution, retrieved_content, combined_keywords)
 
     return questions

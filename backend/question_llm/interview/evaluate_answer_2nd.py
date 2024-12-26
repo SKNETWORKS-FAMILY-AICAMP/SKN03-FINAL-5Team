@@ -10,12 +10,14 @@ from langchain.prompts import (
     SystemMessagePromptTemplate,
     HumanMessagePromptTemplate
 )
-from question_llm.interview.database_utils import load_data_by_interview_id
+from question_llm.interview.database_utils import load_data_by_interview_id, get_job_questions_by_interview_id
 from models import Answer
 from typing import List, Dict
 import openai
 import boto3
 from langchain.schema import SystemMessage, HumanMessage
+from sqlalchemy.orm import Session
+from database import SessionLocal
 
 ############################################
 # 시스템 프롬프트 
@@ -329,14 +331,38 @@ def translate_korean_answers_to_english(answers):
 # 실행
 ############################################
 
+def save_answers_to_db(session: Session, interview_id: int, answers: List[Answer]):
+    # 인터뷰 ID에 해당하는 질문 가져오기
+    questions = get_job_questions_by_interview_id(session, interview_id)
+
+    responses = [answer.job_answer_kor for answer in answers]
+    responses_eng = translate_korean_answers_to_english(responses)  # 한글 답변을 영어로 번역
+
+    for index, question in enumerate(questions):
+        # 한글 답변과 영어 번역된 답변을 가져오기
+        korean_answer = responses[index] if index < len(responses) else ""
+        english_answer = responses_eng[index] if index < len(responses_eng) else ""
+        
+        # 해당 질문에 대한 답변 업데이트
+        question.job_answer_kor = korean_answer
+        question.job_answer_eng = english_answer
+        
+        # DB에 커밋하여 저장
+        session.commit()
+
+
 def evaluate_responses(interview_id,  answers: List[Answer]):
     # 데이터 로드
+    session: Session = SessionLocal()
+
     print("interviewId_response:")
     job_questions, job_contexts, responses, job_solutions = load_data_by_interview_id(interview_id, answers)
 
 
     responses_eng = translate_korean_answers_to_english(responses)
-    print(responses_eng)
+    
+    save_answers_to_db(session, interview_id, answers)
+
 
     # RAGAS 평가
     ragas_df = run_ragas_evaluation(job_questions, job_contexts, responses_eng, job_solutions)

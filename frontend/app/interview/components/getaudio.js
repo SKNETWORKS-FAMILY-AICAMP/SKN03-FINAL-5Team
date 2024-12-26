@@ -60,7 +60,7 @@ const SpeechToText = ({ isRecording, onTranscriptUpdate }) => {
 
   return (
     <div>
-      <h3>Transcript:</h3>
+      <h3>답변:</h3>
       <p>{transcript}</p>
     </div>
   );

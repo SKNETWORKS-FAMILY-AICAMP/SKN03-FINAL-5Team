@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
 from sqlalchemy.orm import Session
 from typing import List, Annotated
-from question_llm.interview.generate_questions import generate_questions, create_new_interview
+from question_llm.interview.generate_questions import generate_questions
+from question_llm.interview.database_utils import create_new_interview
 from models import Interview
 from database import SessionLocal
 from .crud import get_interviews_by_user_id
@@ -64,14 +65,13 @@ def makequestion(user_id, user_job, make_keywords, db_session: Session):
             user_id=USER_ID,
             user_job=USER_JOB,
             resume_path=RESUME_PATH,
-            interview_created=datetime.now(),
             db_session=db_session  
         )
         if not interview_id:
             raise ValueError("Failed to create new interview.")
         print(f"Interview created with ID: {interview_id}")
 
-        questions = generate_questions(keywords, USER_JOB, interview_id, db_session)
+        questions = generate_questions(keywords, interview_id, USER_ID,  db_session)
         
         save_questions_to_db(interview_id, questions, db_session)
         
@@ -138,16 +138,21 @@ async def evaluate_answers(request: EvaluateAnswersRequest, db: Session = Depend
     ragas_df, total_score, level, summary_resp = evaluate_responses(request.interview_id, request.answers)
     parsed_report = parse_report(summary_resp)
 
+    # 문항별 평가 데이터를 JSON 형식으로 변환
+    question_feedback = {
+        key: value for key, value in parsed_report.items() if key.startswith("문항")
+    }
+
     # DB에 데이터 저장
     try:
         new_report = ReportTb(
             interview_id=request.interview_id,
             strength=parsed_report.get("강점", ""),
             weakness=parsed_report.get("약점", ""),
-            ai_summary=summary_resp,
-            detail_feedback=str(parsed_report),
+            ai_summary=parsed_report.get("한줄평", ""),
+            detail_feedback=str(question_feedback),  # 문항별 평가 데이터를 JSON 형식으로 저장
             report_score=total_score,
-            report_created=datetime.now()
+            report_created=datetime.now()  # 현재 로컬 시간 사용
         )
         db.add(new_report)
         db.commit()
@@ -160,7 +165,6 @@ async def evaluate_answers(request: EvaluateAnswersRequest, db: Session = Depend
         "summary_resp": summary_resp,
         "parsed_report": parsed_report
     }
-
 
 
 

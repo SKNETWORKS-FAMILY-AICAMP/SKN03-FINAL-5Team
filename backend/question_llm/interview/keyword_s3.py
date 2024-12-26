@@ -163,6 +163,7 @@ def keyword_main(user_id):
 
         # 번역
         translated_text = translate_text(project_experience, OPENAI_API_KEY)
+        translated_text = translated_text.lower()
         logging.info("[Translated Project Experience]:\n" + translated_text)
 
 

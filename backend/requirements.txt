@@ -35,3 +35,4 @@ pydantic<1.10.10
 haystack-ai
 ragas-haystack
 langchain-community
+openpyxl

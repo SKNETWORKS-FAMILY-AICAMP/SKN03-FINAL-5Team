@@ -38,7 +38,7 @@ function StepComponent({ checkPermissions, permissionsGranted }) {
 
   return (
     <Box
-      w={'400px'}
+      w={'450px'}
       h={'450px'}
       borderRadius={'40px'}
       background={'#DFE2FB'}

@@ -3,10 +3,10 @@ from typing import Dict, List, Tuple
 import sys
 import os
 from sqlalchemy.exc import SQLAlchemyError
-from datetime import  datetime
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from sqlalchemy import update
-
+from sqlalchemy.dialects.mysql import insert 
 from database import SessionLocal
 from models import QuestionTb, ReportTb, Interview
 
@@ -85,7 +85,7 @@ def save_report_to_db(db_session, **kwargs):
 
 
 
-def create_new_interview(user_id: int, user_job: str, resume_path: str, interview_created: datetime, db_session: Session) -> int:
+def create_new_interview(user_id: int, user_job: str, resume_path: str, db_session: Session) -> int:
 
     try:
         # 인터뷰 데이터 생성
@@ -93,7 +93,7 @@ def create_new_interview(user_id: int, user_job: str, resume_path: str, intervie
             user_id=user_id,
             user_job=user_job,
             resume_path=resume_path,
-            interview_created=interview_created,
+            interview_created=datetime.now(),
         )
 
         # DB 세션을 사용하여 데이터 추가 및 커밋
@@ -107,6 +107,43 @@ def create_new_interview(user_id: int, user_job: str, resume_path: str, intervie
         print(f"Error creating interview: {e}")
         db_session.rollback()  # 에러 발생 시 롤백
         return None
+    
+
+def create_new_question_in_db(
+    interview_id: int,
+    job_question_kor: str,
+    job_solution_kor: str,
+    job_question_eng: str = None,
+    job_solution_eng: str = None,
+) -> int:
+    """
+    새로운 질문을 데이터베이스에 추가하고, 생성된 question_id를 반환합니다.
+    """
+    session: Session = SessionLocal()
+    try:
+        # 새로운 질문 생성
+        new_question = QuestionTb(
+            interview_id=interview_id,
+            job_question_kor=job_question_kor,
+            job_solution_kor=job_solution_kor,
+            job_question_eng=job_question_eng,
+            job_solution_eng=job_solution_eng,
+            job_answer_kor="",  # 기본값 설정
+            job_answer_eng="",  # 기본값 설정
+            job_score=0.0,  # 초기 점수
+            job_context="Default job_context",  # 기본 컨텍스트
+        )
+        session.add(new_question)
+        session.commit()
+
+        # 생성된 question_id 반환
+        return new_question.question_id
+    except Exception as e:
+        session.rollback()
+        print(f"[DB 오류] 새로운 질문 생성 실패: {e}")
+        return -1  # 실패 시 -1 반환
+    finally:
+        session.close()
     
 def save_answers_to_db(answers: List[Dict]):
 
@@ -124,21 +161,23 @@ def save_answers_to_db(answers: List[Dict]):
         session.commit()
     print("Answers successfully saved to the database.")
 
+
 def save_evaluated_answers_to_db(
-    interview_id: int,
     evaluated_answers: List[Dict],
-    db_session: Session
+    db_session: Session,
 ):
 
     try:
         for answer in evaluated_answers:
             stmt = update(QuestionTb).where(
-                (QuestionTb.interview_id == interview_id) &
-                (QuestionTb.job_question == answer["question"])
+                QuestionTb.question_id == answer["question_id"]
             ).values(
-                job_answer_kor=answer["answer"],
-                job_solution_kor=answer["model_answer"],
-                job_score=answer["score"],
+                interview_id = answer["interview_id"],
+                question_id = answer["question_id"],
+                job_answer_kor=answer["job_answer_kor"],
+                job_answer_eng=answer["job_answer_eng"],
+                job_score=answer["job_score"],
+                job_context=answer["job_context"],
             )
             db_session.execute(stmt)
         
@@ -148,7 +187,6 @@ def save_evaluated_answers_to_db(
         db_session.rollback()
         print(f"Error during DB update: {e}")
         raise
-
 
 def save_report_to_db(
     interview_id: int,
@@ -194,6 +232,8 @@ def load_data_by_interview_id(interview_id: int, answers) -> Tuple[List[str], Li
 
     # 질문 가져오기
     questions = get_job_questions_by_interview_id(session, interview_id)
+    print('-------------------')
+    print(questions)
 
     # 결과를 저장할 리스트 초기화
     job_questions = []
@@ -218,7 +258,8 @@ def load_data_by_interview_id(interview_id: int, answers) -> Tuple[List[str], Li
             # answers가 부족할 경우 처리
             responses.append("")  # 빈 값으로 추가
             job_solutions.append("")  # 빈 값으로 추가
-    print('-----------------')
     print(f"First answer object: {answers[1].job_answer_kor}")
 
     return job_questions, job_contexts, responses, job_solutions
+
+

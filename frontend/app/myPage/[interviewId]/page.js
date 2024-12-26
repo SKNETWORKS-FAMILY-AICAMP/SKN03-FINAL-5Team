@@ -21,7 +21,7 @@ const InterviewDetail = ({ params }) => {
         <Flex mt={'50px'} gap={'30px'}>
           <SideNavigation />
           <Box w={'70%'}>
-            <DetailLog interviewLogList={interviewLogList} />
+            <DetailLog interviewLogList={interviewLogList} reportData={reportData} />
           </Box>
         </Flex>
       </Container>
