@@ -118,6 +118,7 @@ def generate_interview_questions(
 
         # 질문 생성 및 인터뷰 ID 얻기
         questions, interview_id = makequestion(user_id,user_job, make_keywords, db)
+        
 
         return {
             "message": "Questions generated successfully",
@@ -140,7 +141,7 @@ async def evaluate_answers(request: EvaluateAnswersRequest, db: Session = Depend
 
 
 
-    
+
 # @router.post("/evaluate_answers")
 # async def evaluate_answers(request: EvaluateAnswersRequest, db: Session = Depends(get_db)):
 #     try:
