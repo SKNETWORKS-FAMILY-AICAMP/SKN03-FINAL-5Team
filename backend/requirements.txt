@@ -29,3 +29,8 @@ faiss-cpu
 transformers
 tokenizers
 langchain-openai
+ragas-haystack
+haystack-ai
+langchain 
+openai
+langchain-community

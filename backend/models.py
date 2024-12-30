@@ -91,9 +91,9 @@ class QuestionTb(Base):
 
 class Answer(BaseModel):
     interview_id: int
-    question: str
-    answer: str
-    solution: str
+    job_question_kor: str
+    job_answer_kor: str
+    job_solution_kor: str
 
 class EvaluateAnswersRequest(BaseModel):
     interview_id: int

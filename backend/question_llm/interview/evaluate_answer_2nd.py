@@ -10,8 +10,9 @@ from langchain.prompts import (
     SystemMessagePromptTemplate,
     HumanMessagePromptTemplate
 )
-from question_llm.interview.evaluate_answer_2nd import load_data_by_interview_id
+from question_llm.interview.database_utils import load_data_by_interview_id
 from models import Answer
+from typing import List, Dict
 
 ############################################
 # 시스템 프롬프트 
@@ -294,9 +295,14 @@ def translate_korean_answer_to_english(answer):
 # 실행
 ############################################
 
-def evaluate_responses(interviewId,  answers: List[Answer]):
+def evaluate_responses(interview_id,  answers: List[Answer]):
     # 데이터 로드
-    questions, context, responses, ground_truths = load_data_by_interview_id(interviewId)
+    print("interviewId111")
+    print(interview_id)
+    questions, context, responses, ground_truths = load_data_by_interview_id(interview_id)
+    
+    print('---------------------------')
+    print(questions, context, responses, ground_truths)
 
     responses_eng = translate_korean_answer_to_english(responses)
 

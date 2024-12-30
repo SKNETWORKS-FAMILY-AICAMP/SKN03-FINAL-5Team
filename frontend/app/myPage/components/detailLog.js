@@ -30,7 +30,7 @@ const DetailLog = ({ interviewLogList }) => {
             <Flex align="center" mb={4}>
               <Image w={'30px'} mb={'5px'} mr={'8px'} src="/logo.png" />
               <Box p={'5px 30px'} background={'white'} borderRadius={'16px'}>
-                <Text fontWeight="bold">질문: {item.job_question}</Text>
+                <Text fontWeight="bold">질문: {item.job_question_kor}</Text>
               </Box>
             </Flex>
             <Flex align="center" mb={4}>

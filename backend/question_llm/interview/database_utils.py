@@ -1,5 +1,5 @@
 import pandas as pd
-from typing import Dict, List
+from typing import Dict, List, Tuple
 import sys
 import os
 from sqlalchemy.exc import SQLAlchemyError
@@ -52,7 +52,6 @@ def update_question_in_db(
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 
 def save_questions_to_db(interview_id: int, questions: List[Dict], db_session):
-    print(questions)
     for question in questions:
         question_entry = QuestionTb(
             interview_id=interview_id,
@@ -66,8 +65,8 @@ def save_questions_to_db(interview_id: int, questions: List[Dict], db_session):
             job_score=question["job_score"],
             
         )
-    db_session.add(question_entry)
-    db_session.commit()
+        db_session.add(question_entry)
+        db_session.commit()
 
 
 def save_report_to_db(db_session, **kwargs):
@@ -182,6 +181,7 @@ def save_report_to_db(
 
 
 def get_job_questions_by_interview_id(db: Session, interview_id: int):
+
     return (
         db.query(QuestionTb)
         .join(Interview, QuestionTb.interview_id == Interview.interview_id)
@@ -189,8 +189,14 @@ def get_job_questions_by_interview_id(db: Session, interview_id: int):
         .all()
     )
 
-def load_data_by_interview_id(db: Session, interview_id: int) -> Tuple[List[str], List[List[str]], List[str], List[str]]:
-    questions = get_job_questions_by_interview_id(db, interview_id)
+def load_data_by_interview_id(interview_id: int) -> Tuple[List[str], List[List[str]], List[str], List[str]]:
+    session: Session = SessionLocal()
+
+    print('interview_id:: ')
+    print(interview_id)
+    questions = get_job_questions_by_interview_id(session, interview_id)
+
+    print(f"questions: {questions}")
     
     job_questions = []
     job_contexts = []

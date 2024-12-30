@@ -177,11 +177,11 @@ def generate_questions(keywords: List[str], USER_JOB: str, interview_id: int, db
             })
 
             # 질문이 5개가 되면 종료
-            if len(questions) >= 5:
+            if len(questions) >= 2:
                 break
 
         # 질문이 5개가 되면 외부 루프도 종료
-        if len(questions) >= 5:
+        if len(questions) >= 2:
             break
 
 
