@@ -133,9 +133,9 @@ def run_ragas_evaluation(questions, contexts, responses, ground_truths):
     return df
 
 def step1_rating(score: float) -> str:
-    if score >= 0.5:
+    if score >= 0.7:
         return "우수"
-    elif score >= 0.3:
+    elif score >= 0.6:
         return "보통"
     else:
         return "미흡"
